@@ -1,113 +1,109 @@
-# Selwyn Panel Beaters Online Service
+<div align="center">
+ <h1>🚗 Selwyn Panel Beaters Online Service</h1>
+ <img src="https://img.shields.io/badge/python-3.9+-blue?style=flat&logo=python&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Flask-3.0.1-black?style=flat&logo=flask&logoColor=white"/>
+ <img src="https://img.shields.io/badge/MySQL-8.3.0-blue?style=flat&logo=mysql&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Bootstrap-5.0-purple?style=flat&logo=bootstrap&logoColor=white"/>
+ <img src="https://img.shields.io/badge/License-MIT-brightgreen?style=flat"/>
+</div>
 
-## Overview
+# Features
+The Selwyn Panel Beaters Online Service provides a comprehensive solution for automotive repair shop management with dedicated interfaces for technicians and administrators.
 
-Selwyn Panel Beaters Online Service is a web application designed to manage the services of Selwyn Panel Beaters, with dedicated interfaces for technicians and administrators. The application is built using Flask, a micro web framework in Python, and MySQL for database operations. It encompasses several routes, functions, and templates to deliver the required functionality.
+### 🔧 Technician Interface
+- View and manage current repair jobs
+- Add services and parts to jobs
+- Track job completion status
+- Real-time cost calculation
+- User-friendly job modification interface
 
-## Development Process
+### 👥 Administrator Interface
+- Manage customer information and records
+- Schedule new repair jobs
+- Track unpaid bills and payments
+- Monitor overdue accounts
+- Add/update services and parts catalog
+- Comprehensive billing management
 
-### Front-End Development
+### 💼 Business Management
+- Automated cost calculation
+- Job status tracking
+- Payment status monitoring
+- Customer information management
+- Parts and services inventory
+- Billing and payment processing
 
-The front-end design was initiated using WebStorm, facilitating the creation of an intuitive and user-friendly interface. The design adheres to the Bootstrap documentation, ensuring a consistent and responsive layout across various devices.
+### 🛠️ System Features
+- Intuitive user interfaces
+- Responsive design
+- Real-time updates
+- Secure data management
+- Multi-user support
+- Automated calculations
 
-### Back-End Development
+## Tech Stack
+![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white)
+![Python](https://img.shields.io/badge/python-%2314354C.svg?style=for-the-badge&logo=python&logoColor=white)
+![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/bootstrap-%23563D7C.svg?style=for-the-badge&logo=bootstrap&logoColor=white)
+![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
 
-The back-end functionality was implemented using PyCharm, integrating seamlessly with the front-end components. Flask handles the routing and processing, while MySQL manages the data storage and retrieval.
+## Getting Started
 
-## Application Structure
+### Prerequisites
+- Python 3.9+
+- MySQL 8.0+
+- Web browser with JavaScript enabled
 
-### Templates
+### Installation
+1. Clone the repository
+```bash
+git clone https://github.com/ChanMeng666/automotive-repair-management-system.git
+```
 
-Templates define the HTML structure of the application's pages. Designed according to Bootstrap guidelines, these templates ensure a consistent look and feel. The design was visually checked in real-time using WebStorm.
+2. Install required packages
+```bash
+pip install -r requirements.txt
+```
 
-### Navigation
+3. Set up MySQL database
+```bash
+mysql -u root -p < spb_local.sql
+```
 
-The application employs Bootstrap's `navs-tabs` component for the navigation bar, offering a clear and organised layout. The use of nested `<div class="container">` elements resolves the common Bootstrap issue of having multiple `class="nav-link active"` elements on a single page.
+4. Configure database connection
+Update the `connect.py` file with your MySQL credentials.
 
-### Overall Layout
+5. Run the application
+```bash
+python app.py
+```
 
-The application's layout directs technicians and administrators to their respective pages from the home page, ensuring a tailored experience for each user role. All pages inherit Bootstrap styling and JavaScript from `base.html`, maintaining a consistent interface.
-
-### Design Decisions
-
-#### Separation of Concerns
-
-The application is designed with a clear separation of concerns. Technicians and administrators have distinct roles and permissions, reflected in the routes they can access. Separate templates for different user roles ensure a tailored interface.
-
-#### Editing Functionality
-
-Editing functionality is implemented using conditional statements within the same template, keeping the code clean and avoiding redundancy.
-
-#### Data Transmission
-
-GET requests retrieve data (e.g., listing jobs or customers), while POST requests submit data (e.g., modifying job details or marking bills as paid), adhering to RESTful design principles.
+The application will be accessible at `http://localhost:5000`.
 
 ## Database Schema
 
-### Job Table Creation
-
-The `job` table is created using the following SQL statement:
-
-```sql
-CREATE TABLE IF NOT EXISTS job
-(
-    job_id INT auto_increment PRIMARY KEY NOT NULL,
-    job_date date NOT NULL,
-    customer int NOT NULL,
-    total_cost decimal(6,2) default null,
-    completed tinyint default 0,
-    paid tinyint default 0,
-    FOREIGN KEY (customer) REFERENCES customer(customer_id)
-    ON UPDATE CASCADE
-);
-```
-
-### Customer-Job Relationship
-
-The relationship between the customer and job tables is defined as:
-
-```sql
-FOREIGN KEY (customer) REFERENCES customer(customer_id)
-ON UPDATE CASCADE
-```
-
-### Parts Table Insertion
-
-Parts are inserted into the parts table with the following lines:
-
-```sql
-INSERT INTO part (`part_name`, `cost`) VALUES ('Windscreen', '560.65');
-INSERT INTO part (`part_name`, `cost`) VALUES ('Headlight', '35.65');
--- ... other parts
-```
-
-### Audit Trail Fields
-
-To record the time and date a service or part was added to a job, the following fields are added:
-
-- In the job_service table: created_at column of type DATETIME
-- In the job_part table: created_at column of type DATETIME
-
-### Logins and Access Control
-
-Implementing logins ensures that technicians and administrators can only access relevant routes. Without this control, unauthorised access could lead to:
-
-1. Technicians accidentally marking jobs as paid, causing incorrect job status.
-2. Unauthorised users accessing sensitive customer information or modifying job details, leading to operational chaos and potential financial loss.
-
-## Getting Started
-To get started with the project, follow these steps:
-
-1. Clone the repository: `git clone https://github.com/ChanMeng666/Automotive-Repair-Management-System.git`
-2. Install the required dependencies: `pip install -r requirements.txt`
-3. Set up the database using the provided SQL scripts.
-4. Run the application: `flask run`
+The system uses a MySQL database with the following main tables:
+- `customer`: Stores customer information
+- `job`: Manages repair jobs
+- `service`: Catalogs available services
+- `part`: Tracks parts inventory
+- `job_service`: Links jobs with services
+- `job_part`: Links jobs with parts
 
 ## Contributing
-We welcome contributions! Please fork the repository and submit a pull request with your changes. Ensure that your code adheres to our coding standards and includes appropriate tests.
+Contributions are welcome! Please read our [Contributing Guidelines](CODE_OF_CONDUCT.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
-For any questions or suggestions, please contact us at ChanMeng666@outlook.com.
+Email: ChanMeng666@outlook.com
+
+## Acknowledgments
+Special thanks to everyone who has contributed to making this project better.
+
+- Bootstrap Documentation
+- Flask Documentation
+- MySQL Documentation
