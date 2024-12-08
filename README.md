@@ -7,6 +7,12 @@
  <img src="https://img.shields.io/badge/License-MIT-brightgreen?style=flat"/>
 </div>
 
+![screencapture-chanmeng-pythonanywhere-2024-12-07-14_58_47](https://github.com/user-attachments/assets/fc5e01b6-380d-492d-9961-68c3d1f0dfff)
+
+![屏幕截图 2024-12-07 150003](https://github.com/user-attachments/assets/b5d1eec3-88db-45ed-aaea-74c1bc8dfb13)
+
+![screencapture-chanmeng-pythonanywhere-currentjoblist-2024-12-07-14_59_06](https://github.com/user-attachments/assets/8ec92d9a-c896-4471-9a60-3af579c57875)
+
 # Features
 The Selwyn Panel Beaters Online Service provides a comprehensive solution for automotive repair shop management with dedicated interfaces for technicians and administrators.
 
