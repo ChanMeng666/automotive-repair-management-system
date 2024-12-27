@@ -1,5 +1,5 @@
 <div align="center">
- <h1>🚗 Selwyn Panel Beaters Online Service</h1>
+ <h1><img src="public/selwyn-panel-beaters-online.svg" width="80px"><br/>Selwyn Panel Beaters Online Service</h1>
  <img src="https://img.shields.io/badge/python-3.9+-blue?style=flat&logo=python&logoColor=white"/>
  <img src="https://img.shields.io/badge/Flask-3.0.1-black?style=flat&logo=flask&logoColor=white"/>
  <img src="https://img.shields.io/badge/MySQL-8.3.0-blue?style=flat&logo=mysql&logoColor=white"/>
