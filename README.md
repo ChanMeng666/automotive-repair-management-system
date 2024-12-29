@@ -111,6 +111,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 Email: ChanMeng666@outlook.com
 
+## 🙋‍♀ Author
+
+Created and maintained by [Chan Meng](https://github.com/ChanMeng666).
+
 ## Acknowledgments
 Special thanks to everyone who has contributed to making this project better.
 
