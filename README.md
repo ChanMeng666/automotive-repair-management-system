@@ -7,6 +7,11 @@
  <img src="https://img.shields.io/badge/License-MIT-brightgreen?style=flat"/>
 </div>
 
+<br/>
+
+[![Explore GitHub Profile README Generator](https://gradient-svg-generator.vercel.app/?text=👉+Try+It+Now!+👈&height=40&template=pride-rainbow)](https://chanmeng.pythonanywhere.com/)
+
+<br/>
 
 https://github.com/user-attachments/assets/10dc2190-187c-4c52-bbbb-a3a0e4436005
 
