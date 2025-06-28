@@ -2,7 +2,7 @@
 
 [![Project Banner](./public/selwyn-panel-beaters-online.svg)](#)
 
-# 🚗 Selwyn Panel Beaters Online Service<br/><small>Comprehensive Automotive Repair Management System</small>
+# 🚗 Selwyn Panel Beaters Online Service<br/><h3>Comprehensive Automotive Repair Management System</h3>
 
 An innovative automotive repair shop management solution that leverages modern web technologies to provide streamlined operations and enhanced customer service.<br/>
 Supports multi-user interfaces, real-time cost calculation, and comprehensive job tracking with an extensible and scalable architecture.<br/>
