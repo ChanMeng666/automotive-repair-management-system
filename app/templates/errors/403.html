@@ -1,0 +1,81 @@
+{% extends "base/layout.html" %}
+
+{% block title %}访问被拒绝 - 汽车维修管理系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5">
+                <!-- 403 图标 -->
+                <div class="text-warning mb-4">
+                    <i class="bi bi-shield-exclamation" style="font-size: 6rem;"></i>
+                </div>
+                
+                <!-- 错误信息 -->
+                <h1 class="display-4 text-warning mb-3">403</h1>
+                <h3 class="mb-3">访问被拒绝</h3>
+                <p class="text-muted mb-4">
+                    抱歉，您没有权限访问此页面。
+                    <br>
+                    请确认您已正确登录且具有相应的访问权限。
+                </p>
+                
+                <!-- 操作按钮 -->
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    {% if session.logged_in %}
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                            <i class="bi bi-speedometer2 me-2"></i>返回仪表板
+                        </a>
+                        
+                        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-box-arrow-right me-2"></i>切换账户
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main.login') }}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>登录系统
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house me-2"></i>返回首页
+                    </a>
+                </div>
+                
+                <!-- 权限说明 -->
+                <div class="mt-4 pt-4 border-top text-start">
+                    <h6 class="text-muted mb-3">权限说明：</h6>
+                    <div class="row text-muted small">
+                        <div class="col-md-6">
+                            <h6 class="text-success">技术员权限</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success me-1"></i> 查看工作订单</li>
+                                <li><i class="bi bi-check text-success me-1"></i> 创建工作订单</li>
+                                <li><i class="bi bi-check text-success me-1"></i> 管理服务和零件</li>
+                                <li><i class="bi bi-check text-success me-1"></i> 查看客户信息</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">管理员权限</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-primary me-1"></i> 所有技术员功能</li>
+                                <li><i class="bi bi-check text-primary me-1"></i> 客户管理</li>
+                                <li><i class="bi bi-check text-primary me-1"></i> 账单管理</li>
+                                <li><i class="bi bi-check text-primary me-1"></i> 系统报表</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 联系信息 -->
+                <div class="mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="bi bi-person-gear me-1"></i>
+                        如需权限升级，请联系系统管理员
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

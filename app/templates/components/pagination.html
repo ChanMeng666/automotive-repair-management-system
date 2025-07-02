@@ -1,0 +1,105 @@
+<!-- 分页组件 -->
+{% if total_pages > 1 %}
+<nav aria-label="页面导航" class="d-flex justify-content-between align-items-center">
+    <div class="text-muted">
+        显示第 {{ ((page - 1) * per_page) + 1 }} - {{ [page * per_page, total]|min }} 项，
+        共 {{ total }} 项
+    </div>
+    
+    <ul class="pagination mb-0">
+        <!-- 首页 -->
+        {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=1) }}" 
+                   aria-label="首页">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+            </li>
+        {% endif %}
+        
+        <!-- 上一页 -->
+        {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page-1) }}" 
+                   aria-label="上一页">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+            </li>
+        {% endif %}
+        
+        <!-- 页码 -->
+        {% set start_page = [1, page - 2]|max %}
+        {% set end_page = [total_pages, page + 2]|min %}
+        
+        {% if start_page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=1) }}">1</a>
+            </li>
+            {% if start_page > 2 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            {% endif %}
+        {% endif %}
+        
+        {% for page_num in range(start_page, end_page + 1) %}
+            {% if page_num == page %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page_num) }}">{{ page_num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if end_page < total_pages %}
+            {% if end_page < total_pages - 1 %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+            {% endif %}
+            <li class="page-item">
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=total_pages) }}">{{ total_pages }}</a>
+            </li>
+        {% endif %}
+        
+        <!-- 下一页 -->
+        {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page+1) }}" 
+                   aria-label="下一页">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+            </li>
+        {% endif %}
+        
+        <!-- 末页 -->
+        {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=total_pages) }}" 
+                   aria-label="末页">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %} 

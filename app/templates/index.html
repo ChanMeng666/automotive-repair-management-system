@@ -1,0 +1,310 @@
+{% extends "base/layout.html" %}
+
+{% block title %}首页 - 汽车维修管理系统{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active">首页</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 欢迎区域 -->
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow-sm bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="display-6 fw-bold mb-2">
+                            <i class="bi bi-gear-fill me-3"></i>汽车维修管理系统
+                        </h1>
+                        <p class="lead mb-3">专业的维修订单和客户管理平台</p>
+                        <p class="mb-0">
+                            <i class="bi bi-calendar-date me-2"></i>
+                            今天是 {{ current_date.strftime('%Y年%m月%d日') if current_date else '系统日期' }}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        {% if not session.logged_in %}
+                            <a href="{{ url_for('main.login') }}" class="btn btn-light btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>立即登录
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg">
+                                <i class="bi bi-speedometer2 me-2"></i>进入仪表板
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if session.logged_in %}
+<!-- 系统统计面板 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="mb-3">
+            <i class="bi bi-graph-up me-2"></i>系统概览
+        </h3>
+    </div>
+    
+    <!-- 工作订单统计 -->
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-primary mb-3">
+                    <i class="bi bi-list-task" style="font-size: 2.5rem;"></i>
+                </div>
+                <h4 class="text-primary">{{ job_stats.get('total_jobs', 0) }}</h4>
+                <p class="text-muted mb-0">总工作订单</p>
+                <small class="text-muted">
+                    未完成: {{ job_stats.get('pending_jobs', 0) }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 账单统计 -->
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-success mb-3">
+                    <i class="bi bi-credit-card" style="font-size: 2.5rem;"></i>
+                </div>
+                <h4 class="text-success">¥{{ "%.2f"|format(billing_stats.get('total_revenue', 0)) }}</h4>
+                <p class="text-muted mb-0">总收入</p>
+                <small class="text-muted">
+                    未付: ¥{{ "%.2f"|format(billing_stats.get('unpaid_amount', 0)) }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 逾期账单 -->
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-warning mb-3">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 2.5rem;"></i>
+                </div>
+                <h4 class="text-warning">{{ (overdue_bills|length) if overdue_bills else 0 }}</h4>
+                <p class="text-muted mb-0">逾期账单</p>
+                <small class="text-muted">
+                    需要关注
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 近期工作 -->
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-info mb-3">
+                    <i class="bi bi-clock-history" style="font-size: 2.5rem;"></i>
+                </div>
+                <h4 class="text-info">{{ (recent_jobs|length) if recent_jobs else 0 }}</h4>
+                <p class="text-muted mb-0">最近工作</p>
+                <small class="text-muted">
+                    本周活动
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速操作 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="mb-3">
+            <i class="bi bi-lightning me-2"></i>快速操作
+        </h3>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-person-plus text-primary me-2"></i>客户管理
+                </h5>
+                <p class="card-text text-muted">查看客户列表、添加新客户或搜索现有客户信息</p>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('main.customers') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-people me-1"></i>客户列表
+                    </a>
+                    <a href="{{ url_for('main.new_customer') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>新建客户
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-wrench text-success me-2"></i>工作管理
+                </h5>
+                <p class="card-text text-muted">管理维修工作订单、查看当前进度和创建新工作</p>
+                <div class="d-flex gap-2">
+                    {% if session.user_type == 'technician' %}
+                        <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
+                            <i class="bi bi-list-task me-1"></i>当前工作
+                        </a>
+                        <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
+                            <i class="bi bi-plus-lg me-1"></i>新建工作
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
+                            <i class="bi bi-speedometer2 me-1"></i>查看详情
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近活动 -->
+{% if recent_jobs %}
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-bottom-0">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>最近工作订单
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>工作ID</th>
+                                <th>客户</th>
+                                <th>日期</th>
+                                <th>状态</th>
+                                <th>金额</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in recent_jobs[:5] %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" 
+                                       class="text-decoration-none">
+                                        #{{ job.get('job_id', 'N/A') }}
+                                    </a>
+                                </td>
+                                <td>{{ job.get('customer_name', 'N/A') }}</td>
+                                <td>{{ job.get('job_date', 'N/A') }}</td>
+                                <td>
+                                    {% if job.get('job_completed') %}
+                                        <span class="badge bg-success">已完成</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">进行中</span>
+                                    {% endif %}
+                                </td>
+                                <td>¥{{ "%.2f"|format(job.get('total_cost', 0)) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 逾期账单提醒 -->
+    {% if overdue_bills %}
+    <div class="col-md-4 mb-4">
+        <div class="card border-warning border-0 shadow-sm">
+            <div class="card-header bg-warning bg-opacity-10 border-bottom-0">
+                <h6 class="mb-0 text-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>逾期账单提醒
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for bill in overdue_bills %}
+                <div class="d-flex justify-content-between align-items-center {% if not loop.last %}border-bottom pb-2 mb-2{% endif %}">
+                    <div>
+                        <small class="text-muted">{{ bill.get('customer_name', 'N/A') }}</small>
+                        <br>
+                        <span class="text-danger">¥{{ "%.2f"|format(bill.get('total_cost', 0)) }}</span>
+                    </div>
+                    <small class="text-muted">
+                        {{ bill.get('days_overdue', 0) }}天
+                    </small>
+                </div>
+                {% endfor %}
+                
+                {% if session.user_type == 'administrator' %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning btn-sm">
+                        查看全部
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- 未登录用户的功能介绍 -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="text-center mb-4">系统功能</h3>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-primary mb-3">
+                    <i class="bi bi-people" style="font-size: 3rem;"></i>
+                </div>
+                <h5>客户管理</h5>
+                <p class="text-muted">完整的客户信息管理，包括联系方式、历史记录和统计分析</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-success mb-3">
+                    <i class="bi bi-wrench" style="font-size: 3rem;"></i>
+                </div>
+                <h5>工作订单</h5>
+                <p class="text-muted">专业的维修工作管理，包括服务项目、零件使用和进度跟踪</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="text-warning mb-3">
+                    <i class="bi bi-credit-card" style="font-size: 3rem;"></i>
+                </div>
+                <h5>账单管理</h5>
+                <p class="text-muted">自动化的账单生成、付款跟踪和逾期提醒功能</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <h4 class="mb-3">准备开始了吗？</h4>
+        <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-box-arrow-in-right me-2"></i>立即登录系统
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

@@ -1,0 +1,30 @@
+<!-- Flash消息组件 -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container-fluid">
+            {% for category, message in messages %}
+                {% set alert_class = {
+                    'success': 'alert-success',
+                    'info': 'alert-info', 
+                    'warning': 'alert-warning',
+                    'error': 'alert-danger',
+                    'danger': 'alert-danger'
+                } %}
+                
+                {% set icon_class = {
+                    'success': 'bi-check-circle-fill',
+                    'info': 'bi-info-circle-fill',
+                    'warning': 'bi-exclamation-triangle-fill',
+                    'error': 'bi-x-circle-fill',
+                    'danger': 'bi-x-circle-fill'
+                } %}
+                
+                <div class="alert {{ alert_class.get(category, 'alert-info') }} alert-dismissible fade show" role="alert">
+                    <i class="bi {{ icon_class.get(category, 'bi-info-circle-fill') }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %} 

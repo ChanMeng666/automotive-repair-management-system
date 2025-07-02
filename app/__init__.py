@@ -1,0 +1,83 @@
+"""
+Automotive Repair Management System
+Flask应用工厂和应用初始化
+"""
+from flask import Flask
+from config.base import get_config
+from app.utils.database import init_database
+from app.utils.error_handler import ErrorHandler, LoggerConfig
+from app.utils.security import SecurityConfig, CSRFProtection
+import os
+
+
+def create_app(config_name=None):
+    """应用工厂函数"""
+    app = Flask(__name__)
+    
+    # 加载配置
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'development')
+    
+    config = get_config(config_name)
+    app.config.from_object(config)
+    
+    # 设置密钥
+    if not app.config.get('SECRET_KEY'):
+        app.config['SECRET_KEY'] = 'dev-secret-key-change-in-production'
+    
+    # 初始化扩展
+    init_extensions(app)
+    
+    # 注册蓝图
+    register_blueprints(app)
+    
+    # 注册错误处理器
+    register_error_handlers(app)
+    
+    # 注册安全中间件
+    register_security_middleware(app)
+    
+    app.logger.info("应用初始化完成")
+    
+    return app
+
+
+def init_extensions(app):
+    """初始化Flask扩展"""
+    # 设置日志系统
+    LoggerConfig.setup_logging(app)
+    
+    # 初始化数据库
+    init_database(app)
+    
+    # 初始化错误处理器
+    error_handler = ErrorHandler(app)
+
+
+def register_blueprints(app):
+    """注册蓝图"""
+    from app.views.main import main_bp
+    from app.views.technician import technician_bp
+    from app.views.administrator import administrator_bp
+    
+    app.register_blueprint(main_bp)
+    app.register_blueprint(technician_bp, url_prefix='/technician')
+    app.register_blueprint(administrator_bp, url_prefix='/administrator')
+
+
+def register_error_handlers(app):
+    """注册错误处理器"""
+    # ErrorHandler已在init_extensions中初始化，这里保留为向后兼容
+    pass
+
+
+def register_security_middleware(app):
+    """注册安全中间件"""
+    
+    @app.after_request
+    def apply_security_headers(response):
+        return SecurityConfig.apply_security_headers(response)
+    
+    @app.context_processor
+    def inject_csrf_token():
+        return {'csrf_token': CSRFProtection.generate_token} 
