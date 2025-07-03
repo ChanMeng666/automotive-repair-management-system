@@ -1,22 +1,22 @@
-<!-- 加载动画组件 -->
+<!-- Loading Animation Component -->
 <div class="d-flex justify-content-center align-items-center p-4" id="loading-spinner" style="display: none !important;">
     <div class="text-center">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-            <span class="visually-hidden">加载中...</span>
+            <span class="visually-hidden">Loading...</span>
         </div>
         <div class="mt-2 text-muted">
-            <small>{{ loading_text or '正在加载数据...' }}</small>
+            <small>{{ loading_text or 'Loading data...' }}</small>
         </div>
     </div>
 </div>
 
-<!-- 页面加载遮罩 -->
+<!-- Page Loading Overlay -->
 <div class="position-fixed top-0 start-0 w-100 h-100 bg-white d-flex justify-content-center align-items-center" 
      id="page-loading" style="z-index: 9999; display: none !important;">
     <div class="text-center">
         <div class="spinner-border text-primary mb-3" style="width: 4rem; height: 4rem;">
-            <span class="visually-hidden">页面加载中...</span>
+            <span class="visually-hidden">Page loading...</span>
         </div>
-        <h5 class="text-muted">页面加载中，请稍候...</h5>
+        <h5 class="text-muted">Page loading, please wait...</h5>
     </div>
 </div> 

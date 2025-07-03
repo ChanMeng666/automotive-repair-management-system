@@ -1,5 +1,5 @@
 """
-客户模型
+Customer model
 """
 from typing import List, Optional, Dict, Any
 from .base import BaseModel
@@ -8,7 +8,7 @@ import re
 
 
 class Customer(BaseModel):
-    """客户模型类"""
+    """Customer model class"""
     
     _table_name = 'customer'
     _primary_key = 'customer_id'

@@ -1,17 +1,16 @@
-<!-- 分页组件 -->
+<!-- Pagination Component -->
 {% if total_pages > 1 %}
-<nav aria-label="页面导航" class="d-flex justify-content-between align-items-center">
+<nav aria-label="Page navigation" class="d-flex justify-content-between align-items-center">
     <div class="text-muted">
-        显示第 {{ ((page - 1) * per_page) + 1 }} - {{ [page * per_page, total]|min }} 项，
-        共 {{ total }} 项
+        Showing {{ ((page - 1) * per_page) + 1 }} - {{ [page * per_page, total]|min }} of {{ total }} items
     </div>
     
     <ul class="pagination mb-0">
-        <!-- 首页 -->
+        <!-- First Page -->
         {% if page > 1 %}
             <li class="page-item">
                 <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=1) }}" 
-                   aria-label="首页">
+                   aria-label="First">
                     <i class="bi bi-chevron-double-left"></i>
                 </a>
             </li>
@@ -21,11 +20,11 @@
             </li>
         {% endif %}
         
-        <!-- 上一页 -->
+        <!-- Previous Page -->
         {% if page > 1 %}
             <li class="page-item">
                 <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page-1) }}" 
-                   aria-label="上一页">
+                   aria-label="Previous">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
@@ -35,7 +34,7 @@
             </li>
         {% endif %}
         
-        <!-- 页码 -->
+        <!-- Page Numbers -->
         {% set start_page = [1, page - 2]|max %}
         {% set end_page = [total_pages, page + 2]|min %}
         
@@ -73,11 +72,11 @@
             </li>
         {% endif %}
         
-        <!-- 下一页 -->
+        <!-- Next Page -->
         {% if page < total_pages %}
             <li class="page-item">
                 <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page+1) }}" 
-                   aria-label="下一页">
+                   aria-label="Next">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
@@ -87,11 +86,11 @@
             </li>
         {% endif %}
         
-        <!-- 末页 -->
+        <!-- Last Page -->
         {% if page < total_pages %}
             <li class="page-item">
                 <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=total_pages) }}" 
-                   aria-label="末页">
+                   aria-label="Last">
                     <i class="bi bi-chevron-double-right"></i>
                 </a>
             </li>

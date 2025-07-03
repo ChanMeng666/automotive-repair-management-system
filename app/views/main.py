@@ -27,16 +27,16 @@ billing_service = BillingService()
 @handle_database_errors
 @log_function_call
 def index():
-    """首页 - 显示系统概览和快速统计"""
+    """Home page - Display system overview and quick statistics"""
     try:
-        # 获取系统统计信息
+        # Get system statistics
         job_stats = job_service.get_job_statistics()
         billing_stats = billing_service.get_billing_statistics()
         
-        # 获取最近的工作订单
+        # Get recent work orders
         recent_jobs, _, _ = job_service.get_current_jobs(page=1, per_page=5)
         
-        # 获取逾期账单
+        # Get overdue bills
         overdue_bills = billing_service.get_overdue_bills()[:5]
         
         return render_template('index.html',
@@ -47,8 +47,8 @@ def index():
                              current_date=date.today())
         
     except Exception as e:
-        logger.error(f"首页加载失败: {e}")
-        flash('系统暂时不可用，请稍后重试', 'error')
+        logger.error(f"Home page loading failed: {e}")
+        flash('System temporarily unavailable, please try again later', 'error')
         return render_template('index.html',
                              job_stats={},
                              billing_stats={},
@@ -59,7 +59,7 @@ def index():
 
 @main_bp.route('/login')
 def login():
-    """登录页面（简化版本）"""
+    """Login page (simplified version)"""
     return render_template('auth/login.html')
 
 
@@ -67,46 +67,46 @@ def login():
 @csrf_protect
 @handle_database_errors
 def login_post():
-    """处理登录提交（简化版本）"""
+    """Handle login submission (simplified version)"""
     username = InputSanitizer.sanitize_string(request.form.get('username', ''))
     password = request.form.get('password', '')
     user_type = InputSanitizer.sanitize_string(request.form.get('user_type', 'technician'))
     
-    # 检查SQL注入
+    # Check for SQL injection
     if SQLInjectionProtection.scan_sql_injection(username):
-        raise ValidationError("用户名包含非法字符")
+        raise ValidationError("Username contains illegal characters")
     if SQLInjectionProtection.scan_sql_injection(user_type):
-        raise ValidationError("用户类型包含非法字符")
+        raise ValidationError("User type contains illegal characters")
     
-    # 简化的登录验证（实际项目中需要完整的认证系统）
+    # Simplified login validation (actual project needs complete authentication system)
     if username and password:
-        # 这里应该进行实际的用户验证
-        # 目前为演示目的，使用简单的验证
-        if password == '123456':  # 临时验证逻辑
+        # Actual user verification should be performed here
+        # Currently using simple validation for demonstration purposes
+        if password == '123456':  # Temporary validation logic
             session['user_id'] = username
             session['user_type'] = user_type
             session['logged_in'] = True
             
-            flash(f'欢迎回来，{username}！', 'success')
+            flash(f'Welcome back, {username}!', 'success')
             
-            # 根据用户类型重定向
+            # Redirect based on user type
             if user_type == 'administrator':
                 return redirect(url_for('administrator.dashboard'))
             else:
                 return redirect(url_for('technician.current_jobs'))
         else:
-            flash('用户名或密码错误', 'error')
+            flash('Incorrect username or password', 'error')
     else:
-        flash('请输入用户名和密码', 'error')
+        flash('Please enter username and password', 'error')
     
     return render_template('auth/login.html')
 
 
 @main_bp.route('/logout')
 def logout():
-    """注销"""
+    """Logout"""
     session.clear()
-    flash('您已成功注销', 'info')
+    flash('You have successfully logged out', 'info')
     return redirect(url_for('main.index'))
 
 
@@ -115,20 +115,20 @@ def logout():
 @handle_database_errors
 @log_function_call
 def dashboard():
-    """仪表板 - 系统概览"""
-    # 检查是否已登录（简化版本）
+    """Dashboard - System overview"""
+    # Check if logged in (simplified version)
     if not session.get('logged_in'):
-        flash('请先登录', 'warning')
+        flash('Please login first', 'warning')
         return redirect(url_for('main.login'))
     
     try:
         user_type = session.get('user_type', 'technician')
         
-        # 获取统计数据
+        # Get statistics
         job_stats = job_service.get_job_statistics()
         billing_stats = billing_service.get_billing_statistics()
         
-        # 获取最近活动
+        # Get recent activities
         recent_jobs, _, _ = job_service.get_current_jobs(page=1, per_page=10)
         overdue_bills = billing_service.get_overdue_bills()
         
@@ -140,8 +140,8 @@ def dashboard():
                              overdue_bills=overdue_bills)
         
     except Exception as e:
-        logger.error(f"仪表板加载失败: {e}")
-        flash('加载仪表板失败', 'error')
+        logger.error(f"Dashboard loading failed: {e}")
+        flash('Failed to load dashboard', 'error')
         return render_template('dashboard.html',
                              user_type='technician',
                              job_stats={},
@@ -154,13 +154,13 @@ def dashboard():
 @require_auth()
 @handle_database_errors
 def api_search_customers():
-    """API: 搜索客户"""
+    """API: Search customers"""
     query = InputSanitizer.sanitize_string(request.args.get('q', ''))
     search_type = InputSanitizer.sanitize_string(request.args.get('type', 'both'))
     
-    # 检查SQL注入
+    # Check for SQL injection
     if SQLInjectionProtection.scan_sql_injection(query):
-        raise ValidationError("搜索条件包含非法字符")
+        raise ValidationError("Search criteria contains illegal characters")
     
     if not query:
         return jsonify([])
@@ -175,38 +175,38 @@ def api_search_customers():
         } for c in customers])
         
     except Exception as e:
-        logger.error(f"搜索客户失败: {e}")
-        return jsonify({'error': '搜索失败'}), 500
+        logger.error(f"Customer search failed: {e}")
+        return jsonify({'error': 'Search failed'}), 500
 
 
 @main_bp.route('/api/customers/<int:customer_id>')
 @handle_database_errors
 def api_get_customer(customer_id):
-    """API: 获取客户详情"""
+    """API: Get customer details"""
     try:
         customer = customer_service.get_customer_by_id(customer_id)
         if not customer:
-            return jsonify({'error': '客户不存在'}), 404
+            return jsonify({'error': 'Customer not found'}), 404
         
         stats = customer_service.get_customer_statistics(customer_id)
         return jsonify(stats)
         
     except Exception as e:
-        logger.error(f"获取客户详情失败: {e}")
-        return jsonify({'error': '获取客户信息失败'}), 500
+        logger.error(f"Get customer details failed: {e}")
+        return jsonify({'error': 'Failed to get customer information'}), 500
 
 
 @main_bp.route('/customers')
 @handle_database_errors
 @log_function_call
 def customers():
-    """客户列表页面"""
+    """Customer list page"""
     try:
-        # 获取搜索参数
+        # Get search parameters
         search_query = sanitize_input(request.args.get('search', ''))
         search_type = sanitize_input(request.args.get('search_type', 'both'))
         
-        # 搜索或获取所有客户
+        # Search or get all customers
         if search_query:
             customers = customer_service.search_customers(search_query, search_type)
         else:
@@ -218,8 +218,8 @@ def customers():
                              search_type=search_type)
         
     except Exception as e:
-        logger.error(f"客户列表加载失败: {e}")
-        flash('加载客户列表失败', 'error')
+        logger.error(f"Customer list loading failed: {e}")
+        flash('Failed to load customer list', 'error')
         return render_template('customers/list.html',
                              customers=[],
                              search_query='',
@@ -228,7 +228,7 @@ def customers():
 
 @main_bp.route('/customers/new')
 def new_customer():
-    """新建客户页面"""
+    """New customer page"""
     return render_template('customers/form.html',
                          customer=None,
                          action='create')
@@ -237,8 +237,8 @@ def new_customer():
 @main_bp.route('/customers', methods=['POST'])
 @handle_database_errors
 def create_customer():
-    """创建新客户"""
-    # 获取表单数据
+    """Create new customer"""
+    # Get form data
     customer_data = {
         'first_name': sanitize_input(request.form.get('first_name', '')),
         'family_name': sanitize_input(request.form.get('family_name', '')),
@@ -247,7 +247,7 @@ def create_customer():
     }
     
     try:
-        # 验证数据
+        # Validate data
         validation_result = validate_customer_data(customer_data)
         if not validation_result.is_valid:
             for error in validation_result.get_errors():
@@ -256,11 +256,11 @@ def create_customer():
                                  customer=customer_data,
                                  action='create')
         
-        # 创建客户
+        # Create customer
         success, errors, customer = customer_service.create_customer(customer_data)
         
         if success:
-            flash(f'客户 {customer.full_name} 创建成功！', 'success')
+            flash(f'Customer {customer.full_name} created successfully!', 'success')
             return redirect(url_for('main.customers'))
         else:
             for error in errors:
@@ -270,8 +270,8 @@ def create_customer():
                                  action='create')
             
     except Exception as e:
-        logger.error(f"创建客户失败: {e}")
-        flash('创建客户失败，请稍后重试', 'error')
+        logger.error(f"Failed to create customer: {e}")
+        flash('Failed to create customer, please try again later', 'error')
         return render_template('customers/form.html',
                              customer=customer_data,
                              action='create')
@@ -281,14 +281,14 @@ def create_customer():
 @handle_database_errors
 @log_function_call
 def customer_detail(customer_id):
-    """客户详情页面"""
+    """Customer detail page"""
     try:
         customer = customer_service.get_customer_by_id(customer_id)
         if not customer:
-            flash('客户不存在', 'error')
+            flash('Customer not found', 'error')
             return redirect(url_for('main.customers'))
         
-        # 获取客户统计信息
+        # Get customer statistics
         stats = customer_service.get_customer_statistics(customer_id)
         
         return render_template('customers/detail.html',
@@ -296,19 +296,19 @@ def customer_detail(customer_id):
                              stats=stats)
         
     except Exception as e:
-        logger.error(f"客户详情加载失败: {e}")
-        flash('加载客户详情失败', 'error')
+        logger.error(f"Customer detail loading failed: {e}")
+        flash('Failed to load customer details', 'error')
         return redirect(url_for('main.customers'))
 
 
 @main_bp.route('/customers/<int:customer_id>/edit')
 @handle_database_errors
 def edit_customer(customer_id):
-    """编辑客户页面"""
+    """Edit customer page"""
     try:
         customer = customer_service.get_customer_by_id(customer_id)
         if not customer:
-            flash('客户不存在', 'error')
+            flash('Customer not found', 'error')
             return redirect(url_for('main.customers'))
         
         return render_template('customers/form.html',
@@ -316,16 +316,16 @@ def edit_customer(customer_id):
                              action='edit')
         
     except Exception as e:
-        logger.error(f"加载客户编辑页面失败: {e}")
-        flash('加载编辑页面失败', 'error')
+        logger.error(f"Failed to load customer edit page: {e}")
+        flash('Failed to load edit page', 'error')
         return redirect(url_for('main.customers'))
 
 
 @main_bp.route('/customers/<int:customer_id>', methods=['POST'])
 @handle_database_errors
 def update_customer(customer_id):
-    """更新客户信息"""
-    # 获取表单数据
+    """Update customer information"""
+    # Get form data
     customer_data = {
         'first_name': sanitize_input(request.form.get('first_name', '')),
         'family_name': sanitize_input(request.form.get('family_name', '')),
@@ -334,7 +334,7 @@ def update_customer(customer_id):
     }
     
     try:
-        # 验证数据
+        # Validate data
         validation_result = validate_customer_data(customer_data)
         if not validation_result.is_valid:
             for error in validation_result.get_errors():
@@ -344,11 +344,11 @@ def update_customer(customer_id):
                                  customer=customer,
                                  action='edit')
         
-        # 更新客户
+        # Update customer
         success, errors, customer = customer_service.update_customer(customer_id, customer_data)
         
         if success:
-            flash(f'客户 {customer.full_name} 更新成功！', 'success')
+            flash(f'Customer {customer.full_name} updated successfully!', 'success')
             return redirect(url_for('main.customer_detail', customer_id=customer_id))
         else:
             for error in errors:
@@ -359,8 +359,8 @@ def update_customer(customer_id):
                                  action='edit')
             
     except Exception as e:
-        logger.error(f"更新客户失败: {e}")
-        flash('更新客户失败，请稍后重试', 'error')
+        logger.error(f"Failed to update customer: {e}")
+        flash('Failed to update customer, please try again later', 'error')
         customer = customer_service.get_customer_by_id(customer_id)
         return render_template('customers/form.html',
                              customer=customer,
@@ -369,24 +369,24 @@ def update_customer(customer_id):
 
 @main_bp.route('/about')
 def about():
-    """关于页面"""
+    """About page"""
     return render_template('about.html')
 
 
 @main_bp.route('/help')
 def help_page():
-    """帮助页面"""
+    """Help page"""
     return render_template('help.html')
 
 
-# 错误处理
+# Error handling
 @main_bp.errorhandler(404)
 def not_found_error(error):
-    """404错误处理"""
+    """404 error handler"""
     return render_template('errors/404.html'), 404
 
 
 @main_bp.errorhandler(500)
 def internal_error(error):
-    """500错误处理"""
+    """500 error handler"""
     return render_template('errors/500.html'), 500 

@@ -22,13 +22,13 @@ billing_service = BillingService()
 
 
 def require_admin_login():
-    """检查管理员登录状态"""
+    """Check administrator login status"""
     if not session.get('logged_in'):
-        flash('请先登录', 'warning')
+        flash('Please login first', 'warning')
         return redirect(url_for('main.login'))
-    
+
     if session.get('user_type') != 'administrator':
-        flash('需要管理员权限', 'error')
+        flash('Administrator privileges required', 'error')
         return redirect(url_for('main.index'))
     
     return None
@@ -38,22 +38,22 @@ def require_admin_login():
 @handle_database_errors
 @log_function_call
 def dashboard():
-    """管理员仪表板"""
+    """Administrator dashboard"""
     redirect_response = require_admin_login()
     if redirect_response:
         return redirect_response
     
     try:
-        # 获取系统统计信息
+        # Get system statistics
         job_stats = job_service.get_job_statistics()
         billing_stats = billing_service.get_billing_statistics()
         
-        # 获取客户统计
+        # Get customer statistics
         total_customers = len(customer_service.get_all_customers())
         customers_with_unpaid = customer_service.get_customers_with_filter(has_unpaid=True)
         customers_with_overdue = customer_service.get_customers_with_filter(has_overdue=True)
         
-        # 获取最近活动
+        # Get recent activities
         recent_jobs, _, _ = job_service.get_current_jobs(page=1, per_page=5)
         overdue_bills = billing_service.get_overdue_bills()[:5]
         
@@ -68,8 +68,8 @@ def dashboard():
                              current_date=date.today())
         
     except Exception as e:
-        logger.error(f"管理员仪表板加载失败: {e}")
-        flash('加载仪表板失败', 'error')
+        logger.error(f"Administrator dashboard loading failed: {e}")
+        flash('Failed to load dashboard', 'error')
         return render_template('administrator/dashboard.html',
                              job_stats={},
                              billing_stats={},

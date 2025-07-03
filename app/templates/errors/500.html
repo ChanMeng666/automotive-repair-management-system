@@ -1,69 +1,69 @@
 {% extends "base/layout.html" %}
 
-{% block title %}服务器错误 - 汽车维修管理系统{% endblock %}
+{% block title %}Server Error - Automotive Repair Management System{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 text-center">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <!-- 500 图标 -->
+                <!-- 500 Icon -->
                 <div class="text-danger mb-4">
                     <i class="bi bi-exclamation-triangle" style="font-size: 6rem;"></i>
                 </div>
                 
-                <!-- 错误信息 -->
+                <!-- Error Message -->
                 <h1 class="display-4 text-danger mb-3">500</h1>
-                <h3 class="mb-3">服务器内部错误</h3>
+                <h3 class="mb-3">Internal Server Error</h3>
                 <p class="text-muted mb-4">
-                    抱歉，服务器出现了一些问题。
+                    Sorry, the server encountered an issue.
                     <br>
-                    我们的技术团队已经收到通知并正在修复此问题。
+                    Our technical team has been notified and is working to fix this problem.
                     <br>
-                    请稍后重试或联系系统管理员。
+                    Please try again later or contact the system administrator.
                 </p>
                 
-                <!-- 操作按钮 -->
+                <!-- Action Buttons -->
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
                     <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-                        <i class="bi bi-house me-2"></i>返回首页
+                        <i class="bi bi-house me-2"></i>Back to Home
                     </a>
                     
                     <button onclick="window.location.reload()" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-clockwise me-2"></i>重新加载
+                        <i class="bi bi-arrow-clockwise me-2"></i>Reload Page
                     </button>
                     
                     {% if session.logged_in %}
                         <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-speedometer2 me-2"></i>仪表板
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
                         </a>
                     {% endif %}
                 </div>
                 
-                <!-- 故障排除建议 -->
+                <!-- Troubleshooting Suggestions -->
                 <div class="mt-4 pt-4 border-top text-start">
-                    <h6 class="text-muted mb-3">故障排除建议：</h6>
+                    <h6 class="text-muted mb-3">Troubleshooting Suggestions:</h6>
                     <ul class="list-unstyled text-muted small">
                         <li class="mb-2">
                             <i class="bi bi-check-circle text-success me-2"></i>
-                            检查网络连接是否正常
+                            Check if your network connection is working properly
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-check-circle text-success me-2"></i>
-                            清除浏览器缓存并重新加载页面
+                            Clear your browser cache and reload the page
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-check-circle text-success me-2"></i>
-                            如果问题持续存在，请联系系统管理员
+                            If the problem persists, please contact the system administrator
                         </li>
                     </ul>
                 </div>
                 
-                <!-- 联系信息 -->
+                <!-- Contact Information -->
                 <div class="mt-3 pt-3 border-top">
                     <small class="text-muted">
                         <i class="bi bi-envelope me-1"></i>
-                        如需技术支持，请联系：support@example.com
+                        For technical support, please contact: support@example.com
                     </small>
                 </div>
             </div>

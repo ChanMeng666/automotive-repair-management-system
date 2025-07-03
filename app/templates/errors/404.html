@@ -1,67 +1,67 @@
 {% extends "base/layout.html" %}
 
-{% block title %}页面未找到 - 汽车维修管理系统{% endblock %}
+{% block title %}Page Not Found - Automotive Repair Management System{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 text-center">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <!-- 404 图标 -->
+                <!-- 404 Icon -->
                 <div class="text-primary mb-4">
                     <i class="bi bi-search" style="font-size: 6rem;"></i>
                 </div>
                 
-                <!-- 错误信息 -->
+                <!-- Error Message -->
                 <h1 class="display-4 text-primary mb-3">404</h1>
-                <h3 class="mb-3">页面未找到</h3>
+                <h3 class="mb-3">Page Not Found</h3>
                 <p class="text-muted mb-4">
-                    抱歉，您访问的页面不存在或已被移动。
+                    Sorry, the page you are looking for does not exist or has been moved.
                     <br>
-                    请检查网址是否正确，或使用下面的链接返回系统。
+                    Please check if the URL is correct, or use the links below to return to the system.
                 </p>
                 
-                <!-- 操作按钮 -->
+                <!-- Action Buttons -->
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
                     <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-                        <i class="bi bi-house me-2"></i>返回首页
+                        <i class="bi bi-house me-2"></i>Back to Home
                     </a>
                     
                     {% if session.logged_in %}
                         <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-speedometer2 me-2"></i>仪表板
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
                         </a>
                         
                         {% if session.user_type == 'technician' %}
                             <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-list-task me-2"></i>当前工作
+                                <i class="bi bi-list-task me-2"></i>Current Jobs
                             </a>
                         {% elif session.user_type == 'administrator' %}
                             <a href="{{ url_for('administrator.customer_list') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-people me-2"></i>客户管理
+                                <i class="bi bi-people me-2"></i>Customer Management
                             </a>
                         {% endif %}
                     {% else %}
                         <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>登录系统
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to System
                         </a>
                     {% endif %}
                 </div>
                 
-                <!-- 常用链接 -->
+                <!-- Common Links -->
                 <div class="mt-4 pt-4 border-top">
-                    <small class="text-muted">常用功能：</small>
+                    <small class="text-muted">Common Functions:</small>
                     <div class="mt-2">
                         <a href="{{ url_for('main.customers') }}" class="btn btn-sm btn-outline-secondary me-2 mb-1">
-                            客户列表
+                            Customer List
                         </a>
                         {% if session.logged_in and session.user_type == 'technician' %}
                             <a href="{{ url_for('technician.new_job') }}" class="btn btn-sm btn-outline-secondary me-2 mb-1">
-                                新建工作
+                                New Job
                             </a>
                         {% endif %}
                         <a href="{{ url_for('main.help_page') }}" class="btn btn-sm btn-outline-secondary me-2 mb-1">
-                            帮助中心
+                            Help Center
                         </a>
                     </div>
                 </div>
