@@ -1,6 +1,13 @@
-{% extends "base.html" %}
+{% extends "base/layout.html" %}
 {% block title %}
 Billing Management - Administrator Portal
+{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Billing Management</li>
 {% endblock %}
 
 {% block content %}
@@ -271,10 +278,16 @@ Billing Management - Administrator Portal
 function markAsPaid(customerId) {
     if (confirm('Are you sure you want to mark this bill as paid?')) {
         // Set the radio button for this customer
-        document.querySelector('input[name="bill_select"][value="' + customerId + '"]').checked = true;
+        const radioButton = document.querySelector(`input[name="bill_select"][value="${customerId}"]`);
+        if (radioButton) {
+            radioButton.checked = true;
+        }
         
         // Submit the form
-        document.querySelector('form[action="/administrator_mark_paid"]').submit();
+        const form = document.querySelector('form[action="/administrator_mark_paid"]');
+        if (form) {
+            form.submit();
+        }
     }
 }
 
