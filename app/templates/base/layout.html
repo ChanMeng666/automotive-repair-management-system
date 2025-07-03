@@ -231,24 +231,8 @@
         {% endif %}
         {% endblock %}
         
-        <!-- Flash Messages -->
-        <div class="container-fluid">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'error' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                            <div class="d-flex align-items-start">
-                                <i class="alert-icon bi bi-{% if category == 'success' %}check-circle-fill{% elif category == 'error' %}x-circle-fill{% elif category == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
-                                <div class="alert-content">
-                                    <div class="alert-message">{{ message }}</div>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
+        <!-- Toast Notifications -->
+        {% include 'components/toast_notifications.html' %}
         
         <!-- Page Content -->
         <div class="container-fluid py-4">
@@ -256,6 +240,11 @@
         </div>
     </main>
     
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading-overlay d-none">
+        <div class="loading-spinner"></div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container-fluid">

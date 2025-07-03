@@ -48,6 +48,9 @@ const AutoRepairApp = {
         
         // Setup live updates
         this.setupLiveUpdates();
+
+        // Initialize charts
+        this.initializeCharts();
     },
     
     // Form handling with enhanced UX
@@ -57,10 +60,12 @@ const AutoRepairApp = {
         
         if (submitBtn && !form.dataset.noLoadingState) {
             this.showFormLoading(submitBtn);
+            this.showLoadingIndicator(); // Show global loading indicator
             
             // Reset loading state after timeout (fallback)
             setTimeout(() => {
                 this.hideFormLoading(submitBtn);
+                this.hideLoadingIndicator(); // Hide global loading indicator
             }, 10000);
         }
         
@@ -68,6 +73,7 @@ const AutoRepairApp = {
         if (!this.validateForm(form)) {
             event.preventDefault();
             this.hideFormLoading(submitBtn);
+            this.hideLoadingIndicator(); // Hide global loading indicator if validation fails
         }
     },
     
@@ -314,6 +320,21 @@ const AutoRepairApp = {
             dropdown.style.display = 'none';
         }
     },
+
+    // Global Loading Indicator
+    showLoadingIndicator() {
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) {
+            indicator.classList.remove('d-none');
+        }
+    },
+
+    hideLoadingIndicator() {
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) {
+            indicator.classList.add('d-none');
+        }
+    },
     
     // Auto-save functionality
     setupAutoSave() {
@@ -496,6 +517,68 @@ const AutoRepairApp = {
                 });
             });
         });
+    },
+
+    // Chart initialization
+    initializeCharts() {
+        const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
+        if (monthlyRevenueCtx) {
+            new Chart(monthlyRevenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Monthly Revenue',
+                        data: [12000, 19000, 30000, 50000, 20000, 30000, 45000, 35000, 40000, 55000, 60000, 70000],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        const jobStatusCtx = document.getElementById('jobStatusChart');
+        if (jobStatusCtx) {
+            new Chart(jobStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Pending', 'Cancelled'],
+                    datasets: [{
+                        label: 'Job Status',
+                        data: [300, 150, 50, 20],
+                        backgroundColor: [
+                            'rgb(16, 185, 129)', // success
+                            'rgb(6, 182, 212)',  // info
+                            'rgb(245, 158, 11)',  // warning
+                            'rgb(239, 68, 68)'    // error
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
     },
     
     // Live updates simulation

@@ -10,7 +10,7 @@
 <!-- Welcome Hero Section -->
 <div class="row mb-6">
     <div class="col-12">
-        <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%); min-height: 200px;">
+        <div class="card border-0 shadow-lg hero-section-bg">
             <div class="card-body d-flex align-items-center text-white p-5">
                 <div class="row w-100 align-items-center">
                     <div class="col-lg-8">
@@ -212,6 +212,32 @@
                 <a href="#" class="btn btn-secondary">
                     <i class="bi bi-download me-2"></i>Export Data
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Overview Section -->
+<div class="row mb-6">
+    <div class="col-12 mb-4">
+        <h2 class="fw-semibold d-flex align-items-center">
+            <i class="bi bi-bar-chart-line text-success me-3"></i>
+            Performance Overview
+        </h2>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold">Monthly Revenue</h5>
+                <canvas id="monthlyRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold">Job Status Distribution</h5>
+                <canvas id="jobStatusChart"></canvas>
             </div>
         </div>
     </div>

@@ -4,6 +4,32 @@
 /* Custom Components */
 /* ================== */
 
+/* Hero Section Background */
+.hero-section-bg {
+  min-height: 200px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zm0 30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zm0-30V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E') repeat;
+  opacity: 0.3;
+  animation: backgroundPan 60s linear infinite;
+}
+
+@keyframes backgroundPan {
+  from { background-position: 0 0; }
+  to { background-position: 6000px 0; }
+}
+
+
 /* Navigation */
 .navbar {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
@@ -87,14 +113,15 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--gray-50) 100%);
+  background: var(--bg-primary);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-xl);
   padding: var(--spacing-6);
   text-align: center;
   transition: var(--transition-all);
   position: relative;
-    overflow: hidden;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-card::before {
@@ -103,23 +130,24 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 5px; /* Thicker border */
   background: linear-gradient(90deg, var(--primary), var(--info));
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px); /* More pronounced lift */
   box-shadow: var(--shadow-lg);
 }
 
 .stat-card-icon {
-  font-size: 2.5rem;
+  font-size: 2.8rem; /* Slightly larger icon */
   margin-bottom: var(--spacing-3);
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .stat-card-value {
-  font-size: var(--font-size-3xl);
+  font-size: var(--font-size-4xl); /* Larger value */
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--spacing-2);
   color: var(--gray-900);
@@ -152,11 +180,12 @@
   padding: var(--spacing-6);
   transition: var(--transition-all);
   position: relative;
+  box-shadow: var(--shadow-base); /* Start with a slightly more visible shadow */
 }
 
 .action-card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg); /* Stronger shadow on hover */
+  transform: translateY(-4px); /* More pronounced lift */
 }
 
 .action-card-header {
@@ -167,12 +196,15 @@
 }
 
 .action-card-icon {
-  font-size: var(--font-size-2xl);
-  color: var(--primary);
+  font-size: 3rem; /* Larger icon */
+  color: var(--primary); /* Keep primary color */
+  background-color: var(--primary-light); /* Light background for icon */
+  padding: var(--spacing-3);
+  border-radius: var(--radius-md);
 }
 
 .action-card-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl); /* Slightly larger title */
   font-weight: var(--font-weight-semibold);
   color: var(--gray-900);
   margin: 0;
@@ -197,10 +229,11 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  margin-bottom: var(--spacing-6); /* Add some bottom margin */
 }
 
 .table-header {
-  background-color: var(--gray-50);
+  background-color: var(--gray-100); /* Lighter background for header */
   padding: var(--spacing-4) var(--spacing-6);
   border-bottom: 1px solid var(--gray-200);
   display: flex;
@@ -238,16 +271,20 @@
   color: var(--gray-700);
   border-bottom: 1px solid var(--gray-200);
   white-space: nowrap;
+  text-transform: uppercase; /* Uppercase table headers */
+  font-size: var(--font-size-xs); /* Smaller font for headers */
+  letter-spacing: 0.05em; /* Add letter spacing */
 }
 
 .table td {
   padding: var(--spacing-4);
   border-bottom: 1px solid var(--gray-200);
   vertical-align: middle;
+  color: var(--gray-800); /* Slightly darker text for content */
 }
 
 .table tbody tr:hover {
-  background-color: var(--gray-50);
+  background-color: var(--gray-100); /* More noticeable hover effect */
 }
 
 .table tbody tr:last-child td {
@@ -560,26 +597,33 @@
   text-align: center;
   padding: var(--spacing-12) var(--spacing-6);
   color: var(--gray-500);
+  background-color: var(--gray-50); /* Subtle background */
+  border: 1px dashed var(--gray-200); /* Dashed border */
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-6); /* Add some bottom margin */
 }
 
 .empty-state-icon {
-  font-size: 4rem;
+  font-size: 5rem; /* Larger icon */
   margin-bottom: var(--spacing-4);
-  opacity: 0.5;
+  opacity: 0.6;
+  color: var(--gray-400); /* Softer icon color */
 }
 
 .empty-state-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xl); /* Larger title */
+  font-weight: var(--font-weight-bold); /* Bolder title */
   margin-bottom: var(--spacing-2);
-  color: var(--gray-700);
+  color: var(--gray-800); /* Darker title color */
 }
 
 .empty-state-description {
-  margin-bottom: var(--spacing-4);
-  max-width: 400px;
+  margin-bottom: var(--spacing-6); /* More space below description */
+  max-width: 500px; /* Wider description */
   margin-left: auto;
   margin-right: auto;
+  line-height: var(--line-height-relaxed); /* More relaxed line height */
+  color: var(--gray-600); /* Slightly darker description color */
 }
 
 /* Footer */

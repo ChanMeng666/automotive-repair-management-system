@@ -1,0 +1,50 @@
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <!-- Toast messages will be appended here by JavaScript -->
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toastContainer = document.querySelector('.toast-container');
+
+        // Function to show a toast
+        window.showToast = function(message, type = 'info', delay = 5000) {
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${delay}">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastEl = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+
+            toastEl.addEventListener('hidden.bs.toast', function () {
+                toastEl.remove();
+            });
+        };
+
+        // Handle Flask flashed messages
+        const flashedMessages = JSON.parse('{{ get_flashed_messages(with_categories=true) | tojson | safe }}');
+        flashedMessages.forEach(function(categoryMessage) {
+            const category = categoryMessage[0];
+            const message = categoryMessage[1];
+            let type = 'info'; // Default type
+
+            if (category === 'success') {
+                type = 'success';
+            } else if (category === 'error') {
+                type = 'danger'; // Bootstrap uses 'danger' for errors
+            } else if (category === 'warning') {
+                type = 'warning';
+            }
+
+            showToast(message, type);
+        });
+    });
+</script>
