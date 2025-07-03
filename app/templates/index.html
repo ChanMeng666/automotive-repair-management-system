@@ -1,37 +1,42 @@
 {% extends "base/layout.html" %}
 
-{% block title %}首页 - 汽车维修管理系统{% endblock %}
+{% block title %}Dashboard - AutoRepair Pro{% endblock %}
 
 {% block breadcrumb_items %}
-    <li class="breadcrumb-item active">首页</li>
+    <li class="breadcrumb-item active">Dashboard</li>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- 欢迎区域 -->
-    <div class="col-12 mb-4">
-        <div class="card border-0 shadow-sm bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <div class="card-body text-white p-4">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1 class="display-6 fw-bold mb-2">
-                            <i class="bi bi-gear-fill me-3"></i>汽车维修管理系统
-                        </h1>
-                        <p class="lead mb-3">专业的维修订单和客户管理平台</p>
-                        <p class="mb-0">
-                            <i class="bi bi-calendar-date me-2"></i>
-                            今天是 {{ current_date.strftime('%Y年%m月%d日') if current_date else '系统日期' }}
-                        </p>
+<!-- Welcome Hero Section -->
+<div class="row mb-6">
+    <div class="col-12">
+        <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%); min-height: 200px;">
+            <div class="card-body d-flex align-items-center text-white p-5">
+                <div class="row w-100 align-items-center">
+                    <div class="col-lg-8">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-wrench-adjustable-circle-fill display-6 me-4 opacity-75"></i>
+                            <div>
+                                <h1 class="display-5 fw-bold mb-2 text-white">AutoRepair Pro</h1>
+                                <p class="lead mb-0 opacity-90">Professional Automotive Repair Management System</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <span>Today is {{ current_date.strftime('%B %d, %Y') if current_date else 'Loading...' }}</span>
+                        </div>
                     </div>
-                    <div class="col-md-4 text-center">
+                    <div class="col-lg-4 text-end">
                         {% if not session.logged_in %}
                             <a href="{{ url_for('main.login') }}" class="btn btn-light btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>立即登录
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
                             </a>
                         {% else %}
-                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg">
-                                <i class="bi bi-speedometer2 me-2"></i>进入仪表板
-                            </a>
+                            <div class="text-end">
+                                <div class="fs-5 fw-semibold">Welcome back,</div>
+                                <div class="fs-4 fw-bold">{{ session.user_id }}</div>
+                                <small class="opacity-75">{{ session.user_type|title }}</small>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
@@ -41,270 +46,418 @@
 </div>
 
 {% if session.logged_in %}
-<!-- 系统统计面板 -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h3 class="mb-3">
-            <i class="bi bi-graph-up me-2"></i>系统概览
-        </h3>
+<!-- Statistics Dashboard -->
+<div class="row mb-6">
+    <div class="col-12 mb-4">
+        <h2 class="fw-semibold d-flex align-items-center">
+            <i class="bi bi-graph-up text-primary me-3"></i>
+            System Overview
+        </h2>
     </div>
     
-    <!-- 工作订单统计 -->
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-primary mb-3">
-                    <i class="bi bi-list-task" style="font-size: 2.5rem;"></i>
-                </div>
-                <h4 class="text-primary">{{ job_stats.get('total_jobs', 0) }}</h4>
-                <p class="text-muted mb-0">总工作订单</p>
-                <small class="text-muted">
-                    未完成: {{ job_stats.get('pending_jobs', 0) }}
-                </small>
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <!-- Total Jobs -->
+        <div class="stat-card">
+            <div class="stat-card-icon text-primary">
+                <i class="bi bi-list-task"></i>
+            </div>
+            <div class="stat-card-value">{{ job_stats.get('total_jobs', 0) }}</div>
+            <div class="stat-card-label">Total Work Orders</div>
+            <div class="stat-card-change">
+                <span class="text-warning">{{ job_stats.get('pending_jobs', 0) }} pending</span>
             </div>
         </div>
-    </div>
-    
-    <!-- 账单统计 -->
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-success mb-3">
-                    <i class="bi bi-credit-card" style="font-size: 2.5rem;"></i>
-                </div>
-                <h4 class="text-success">¥{{ "%.2f"|format(billing_stats.get('total_revenue', 0)) }}</h4>
-                <p class="text-muted mb-0">总收入</p>
-                <small class="text-muted">
-                    未付: ¥{{ "%.2f"|format(billing_stats.get('unpaid_amount', 0)) }}
-                </small>
+        
+        <!-- Revenue -->
+        <div class="stat-card">
+            <div class="stat-card-icon text-success">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-card-value">${{ "%.0f"|format(billing_stats.get('total_revenue', 0)) }}</div>
+            <div class="stat-card-label">Total Revenue</div>
+            <div class="stat-card-change">
+                <span class="text-warning">${{ "%.0f"|format(billing_stats.get('unpaid_amount', 0)) }} unpaid</span>
             </div>
         </div>
-    </div>
-    
-    <!-- 逾期账单 -->
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-warning mb-3">
-                    <i class="bi bi-exclamation-triangle" style="font-size: 2.5rem;"></i>
-                </div>
-                <h4 class="text-warning">{{ (overdue_bills|length) if overdue_bills else 0 }}</h4>
-                <p class="text-muted mb-0">逾期账单</p>
-                <small class="text-muted">
-                    需要关注
-                </small>
+        
+        <!-- Customers -->
+        <div class="stat-card">
+            <div class="stat-card-icon text-info">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-card-value">{{ billing_stats.get('total_customers', 0) }}</div>
+            <div class="stat-card-label">Active Customers</div>
+            <div class="stat-card-change">
+                <span class="text-success">+{{ billing_stats.get('new_customers_month', 0) }} this month</span>
             </div>
         </div>
-    </div>
-    
-    <!-- 近期工作 -->
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-info mb-3">
-                    <i class="bi bi-clock-history" style="font-size: 2.5rem;"></i>
-                </div>
-                <h4 class="text-info">{{ (recent_jobs|length) if recent_jobs else 0 }}</h4>
-                <p class="text-muted mb-0">最近工作</p>
-                <small class="text-muted">
-                    本周活动
-                </small>
+        
+        <!-- Overdue Bills -->
+        <div class="stat-card">
+            <div class="stat-card-icon text-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="stat-card-value">{{ (overdue_bills|length) if overdue_bills else 0 }}</div>
+            <div class="stat-card-label">Overdue Bills</div>
+            <div class="stat-card-change">
+                <span class="text-error">Needs attention</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 快速操作 -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h3 class="mb-3">
-            <i class="bi bi-lightning me-2"></i>快速操作
-        </h3>
+<!-- Quick Actions -->
+<div class="row mb-6">
+    <div class="col-12 mb-4">
+        <h2 class="fw-semibold d-flex align-items-center">
+            <i class="bi bi-lightning text-warning me-3"></i>
+            Quick Actions
+        </h2>
     </div>
     
-    <div class="col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-person-plus text-primary me-2"></i>客户管理
-                </h5>
-                <p class="card-text text-muted">查看客户列表、添加新客户或搜索现有客户信息</p>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('main.customers') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-people me-1"></i>客户列表
-                    </a>
-                    <a href="{{ url_for('main.new_customer') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i>新建客户
-                    </a>
+    <div class="action-grid">
+        <!-- Customer Management -->
+        <div class="action-card">
+            <div class="action-card-header">
+                <div class="action-card-icon">
+                    <i class="bi bi-person-plus"></i>
                 </div>
+                <div class="action-card-title">Customer Management</div>
+            </div>
+            <div class="action-card-description">
+                View customer database, add new customers, or search existing customer information and history.
+            </div>
+            <div class="action-card-buttons">
+                <a href="{{ url_for('main.customers') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-people me-2"></i>View All
+                </a>
+                <a href="{{ url_for('main.new_customer') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Add New
+                </a>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-6 mb-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-wrench text-success me-2"></i>工作管理
-                </h5>
-                <p class="card-text text-muted">管理维修工作订单、查看当前进度和创建新工作</p>
-                <div class="d-flex gap-2">
-                    {% if session.user_type == 'technician' %}
-                        <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
-                            <i class="bi bi-list-task me-1"></i>当前工作
-                        </a>
-                        <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
-                            <i class="bi bi-plus-lg me-1"></i>新建工作
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
-                            <i class="bi bi-speedometer2 me-1"></i>查看详情
-                        </a>
-                    {% endif %}
+        
+        <!-- Work Order Management -->
+        <div class="action-card">
+            <div class="action-card-header">
+                <div class="action-card-icon">
+                    <i class="bi bi-wrench"></i>
                 </div>
+                <div class="action-card-title">Work Orders</div>
+            </div>
+            <div class="action-card-description">
+                Manage repair work orders, track progress, and create new service requests for customers.
+            </div>
+            <div class="action-card-buttons">
+                {% if session.user_type == 'technician' %}
+                    <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
+                        <i class="bi bi-list-task me-2"></i>Current Jobs
+                    </a>
+                    <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-2"></i>New Job
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
+                        <i class="bi bi-speedometer2 me-2"></i>View Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Billing & Payments -->
+        <div class="action-card">
+            <div class="action-card-header">
+                <div class="action-card-icon">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div class="action-card-title">Billing & Payments</div>
+            </div>
+            <div class="action-card-description">
+                Process payments, manage billing records, and track outstanding balances and overdue accounts.
+            </div>
+            <div class="action-card-buttons">
+                {% if session.user_type == 'administrator' %}
+                    <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-info">
+                        <i class="bi bi-credit-card me-2"></i>Process Payments
+                    </a>
+                    <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Overdue Bills
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-info">
+                        <i class="bi bi-info-circle me-2"></i>View Info
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Reports & Analytics -->
+        <div class="action-card">
+            <div class="action-card-header">
+                <div class="action-card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="action-card-title">Reports & Analytics</div>
+            </div>
+            <div class="action-card-description">
+                Generate detailed reports, view business analytics, and track performance metrics and trends.
+            </div>
+            <div class="action-card-buttons">
+                {% if session.user_type == 'administrator' %}
+                    <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-text me-2"></i>View Reports
+                    </a>
+                {% endif %}
+                <a href="#" class="btn btn-secondary">
+                    <i class="bi bi-download me-2"></i>Export Data
+                </a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 最近活动 -->
-{% if recent_jobs %}
+<!-- Recent Activity Section -->
 <div class="row">
-    <div class="col-md-8 mb-4">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-bottom-0">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history me-2"></i>最近工作订单
-                </h5>
+    <!-- Recent Work Orders -->
+    <div class="col-lg-8 mb-4">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="bi bi-clock-history me-2"></i>Recent Work Orders
+                </h3>
+                <div class="table-actions">
+                    <a href="{{ url_for('technician.current_jobs') if session.user_type == 'technician' else url_for('main.dashboard') }}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
             </div>
-            <div class="card-body p-0">
+            
+            {% if recent_jobs %}
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <th>工作ID</th>
-                                <th>客户</th>
-                                <th>日期</th>
-                                <th>状态</th>
-                                <th>金额</th>
+                                <th>Job ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for job in recent_jobs[:5] %}
                             <tr>
                                 <td>
-                                    <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" 
-                                       class="text-decoration-none">
+                                    <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="text-decoration-none fw-semibold">
                                         #{{ job.get('job_id', 'N/A') }}
                                     </a>
                                 </td>
-                                <td>{{ job.get('customer_name', 'N/A') }}</td>
-                                <td>{{ job.get('job_date', 'N/A') }}</td>
                                 <td>
-                                    {% if job.get('job_completed') %}
-                                        <span class="badge bg-success">已完成</span>
+                                    <div>
+                                        <div class="fw-medium">{{ job.get('first_name', '') }} {{ job.get('family_name', '') }}</div>
+                                        <small class="text-muted">#{{ job.get('customer_id', '') }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ job.get('job_date', 'N/A') }}</span>
+                                </td>
+                                <td>
+                                    {% if job.get('completed') %}
+                                        <span class="status-badge status-badge-success">
+                                            <i class="bi bi-check-circle"></i>
+                                            Completed
+                                        </span>
                                     {% else %}
-                                        <span class="badge bg-warning">进行中</span>
+                                        <span class="status-badge status-badge-warning">
+                                            <i class="bi bi-clock"></i>
+                                            In Progress
+                                        </span>
                                     {% endif %}
                                 </td>
-                                <td>¥{{ "%.2f"|format(job.get('total_cost', 0)) }}</td>
+                                <td>
+                                    <span class="fw-semibold">${{ "%.2f"|format(job.get('total_cost', 0)) }}</span>
+                                    {% if not job.get('paid') %}
+                                        <br><small class="text-warning">Unpaid</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if not job.get('completed') %}
+                                            <a href="{{ url_for('technician.modify_job', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-inbox"></i>
+                    </div>
+                    <div class="empty-state-title">No Recent Work Orders</div>
+                    <div class="empty-state-description">
+                        There are no recent work orders to display. Create a new work order to get started.
+                    </div>
+                    {% if session.user_type == 'technician' %}
+                        <a href="{{ url_for('technician.new_job') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-2"></i>Create New Job
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
     
-    <!-- 逾期账单提醒 -->
-    {% if overdue_bills %}
-    <div class="col-md-4 mb-4">
-        <div class="card border-warning border-0 shadow-sm">
-            <div class="card-header bg-warning bg-opacity-10 border-bottom-0">
-                <h6 class="mb-0 text-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>逾期账单提醒
-                </h6>
+    <!-- Overdue Bills -->
+    <div class="col-lg-4 mb-4">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Overdue Bills
+                </h3>
+                <div class="table-actions">
+                    {% if session.user_type == 'administrator' %}
+                        <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-sm btn-outline-warning">
+                            View All
+                        </a>
+                    {% endif %}
+                </div>
             </div>
-            <div class="card-body">
-                {% for bill in overdue_bills %}
-                <div class="d-flex justify-content-between align-items-center {% if not loop.last %}border-bottom pb-2 mb-2{% endif %}">
-                    <div>
-                        <small class="text-muted">{{ bill.get('customer_name', 'N/A') }}</small>
-                        <br>
-                        <span class="text-danger">¥{{ "%.2f"|format(bill.get('total_cost', 0)) }}</span>
+            
+            {% if overdue_bills %}
+                <div class="p-3">
+                    {% for bill in overdue_bills[:5] %}
+                        <div class="d-flex justify-content-between align-items-center py-3 {% if not loop.last %}border-bottom{% endif %}">
+                            <div>
+                                <div class="fw-semibold">{{ bill.get('first_name', '') }} {{ bill.get('family_name', '') }}</div>
+                                <small class="text-muted">Job #{{ bill.get('job_id', '') }}</small>
+                                <br>
+                                <small class="text-warning">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ bill.get('days_overdue', 0) }} days overdue
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold text-error">${{ "%.2f"|format(bill.get('total_cost', 0)) }}</div>
+                                {% if session.user_type == 'administrator' %}
+                                    <a href="{{ url_for('administrator.pay_single_bill', job_id=bill.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success mt-1">
+                                        Pay
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state py-4">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-check-circle text-success"></i>
                     </div>
-                    <small class="text-muted">
-                        {{ bill.get('days_overdue', 0) }}天
-                    </small>
+                    <div class="empty-state-title">All Bills Current</div>
+                    <div class="empty-state-description">
+                        Great! No overdue bills at this time.
+                    </div>
                 </div>
-                {% endfor %}
-                
-                {% if session.user_type == 'administrator' %}
-                <div class="text-center mt-3">
-                    <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning btn-sm">
-                        查看全部
-                    </a>
-                </div>
-                {% endif %}
-            </div>
+            {% endif %}
         </div>
     </div>
-    {% endif %}
 </div>
-{% endif %}
 
 {% else %}
-<!-- 未登录用户的功能介绍 -->
+<!-- Not Logged In - Welcome Section -->
 <div class="row">
-    <div class="col-12">
-        <h3 class="text-center mb-4">系统功能</h3>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-primary mb-3">
-                    <i class="bi bi-people" style="font-size: 3rem;"></i>
+    <div class="col-lg-8 mx-auto text-center">
+        <div class="mb-5">
+            <h2 class="display-6 fw-bold mb-4">Streamline Your Auto Repair Business</h2>
+            <p class="lead mb-4">
+                AutoRepair Pro helps you manage customer relationships, track work orders, 
+                process payments, and grow your automotive repair business with professional tools.
+            </p>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                        <i class="bi bi-people display-6 text-primary"></i>
+                    </div>
+                    <h4>Customer Management</h4>
+                    <p class="text-muted">Organize customer information, track service history, and build lasting relationships.</p>
                 </div>
-                <h5>客户管理</h5>
-                <p class="text-muted">完整的客户信息管理，包括联系方式、历史记录和统计分析</p>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-success bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                        <i class="bi bi-wrench display-6 text-success"></i>
+                    </div>
+                    <h4>Work Order Tracking</h4>
+                    <p class="text-muted">Efficiently manage repair jobs from start to finish with detailed tracking.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="bg-info bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
+                        <i class="bi bi-graph-up display-6 text-info"></i>
+                    </div>
+                    <h4>Business Analytics</h4>
+                    <p class="text-muted">Track revenue, monitor performance, and make data-driven business decisions.</p>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-success mb-3">
-                    <i class="bi bi-wrench" style="font-size: 3rem;"></i>
-                </div>
-                <h5>工作订单</h5>
-                <p class="text-muted">专业的维修工作管理，包括服务项目、零件使用和进度跟踪</p>
-            </div>
+        
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Get Started
+            </a>
+            <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-info-circle me-2"></i>Learn More
+            </a>
         </div>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card text-center h-100 border-0 shadow-sm">
-            <div class="card-body">
-                <div class="text-warning mb-3">
-                    <i class="bi bi-credit-card" style="font-size: 3rem;"></i>
-                </div>
-                <h5>账单管理</h5>
-                <p class="text-muted">自动化的账单生成、付款跟踪和逾期提醒功能</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-12 text-center">
-        <h4 class="mb-3">准备开始了吗？</h4>
-        <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg">
-            <i class="bi bi-box-arrow-in-right me-2"></i>立即登录系统
-        </a>
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add fade-in animation to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease';
+            
+            // Trigger animation
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        }, index * 100);
+    });
+    
+    // Add hover effects to action cards
+    const actionCards = document.querySelectorAll('.action-card');
+    actionCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+    });
+});
+</script>
 {% endblock %} 

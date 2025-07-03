@@ -1,79 +1,458 @@
-{% extends "base.html" %}
-{% block title %}
-Technician Home
+{% extends "base/layout.html" %}
+
+{% block title %}Current Jobs - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Current Jobs</li>
 {% endblock %}
+
 {% block content %}
-    <div class="container">
-      <nav>
-        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-          <a class="nav-link" href="{{ url_for('home') }}">Welcome Home</a>
-          <a class="nav-link active" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Technician Home</a>
-          <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false" disabled>Administrator Home</button>
-        </div>
-      </nav>
-      <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade show active" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-          <div class="container">
-            <nav>
-              <div class="nav nav-tabs" id="technician-tab" role="tablist">
-                <button class="nav-link active" id="technician-home-tab" data-bs-toggle="tab" data-bs-target="#technician-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Current Jobs</button>
-                <button class="nav-link" id="technician-profile-tab" data-bs-toggle="tab" data-bs-target="#technician-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false" disabled>Modify Job</button>
-              </div>
-            </nav>
-            <div class="tab-content" id="technician-tabContent">
-              <div class="tab-pane fade show active" id="technician-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
-                <div class="table-responsive">
-                  <form method="POST" action="{{url_for('currentjoblist')}}">
-                    <table class="table table-success table-hover">
-                      <thead>
-                        <tr>
-                          <th>Select</th>
-                          <th>Customer ID</th>
-                          <th>First Name</th>
-                          <th>Family Name</th>
-                          <th>Job ID</th>
-                          <th>Job Date</th>
-                          <th>Total Cost</th>
-                          <th>Completed Status</th>
-                          <th>Payment Status</th>
-                        </tr>
-                      </thead>
-                      <tbody class="table-group-divider">
-                        {% for record in data %}
-                          <tr>
-                            <td><input type="radio" name="job_select" id="job_select" value="{{record.job_id}}" required></td>
-                            <td>{{ record.customer_id }}</td>
-                            <td>{{ record.first_name }}</td>
-                            <td>{{ record.family_name }}</td>
-                            <td>{{ record.job_id }}</td>
-                            <td>{{ record.job_date }}</td>
-                            <td>{{ record.total_cost }}</td>
-                            <td>{% if record.completed == 0 %}NO{% endif %}</td>
-                            <td>{% if record.paid == 0 %}NO{% elif record.paid == 1 %}YES{% endif %}</td>
-                          </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                    <button type="submit" class="btn btn-outline-success">Modify</button>
-                  </form>
-                  {% if message %}
-                    <div class="alert alert-warning" role="alert">
-                      {{ message }}
-                    </div>
-                  {% endif %}
-                </div>
-                <nav aria-label="Page navigation example">
-                  <ul class="pagination">
-                    {% set prev_page = page - 1 if page > 1 else 1 %}
-                    {% set next_page = page + 1 %}
-                    <li class="page-item"><a class="page-link" href="{{ url_for('currentjoblist', page=prev_page) }}">Previous</a></li>
-                    <li class="page-item"><a class="page-link" href="{{ url_for('currentjoblist', page=next_page) }}">Next</a></li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-gray-900 mb-2">
+            <i class="bi bi-list-task text-primary me-2"></i>
+            Current Work Orders
+        </h1>
+        <p class="text-muted mb-0">Manage ongoing repair jobs and track progress</p>
     </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('technician.new_job') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>New Job
+        </a>
+        <button type="button" class="btn btn-outline-secondary" onclick="refreshJobs()">
+            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-icon text-warning">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div class="stat-card-value">{{ data|length }}</div>
+            <div class="stat-card-label">Active Jobs</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-icon text-info">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div class="stat-card-value">{{ data|selectattr('job_date')|list|length if data else 0 }}</div>
+            <div class="stat-card-label">This Week</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-icon text-success">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-card-value">${{ "%.0f"|format(data|sum(attribute='total_cost') or 0) }}</div>
+            <div class="stat-card-label">Total Value</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-icon text-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="stat-card-value">{{ data|selectattr('paid')|list|length if data else 0 }}</div>
+            <div class="stat-card-label">Unpaid</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="filter-bar mb-4">
+    <div class="filter-group">
+        <label class="filter-label">Search:</label>
+        <div class="search-container">
+            <input type="text" class="form-control search-input" id="searchInput" placeholder="Search by customer name or job ID...">
+            <i class="bi bi-search search-icon"></i>
+        </div>
+    </div>
+    <div class="filter-group">
+        <label class="filter-label">Status:</label>
+        <select class="form-select filter-select" id="statusFilter">
+            <option value="">All Jobs</option>
+            <option value="unpaid">Unpaid Only</option>
+            <option value="recent">Recent Jobs</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label class="filter-label">Sort by:</label>
+        <select class="form-select filter-select" id="sortFilter">
+            <option value="date_desc">Date (Newest)</option>
+            <option value="date_asc">Date (Oldest)</option>
+            <option value="customer">Customer Name</option>
+            <option value="amount_desc">Amount (High to Low)</option>
+            <option value="amount_asc">Amount (Low to High)</option>
+        </select>
+    </div>
+</div>
+
+<!-- Job Selection Form -->
+<form method="POST" action="{{ url_for('currentjoblist') }}" id="jobSelectionForm">
+    <!-- Jobs Table -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">Work Orders</h3>
+            <div class="table-actions">
+                <button type="submit" class="btn btn-success" id="modifyBtn" disabled>
+                    <i class="bi bi-pencil me-2"></i>Modify Selected
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="toggleSelectAll()">
+                    <i class="bi bi-check-square me-2"></i>Select All
+                </button>
+            </div>
+        </div>
+        
+        {% if data %}
+            <div class="table-responsive">
+                <table class="table" id="jobsTable">
+                    <thead>
+                        <tr>
+                            <th width="50">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="selectAll">
+                                </div>
+                            </th>
+                            <th>Customer</th>
+                            <th>Job ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in data %}
+                        <tr class="job-row" data-job-id="{{ record.job_id }}">
+                            <td>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input job-select" name="job_select" 
+                                           value="{{ record.job_id }}" id="job_{{ record.job_id }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                        <i class="bi bi-person text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ record.first_name }} {{ record.family_name }}</div>
+                                        <small class="text-muted">ID: #{{ record.customer_id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('modifyjob', job_id=record.job_id) }}" class="text-decoration-none fw-semibold">
+                                    #{{ record.job_id }}
+                                </a>
+                            </td>
+                            <td>
+                                <div>
+                                    <div class="fw-medium">{{ record.job_date.strftime('%b %d, %Y') if record.job_date else 'N/A' }}</div>
+                                    <small class="text-muted">{{ record.job_date.strftime('%A') if record.job_date else '' }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-success">${{ "%.2f"|format(record.total_cost) }}</span>
+                            </td>
+                            <td>
+                                {% if record.paid == 1 %}
+                                    <span class="status-badge status-badge-success">
+                                        <i class="bi bi-check-circle"></i>
+                                        Paid
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-badge-warning">
+                                        <i class="bi bi-clock"></i>
+                                        Unpaid
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{{ url_for('modifyjob', job_id=record.job_id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="View/Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                            onclick="viewJobDetails({{ record.job_id }})" title="Quick View">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if session.user_type == 'administrator' and record.paid == 0 %}
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                onclick="markAsPaid({{ record.job_id }})" title="Mark as Paid">
+                                            <i class="bi bi-credit-card"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                {% set prev_page = page - 1 if page > 1 else 1 %}
+                {% set next_page = page + 1 %}
+                
+                <a href="{{ url_for('currentjoblist', page=prev_page) }}" 
+                   class="pagination-item {% if page == 1 %}disabled{% endif %}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+                
+                <span class="pagination-item active">
+                    Page {{ page }}
+                </span>
+                
+                <a href="{{ url_for('currentjoblist', page=next_page) }}" 
+                   class="pagination-item">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <div class="empty-state-title">No Active Jobs</div>
+                <div class="empty-state-description">
+                    There are no active work orders at the moment. Create a new job to get started.
+                </div>
+                <a href="{{ url_for('technician.new_job') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Create New Job
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Flash Message Display -->
+{% if message %}
+    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+{% endif %}
+
+<!-- Job Details Modal -->
+<div class="modal fade" id="jobDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>Job Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="jobDetailsContent">
+                <div class="text-center">
+                    <div class="loading-spinner"></div>
+                    <p class="mt-2">Loading job details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" class="btn btn-primary" id="editJobBtn">Edit Job</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('jobSelectionForm');
+    const modifyBtn = document.getElementById('modifyBtn');
+    const jobSelects = document.querySelectorAll('.job-select');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const sortFilter = document.getElementById('sortFilter');
+    
+    // Enable/disable modify button based on selection
+    function updateModifyButton() {
+        const selectedJob = document.querySelector('.job-select:checked');
+        modifyBtn.disabled = !selectedJob;
+    }
+    
+    // Add event listeners to job selection radios
+    jobSelects.forEach(radio => {
+        radio.addEventListener('change', updateModifyButton);
+    });
+    
+    // Select all functionality
+    window.toggleSelectAll = function() {
+        const allSelected = Array.from(jobSelects).every(radio => radio.checked);
+        
+        if (allSelected) {
+            // Unselect all
+            jobSelects.forEach(radio => radio.checked = false);
+            selectAllCheckbox.checked = false;
+        } else {
+            // Select first if none selected
+            if (jobSelects.length > 0) {
+                jobSelects[0].checked = true;
+            }
+        }
+        updateModifyButton();
+    };
+    
+    // Search functionality
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            filterJobs();
+        }, 300);
+    });
+    
+    // Filter functionality
+    statusFilter.addEventListener('change', filterJobs);
+    sortFilter.addEventListener('change', sortJobs);
+    
+    function filterJobs() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value;
+        const rows = document.querySelectorAll('.job-row');
+        
+        rows.forEach(row => {
+            const customerName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const jobId = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+            const paymentStatus = row.querySelector('.status-badge').textContent.toLowerCase();
+            
+            let matchesSearch = true;
+            let matchesStatus = true;
+            
+            // Search filter
+            if (searchTerm) {
+                matchesSearch = customerName.includes(searchTerm) || jobId.includes(searchTerm);
+            }
+            
+            // Status filter
+            if (statusValue === 'unpaid') {
+                matchesStatus = paymentStatus.includes('unpaid');
+            } else if (statusValue === 'recent') {
+                // You can implement recent logic here
+                matchesStatus = true;
+            }
+            
+            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+    }
+    
+    function sortJobs() {
+        const sortValue = sortFilter.value;
+        const tbody = document.querySelector('#jobsTable tbody');
+        const rows = Array.from(tbody.querySelectorAll('.job-row'));
+        
+        rows.sort((a, b) => {
+            switch (sortValue) {
+                case 'date_asc':
+                    return new Date(a.querySelector('td:nth-child(4)').textContent) - 
+                           new Date(b.querySelector('td:nth-child(4)').textContent);
+                case 'date_desc':
+                    return new Date(b.querySelector('td:nth-child(4)').textContent) - 
+                           new Date(a.querySelector('td:nth-child(4)').textContent);
+                case 'customer':
+                    return a.querySelector('td:nth-child(2)').textContent.localeCompare(
+                           b.querySelector('td:nth-child(2)').textContent);
+                case 'amount_desc':
+                    return parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('$', '')) - 
+                           parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('$', ''));
+                case 'amount_asc':
+                    return parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('$', '')) - 
+                           parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('$', ''));
+                default:
+                    return 0;
+            }
+        });
+        
+        rows.forEach(row => tbody.appendChild(row));
+    }
+    
+    // Form submission handling
+    form.addEventListener('submit', function(e) {
+        const selectedJob = document.querySelector('.job-select:checked');
+        if (!selectedJob) {
+            e.preventDefault();
+            alert('Please select a job before proceeding.');
+        }
+    });
+    
+    // Initialize
+    updateModifyButton();
+});
+
+// Global functions
+function refreshJobs() {
+    window.location.reload();
+}
+
+function viewJobDetails(jobId) {
+    const modal = new bootstrap.Modal(document.getElementById('jobDetailsModal'));
+    const content = document.getElementById('jobDetailsContent');
+    const editBtn = document.getElementById('editJobBtn');
+    
+    // Show loading state
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="loading-spinner"></div>
+            <p class="mt-2">Loading job details...</p>
+        </div>
+    `;
+    
+    // Set edit button link
+    editBtn.href = `/job/${jobId}`;
+    
+    // Show modal
+    modal.show();
+    
+    // Simulate loading job details (replace with actual API call)
+    setTimeout(() => {
+        content.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Job Information</h6>
+                    <p><strong>Job ID:</strong> #${jobId}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-badge-warning">In Progress</span></p>
+                    <p><strong>Created:</strong> Today</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Customer Information</h6>
+                    <p><strong>Name:</strong> Loading...</p>
+                    <p><strong>Phone:</strong> Loading...</p>
+                    <p><strong>Email:</strong> Loading...</p>
+                </div>
+            </div>
+            <hr>
+            <h6>Services & Parts</h6>
+            <p class="text-muted">Service and parts information will be loaded here...</p>
+        `;
+    }, 1000);
+}
+
+function markAsPaid(jobId) {
+    if (confirm('Mark this job as paid?')) {
+        // Implementation for marking as paid
+        console.log('Marking job', jobId, 'as paid');
+        // You can implement the actual API call here
+    }
+}
+</script>
 {% endblock %}

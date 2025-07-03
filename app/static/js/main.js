@@ -1,594 +1,642 @@
-// 汽车维修管理系统 - 主要JavaScript文件
+// AutoRepair Pro - Main JavaScript
+// ================================
 
-// 全局配置
-const AppConfig = {
-    apiBaseUrl: '/api',
-    loadingClass: 'loading-overlay',
-    alertTimeout: 5000,
-    debounceDelay: 300,
-    defaultPageSize: 10
-};
-
-// 实用工具类
-class Utils {
-    // 防抖函数
-    static debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // 格式化货币
-    static formatCurrency(amount) {
-        return new Intl.NumberFormat('zh-CN', {
+// Global application state
+const AutoRepairApp = {
+    currentUser: null,
+    notifications: [],
+    settings: {},
+    
+    init() {
+        this.setupEventListeners();
+        this.loadUserPreferences();
+        this.initializeComponents();
+        this.setupNotifications();
+    },
+    
+    setupEventListeners() {
+        // Global event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            this.onDOMLoaded();
+        });
+        
+        // Handle form submissions with loading states
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', this.handleFormSubmit.bind(this));
+        });
+        
+        // Setup search functionality
+        this.setupGlobalSearch();
+        
+        // Setup tooltips and popovers
+        this.initializeBootstrapComponents();
+        
+        // Setup keyboard shortcuts
+        this.setupKeyboardShortcuts();
+    },
+    
+    onDOMLoaded() {
+        // Add loading animations
+        this.addLoadingAnimations();
+        
+        // Setup auto-save for forms
+        this.setupAutoSave();
+        
+        // Initialize data tables
+        this.initializeDataTables();
+        
+        // Setup live updates
+        this.setupLiveUpdates();
+    },
+    
+    // Form handling with enhanced UX
+    handleFormSubmit(event) {
+        const form = event.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        if (submitBtn && !form.dataset.noLoadingState) {
+            this.showFormLoading(submitBtn);
+            
+            // Reset loading state after timeout (fallback)
+            setTimeout(() => {
+                this.hideFormLoading(submitBtn);
+            }, 10000);
+        }
+        
+        // Validate form before submission
+        if (!this.validateForm(form)) {
+            event.preventDefault();
+            this.hideFormLoading(submitBtn);
+        }
+    },
+    
+    showFormLoading(button) {
+        if (!button) return;
+        
+        button.disabled = true;
+        button.classList.add('loading');
+        
+        const originalText = button.innerHTML;
+        button.dataset.originalText = originalText;
+        
+        const icon = button.querySelector('i');
+        if (icon) {
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        } else {
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + button.textContent;
+        }
+    },
+    
+    hideFormLoading(button) {
+        if (!button) return;
+        
+        button.disabled = false;
+        button.classList.remove('loading');
+        
+        if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText;
+        }
+    },
+    
+    validateForm(form) {
+        const inputs = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                this.showFieldError(input, 'This field is required');
+                isValid = false;
+            } else {
+                this.clearFieldError(input);
+                
+                // Additional validation based on input type
+                if (input.type === 'email' && !this.isValidEmail(input.value)) {
+                    this.showFieldError(input, 'Please enter a valid email address');
+                    isValid = false;
+                }
+                
+                if (input.type === 'tel' && !this.isValidPhone(input.value)) {
+                    this.showFieldError(input, 'Please enter a valid phone number');
+                    isValid = false;
+                }
+            }
+        });
+        
+        return isValid;
+    },
+    
+    showFieldError(input, message) {
+        input.classList.add('is-invalid');
+        
+        let feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            input.parentNode.appendChild(feedback);
+        }
+        feedback.textContent = message;
+    },
+    
+    clearFieldError(input) {
+        input.classList.remove('is-invalid');
+        const feedback = input.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = '';
+        }
+    },
+    
+    // Global search functionality
+    setupGlobalSearch() {
+        const searchInput = document.getElementById('globalSearch');
+        if (!searchInput) return;
+        
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            
+            searchTimeout = setTimeout(() => {
+                this.performGlobalSearch(e.target.value);
+            }, 300);
+        });
+        
+        // Setup search results dropdown
+        this.createSearchDropdown(searchInput);
+    },
+    
+    createSearchDropdown(searchInput) {
+        const dropdown = document.createElement('div');
+        dropdown.className = 'search-dropdown';
+        dropdown.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        `;
+        
+        searchInput.parentNode.style.position = 'relative';
+        searchInput.parentNode.appendChild(dropdown);
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.parentNode.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    },
+    
+    async performGlobalSearch(query) {
+        if (!query || query.length < 2) {
+            this.hideSearchResults();
+            return;
+        }
+        
+        try {
+            // Show loading state
+            this.showSearchLoading();
+            
+            // In a real application, this would be an API call
+            const results = await this.mockSearchAPI(query);
+            
+            this.displaySearchResults(results);
+        } catch (error) {
+            console.error('Search error:', error);
+            this.showSearchError();
+        }
+    },
+    
+    async mockSearchAPI(query) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Mock search results
+        return [
+            { type: 'customer', id: 1, title: 'John Smith', subtitle: 'Customer ID: #1001' },
+            { type: 'job', id: 123, title: 'Job #123', subtitle: 'BMW X5 - Oil Change' },
+            { type: 'customer', id: 2, title: 'Jane Doe', subtitle: 'Customer ID: #1002' }
+        ].filter(item => 
+            item.title.toLowerCase().includes(query.toLowerCase()) ||
+            item.subtitle.toLowerCase().includes(query.toLowerCase())
+        );
+    },
+    
+    displaySearchResults(results) {
+        const dropdown = document.querySelector('.search-dropdown');
+        if (!dropdown) return;
+        
+        if (results.length === 0) {
+            dropdown.innerHTML = `
+                <div class="p-3 text-center text-muted">
+                    <i class="bi bi-search me-2"></i>
+                    No results found
+                </div>
+            `;
+        } else {
+            dropdown.innerHTML = results.map(result => `
+                <div class="search-result-item p-3 border-bottom" data-type="${result.type}" data-id="${result.id}">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-${result.type === 'customer' ? 'person' : 'wrench'} me-3 text-primary"></i>
+                        <div>
+                            <div class="fw-semibold">${result.title}</div>
+                            <small class="text-muted">${result.subtitle}</small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add click handlers
+            dropdown.querySelectorAll('.search-result-item').forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', () => {
+                    this.handleSearchResultClick(item.dataset.type, item.dataset.id);
+                });
+                
+                item.addEventListener('mouseenter', () => {
+                    item.style.backgroundColor = '#f8fafc';
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    item.style.backgroundColor = 'white';
+                });
+            });
+        }
+        
+        dropdown.style.display = 'block';
+    },
+    
+    handleSearchResultClick(type, id) {
+        // Navigate to the appropriate page
+        if (type === 'customer') {
+            window.location.href = `/customer/${id}`;
+        } else if (type === 'job') {
+            window.location.href = `/job/${id}`;
+        }
+        
+        this.hideSearchResults();
+    },
+    
+    showSearchLoading() {
+        const dropdown = document.querySelector('.search-dropdown');
+        if (dropdown) {
+            dropdown.innerHTML = `
+                <div class="p-3 text-center">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    Searching...
+                </div>
+            `;
+            dropdown.style.display = 'block';
+        }
+    },
+    
+    showSearchError() {
+        const dropdown = document.querySelector('.search-dropdown');
+        if (dropdown) {
+            dropdown.innerHTML = `
+                <div class="p-3 text-center text-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Search error occurred
+                </div>
+            `;
+        }
+    },
+    
+    hideSearchResults() {
+        const dropdown = document.querySelector('.search-dropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+    },
+    
+    // Auto-save functionality
+    setupAutoSave() {
+        const forms = document.querySelectorAll('[data-autosave]');
+        
+        forms.forEach(form => {
+            const inputs = form.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    this.autoSaveForm(form);
+                });
+            });
+        });
+    },
+    
+    autoSaveForm(form) {
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Save to localStorage
+        const formId = form.id || 'auto-save-form';
+        localStorage.setItem(`autosave_${formId}`, JSON.stringify(data));
+        
+        this.showAutoSaveIndicator();
+    },
+    
+    showAutoSaveIndicator() {
+        // Create or update auto-save indicator
+        let indicator = document.getElementById('autosave-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'autosave-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 1050;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+            document.body.appendChild(indicator);
+        }
+        
+        indicator.innerHTML = '<i class="bi bi-check me-2"></i>Auto-saved';
+        indicator.style.opacity = '1';
+        
+        setTimeout(() => {
+            indicator.style.opacity = '0';
+        }, 2000);
+    },
+    
+    // Notification system
+    setupNotifications() {
+        this.loadNotifications();
+        this.updateNotificationBadge();
+        
+        // Setup notification dropdown
+        const notificationDropdown = document.querySelector('[data-bs-toggle="dropdown"]');
+        if (notificationDropdown) {
+            notificationDropdown.addEventListener('click', () => {
+                this.markNotificationsAsRead();
+            });
+        }
+    },
+    
+    loadNotifications() {
+        // In a real app, this would fetch from an API
+        this.notifications = [
+            {
+                id: 1,
+                title: 'Overdue Payment',
+                message: 'Customer #1234 payment is overdue',
+                type: 'warning',
+                timestamp: new Date(),
+                read: false
+            },
+            {
+                id: 2,
+                title: 'Job Completed',
+                message: 'Job #5678 has been marked as complete',
+                type: 'success',
+                timestamp: new Date(),
+                read: false
+            }
+        ];
+    },
+    
+    updateNotificationBadge() {
+        const badge = document.querySelector('.navbar .badge');
+        if (badge) {
+            const unreadCount = this.notifications.filter(n => !n.read).length;
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'inline' : 'none';
+        }
+    },
+    
+    markNotificationsAsRead() {
+        this.notifications.forEach(notification => {
+            notification.read = true;
+        });
+        this.updateNotificationBadge();
+    },
+    
+    // Initialize Bootstrap components
+    initializeBootstrapComponents() {
+        // Initialize tooltips
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(tooltip => {
+            new bootstrap.Tooltip(tooltip);
+        });
+        
+        // Initialize popovers
+        const popovers = document.querySelectorAll('[data-bs-toggle="popover"]');
+        popovers.forEach(popover => {
+            new bootstrap.Popover(popover);
+        });
+    },
+    
+    // Keyboard shortcuts
+    setupKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K for search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('globalSearch');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+            
+            // Escape to close modals and dropdowns
+            if (e.key === 'Escape') {
+                const activeModal = document.querySelector('.modal.show');
+                if (activeModal) {
+                    const modal = bootstrap.Modal.getInstance(activeModal);
+                    if (modal) modal.hide();
+                }
+                
+                this.hideSearchResults();
+            }
+        });
+    },
+    
+    // Add loading animations to elements
+    addLoadingAnimations() {
+        const animatedElements = document.querySelectorAll('.stat-card, .action-card, .card');
+        
+        animatedElements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    },
+    
+    // Data table initialization
+    initializeDataTables() {
+        const tables = document.querySelectorAll('.table');
+        
+        tables.forEach(table => {
+            // Add hover effects
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.style.transform = 'translateX(4px)';
+                    row.style.transition = 'transform 0.2s ease';
+                });
+                
+                row.addEventListener('mouseleave', () => {
+                    row.style.transform = 'translateX(0)';
+                });
+            });
+        });
+    },
+    
+    // Live updates simulation
+    setupLiveUpdates() {
+        // In a real application, this would use WebSockets or Server-Sent Events
+        if (window.location.pathname.includes('dashboard') || 
+            window.location.pathname.includes('current-jobs')) {
+            
+            setInterval(() => {
+                this.checkForUpdates();
+            }, 30000); // Check every 30 seconds
+        }
+    },
+    
+    async checkForUpdates() {
+        try {
+            // Simulate checking for updates
+            const hasUpdates = Math.random() > 0.8;
+            
+            if (hasUpdates) {
+                this.showUpdateNotification();
+            }
+        } catch (error) {
+            console.error('Update check failed:', error);
+        }
+    },
+    
+    showUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 300px;
+        `;
+        
+        notification.innerHTML = `
+            <i class="bi bi-info-circle me-2"></i>
+            New updates available
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    },
+    
+    // User preferences
+    loadUserPreferences() {
+        const savedPrefs = localStorage.getItem('autorepair_preferences');
+        if (savedPrefs) {
+            this.settings = JSON.parse(savedPrefs);
+            this.applyUserPreferences();
+        }
+    },
+    
+    saveUserPreferences() {
+        localStorage.setItem('autorepair_preferences', JSON.stringify(this.settings));
+    },
+    
+    applyUserPreferences() {
+        // Apply theme preferences
+        if (this.settings.theme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+        
+        // Apply other preferences
+        if (this.settings.animations === false) {
+            document.body.classList.add('no-animations');
+        }
+    },
+    
+    // Utility functions
+    isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    },
+    
+    isValidPhone(phone) {
+        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+        return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    },
+    
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'CNY',
-            minimumFractionDigits: 2
-        }).format(amount || 0);
-    }
-
-    // 格式化日期
-    static formatDate(date, options = {}) {
-        const defaultOptions = {
+            currency: 'USD'
+        }).format(amount);
+    },
+    
+    formatDate(date) {
+        return new Intl.DateTimeFormat('en-US', {
             year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        };
-        return new Intl.DateTimeFormat('zh-CN', { ...defaultOptions, ...options }).format(new Date(date));
-    }
-
-    // 显示Toast消息
-    static showToast(message, type = 'info') {
-        const toastContainer = document.querySelector('.toast-container') || this.createToastContainer();
-        const toast = this.createToast(message, type);
-        toastContainer.appendChild(toast);
+            month: 'short',
+            day: 'numeric'
+        }).format(new Date(date));
+    },
+    
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        // Create toast container if it doesn't exist
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        
+        container.appendChild(toast);
         
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
         
+        // Remove toast element after it's hidden
         toast.addEventListener('hidden.bs.toast', () => {
             toast.remove();
         });
     }
+};
 
-    // 创建Toast容器
-    static createToastContainer() {
-        const container = document.createElement('div');
-        container.className = 'toast-container position-fixed top-0 end-0 p-3';
-        container.style.zIndex = '1055';
-        document.body.appendChild(container);
-        return container;
-    }
+// Initialize the application
+AutoRepairApp.init();
 
-    // 创建Toast元素
-    static createToast(message, type) {
-        const iconMap = {
-            success: 'bi-check-circle-fill',
-            error: 'bi-x-circle-fill',
-            warning: 'bi-exclamation-triangle-fill',
-            info: 'bi-info-circle-fill'
-        };
-
-        const colorMap = {
-            success: 'text-success',
-            error: 'text-danger',
-            warning: 'text-warning',
-            info: 'text-info'
-        };
-
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = `
-            <div class="toast-header">
-                <i class="bi ${iconMap[type]} ${colorMap[type]} me-2"></i>
-                <strong class="me-auto">系统消息</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                ${message}
-            </div>
-        `;
-        return toast;
-    }
-
-    // 显示加载动画
-    static showLoading(target = document.body) {
-        const loading = document.createElement('div');
-        loading.className = AppConfig.loadingClass;
-        loading.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border text-primary spinner-border-xl" role="status">
-                    <span class="visually-hidden">加载中...</span>
-                </div>
-                <div class="mt-3">
-                    <h6 class="text-muted">正在加载数据...</h6>
-                </div>
-            </div>
-        `;
-        target.appendChild(loading);
-        return loading;
-    }
-
-    // 隐藏加载动画
-    static hideLoading(target = document.body) {
-        const loading = target.querySelector(`.${AppConfig.loadingClass}`);
-        if (loading) {
-            loading.remove();
-        }
-    }
-
-    // 确认对话框
-    static confirm(message, title = '确认操作') {
-        return new Promise((resolve) => {
-            const modal = this.createConfirmModal(message, title, resolve);
-            document.body.appendChild(modal);
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
-            
-            modal.addEventListener('hidden.bs.modal', () => {
-                modal.remove();
-            });
-        });
-    }
-
-    // 创建确认模态框
-    static createConfirmModal(message, title, callback) {
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-question-circle text-warning me-2"></i>
-                            ${title}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>${message}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" id="confirmBtn">确认</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        modal.querySelector('#confirmBtn').addEventListener('click', () => {
-            callback(true);
-            bootstrap.Modal.getInstance(modal).hide();
-        });
-
-        modal.addEventListener('hidden.bs.modal', () => {
-            callback(false);
-        });
-
-        return modal;
-    }
-}
-
-// API请求类
-class ApiClient {
-    static async request(url, options = {}) {
-        const defaultOptions = {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        };
-
-        try {
-            const response = await fetch(AppConfig.apiBaseUrl + url, {
-                ...defaultOptions,
-                ...options
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return { success: true, data };
-        } catch (error) {
-            console.error('API请求失败:', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    static async get(url) {
-        return this.request(url, { method: 'GET' });
-    }
-
-    static async post(url, data) {
-        return this.request(url, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    static async put(url, data) {
-        return this.request(url, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    static async delete(url) {
-        return this.request(url, { method: 'DELETE' });
-    }
-}
-
-// 表单处理类
-class FormHandler {
-    constructor(formElement) {
-        this.form = formElement;
-        this.init();
-    }
-
-    init() {
-        this.form.addEventListener('submit', this.handleSubmit.bind(this));
-        this.setupValidation();
-    }
-
-    async handleSubmit(event) {
-        event.preventDefault();
-        
-        if (!this.validateForm()) {
-            return;
-        }
-
-        const submitBtn = this.form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        
-        try {
-            this.setSubmitState(submitBtn, true);
-            
-            const formData = new FormData(this.form);
-            const response = await fetch(this.form.action, {
-                method: this.form.method,
-                body: formData
-            });
-
-            if (response.ok) {
-                Utils.showToast('操作成功完成', 'success');
-                this.handleSuccess(response);
-            } else {
-                throw new Error('服务器响应错误');
-            }
-        } catch (error) {
-            Utils.showToast('操作失败：' + error.message, 'error');
-            this.handleError(error);
-        } finally {
-            this.setSubmitState(submitBtn, false, originalText);
-        }
-    }
-
-    setSubmitState(button, loading, originalText = '提交') {
-        if (loading) {
-            button.disabled = true;
-            button.innerHTML = `
-                <span class="spinner-border spinner-border-sm me-2"></span>
-                处理中...
-            `;
-        } else {
-            button.disabled = false;
-            button.textContent = originalText;
-        }
-    }
-
-    setupValidation() {
-        const inputs = this.form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            input.addEventListener('blur', this.validateField.bind(this, input));
-            input.addEventListener('input', this.clearFieldError.bind(this, input));
-        });
-    }
-
-    validateField(field) {
-        const value = field.value.trim();
-        let isValid = true;
-        let message = '';
-
-        // 必填验证
-        if (field.required && !value) {
-            isValid = false;
-            message = '此字段为必填项';
-        }
-        
-        // 邮箱验证
-        if (field.type === 'email' && value && !this.isValidEmail(value)) {
-            isValid = false;
-            message = '请输入有效的邮箱地址';
-        }
-        
-        // 电话验证
-        if (field.type === 'tel' && value && !this.isValidPhone(value)) {
-            isValid = false;
-            message = '请输入有效的电话号码';
-        }
-
-        this.setFieldState(field, isValid, message);
-        return isValid;
-    }
-
-    validateForm() {
-        const inputs = this.form.querySelectorAll('input, select, textarea');
-        let isValid = true;
-
-        inputs.forEach(input => {
-            if (!this.validateField(input)) {
-                isValid = false;
-            }
-        });
-
-        return isValid;
-    }
-
-    setFieldState(field, isValid, message = '') {
-        const feedback = field.parentNode.querySelector('.invalid-feedback') || 
-                        this.createFeedbackElement(field);
-
-        field.classList.remove('is-valid', 'is-invalid');
-        
-        if (isValid) {
-            field.classList.add('is-valid');
-            feedback.style.display = 'none';
-        } else {
-            field.classList.add('is-invalid');
-            feedback.textContent = message;
-            feedback.style.display = 'block';
-        }
-    }
-
-    clearFieldError(field) {
-        field.classList.remove('is-invalid');
-        const feedback = field.parentNode.querySelector('.invalid-feedback');
-        if (feedback) {
-            feedback.style.display = 'none';
-        }
-    }
-
-    createFeedbackElement(field) {
-        const feedback = document.createElement('div');
-        feedback.className = 'invalid-feedback';
-        field.parentNode.appendChild(feedback);
-        return feedback;
-    }
-
-    isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    isValidPhone(phone) {
-        const phoneRegex = /^1[3-9]\d{9}$|^0\d{2,3}-?\d{7,8}$/;
-        return phoneRegex.test(phone.replace(/\s+/g, ''));
-    }
-
-    handleSuccess(response) {
-        // 子类可以重写此方法
-        console.log('表单提交成功');
-    }
-
-    handleError(error) {
-        // 子类可以重写此方法
-        console.error('表单提交失败:', error);
-    }
-}
-
-// 搜索功能类
-class SearchHandler {
-    constructor(searchInput, resultsContainer, searchFunction) {
-        this.searchInput = searchInput;
-        this.resultsContainer = resultsContainer;
-        this.searchFunction = searchFunction;
-        this.init();
-    }
-
-    init() {
-        const debouncedSearch = Utils.debounce(this.performSearch.bind(this), AppConfig.debounceDelay);
-        this.searchInput.addEventListener('input', debouncedSearch);
-        this.searchInput.addEventListener('focus', this.showResults.bind(this));
-        document.addEventListener('click', this.hideResults.bind(this));
-    }
-
-    async performSearch() {
-        const query = this.searchInput.value.trim();
-        
-        if (query.length < 2) {
-            this.hideResults();
-            return;
-        }
-
-        try {
-            this.showLoading();
-            const results = await this.searchFunction(query);
-            this.displayResults(results);
-        } catch (error) {
-            console.error('搜索失败:', error);
-            this.displayError('搜索失败，请稍后重试');
-        }
-    }
-
-    showLoading() {
-        this.resultsContainer.innerHTML = `
-            <div class="text-center p-3">
-                <div class="spinner-border spinner-border-sm text-primary"></div>
-                <small class="ms-2 text-muted">搜索中...</small>
-            </div>
-        `;
-        this.showResults();
-    }
-
-    displayResults(results) {
-        if (results.length === 0) {
-            this.resultsContainer.innerHTML = `
-                <div class="text-center p-3 text-muted">
-                    <i class="bi bi-search"></i>
-                    <div>未找到匹配结果</div>
-                </div>
-            `;
-        } else {
-            this.resultsContainer.innerHTML = results.map(this.renderResultItem).join('');
-        }
-        this.showResults();
-    }
-
-    displayError(message) {
-        this.resultsContainer.innerHTML = `
-            <div class="text-center p-3 text-danger">
-                <i class="bi bi-exclamation-triangle"></i>
-                <div>${message}</div>
-            </div>
-        `;
-        this.showResults();
-    }
-
-    renderResultItem(item) {
-        // 子类应该重写此方法
-        return `<div class="p-2">${JSON.stringify(item)}</div>`;
-    }
-
-    showResults() {
-        this.resultsContainer.style.display = 'block';
-    }
-
-    hideResults(event) {
-        if (event && (this.searchInput.contains(event.target) || 
-                     this.resultsContainer.contains(event.target))) {
-            return;
-        }
-        this.resultsContainer.style.display = 'none';
-    }
-}
-
-// 数据表格处理类
-class DataTable {
-    constructor(tableElement, options = {}) {
-        this.table = tableElement;
-        this.options = {
-            pageSize: AppConfig.defaultPageSize,
-            sortable: true,
-            filterable: true,
-            ...options
-        };
-        this.currentPage = 1;
-        this.sortColumn = null;
-        this.sortDirection = 'asc';
-        this.filters = {};
-        this.init();
-    }
-
-    init() {
-        this.setupSorting();
-        this.setupPagination();
-        this.setupFiltering();
-    }
-
-    setupSorting() {
-        if (!this.options.sortable) return;
-
-        const headers = this.table.querySelectorAll('th[data-sortable]');
-        headers.forEach(header => {
-            header.style.cursor = 'pointer';
-            header.addEventListener('click', () => {
-                const column = header.dataset.sortable;
-                this.sort(column);
-            });
-        });
-    }
-
-    sort(column) {
-        if (this.sortColumn === column) {
-            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            this.sortColumn = column;
-            this.sortDirection = 'asc';
-        }
-        this.render();
-    }
-
-    setupPagination() {
-        // 分页逻辑实现
-    }
-
-    setupFiltering() {
-        if (!this.options.filterable) return;
-        
-        const filterInputs = document.querySelectorAll('[data-filter]');
-        filterInputs.forEach(input => {
-            const debouncedFilter = Utils.debounce(() => {
-                this.filters[input.dataset.filter] = input.value;
-                this.render();
-            }, AppConfig.debounceDelay);
-            
-            input.addEventListener('input', debouncedFilter);
-        });
-    }
-
-    render() {
-        // 表格渲染逻辑
-        console.log('表格渲染:', {
-            page: this.currentPage,
-            sort: this.sortColumn,
-            direction: this.sortDirection,
-            filters: this.filters
-        });
-    }
-}
-
-// 页面初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 初始化所有表单
-    const forms = document.querySelectorAll('form[data-enhanced]');
-    forms.forEach(form => new FormHandler(form));
-
-    // 初始化工具提示
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // 初始化弹出框
-    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-    });
-
-    // 自动关闭警告框
-    setTimeout(() => {
-        const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
-        alerts.forEach(alert => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        });
-    }, AppConfig.alertTimeout);
-
-    // 页面加载动画
-    const pageLoading = document.getElementById('page-loading');
-    if (pageLoading) {
-        pageLoading.style.display = 'none';
-    }
-
-    // 添加页面淡入效果
-    document.body.classList.add('fade-in');
-});
-
-// 导出全局对象
-window.App = {
-    Utils,
-    ApiClient,
-    FormHandler,
-    SearchHandler,
-    DataTable,
-    config: AppConfig
-}; 
+// Expose to global scope for debugging
+window.AutoRepairApp = AutoRepairApp; 

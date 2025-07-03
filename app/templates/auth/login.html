@@ -1,121 +1,148 @@
 {% extends "base/layout.html" %}
 
-{% block title %}用户登录 - 汽车维修管理系统{% endblock %}
+{% block title %}Sign In - AutoRepair Pro{% endblock %}
 
 {% block breadcrumb %}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5 col-lg-4">
+<div class="row justify-content-center min-vh-100 align-items-center">
+    <div class="col-xl-4 col-lg-5 col-md-6 col-sm-8">
+        <!-- Login Card -->
         <div class="card border-0 shadow-lg">
             <div class="card-body p-5">
-                <!-- 登录头部 -->
+                <!-- Header -->
                 <div class="text-center mb-4">
-                    <div class="text-primary mb-3">
-                        <i class="bi bi-gear-fill" style="font-size: 3rem;"></i>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                        <i class="bi bi-wrench-adjustable-circle-fill text-primary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h2 class="fw-bold text-dark">系统登录</h2>
-                    <p class="text-muted">汽车维修管理系统</p>
+                    <h1 class="h3 fw-bold text-gray-900 mb-2">Welcome Back</h1>
+                    <p class="text-muted">Sign in to your AutoRepair Pro account</p>
                 </div>
-
-                <!-- 登录表单 -->
-                <form method="POST" action="{{ url_for('main.login_post') }}" id="loginForm">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <!-- 用户名 -->
-                    <div class="mb-3">
-                        <label for="username" class="form-label fw-medium">
-                            <i class="bi bi-person me-1"></i>用户名
-                        </label>
-                        <input type="text" class="form-control form-control-lg" id="username" name="username" 
-                               placeholder="请输入用户名" required autocomplete="username">
-                        <div class="invalid-feedback">
-                            请输入有效的用户名
-                        </div>
-                    </div>
-
-                    <!-- 密码 -->
-                    <div class="mb-3">
-                        <label for="password" class="form-label fw-medium">
-                            <i class="bi bi-lock me-1"></i>密码
-                        </label>
+                
+                <!-- Login Form -->
+                <form method="POST" action="{{ url_for('main.login') }}" class="needs-validation" novalidate>
+                    <!-- Username Field -->
+                    <div class="form-group mb-3">
+                        <label for="username" class="form-label">Username</label>
                         <div class="input-group">
-                            <input type="password" class="form-control form-control-lg" id="password" name="password" 
-                                   placeholder="请输入密码" required autocomplete="current-password">
-                            <button type="button" class="btn btn-outline-secondary" id="togglePassword">
-                                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-person text-muted"></i>
+                            </span>
+                            <input 
+                                type="text" 
+                                class="form-control border-start-0 ps-0" 
+                                id="username" 
+                                name="username" 
+                                placeholder="Enter your username"
+                                required
+                                autocomplete="username"
+                                autofocus
+                            >
+                            <div class="invalid-feedback">
+                                Please enter your username.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="form-group mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-lock text-muted"></i>
+                            </span>
+                            <input 
+                                type="password" 
+                                class="form-control border-start-0 ps-0" 
+                                id="password" 
+                                name="password" 
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button 
+                                type="button" 
+                                class="btn btn-outline-light border-start-0" 
+                                id="togglePassword"
+                                title="Show/Hide Password"
+                            >
+                                <i class="bi bi-eye text-muted"></i>
                             </button>
-                        </div>
-                        <div class="invalid-feedback">
-                            请输入密码
+                            <div class="invalid-feedback">
+                                Please enter your password.
+                            </div>
                         </div>
                     </div>
-
-                    <!-- 用户类型 -->
-                    <div class="mb-4">
-                        <label for="user_type" class="form-label fw-medium">
-                            <i class="bi bi-person-gear me-1"></i>登录身份
-                        </label>
-                        <select class="form-select form-select-lg" id="user_type" name="user_type" required>
-                            <option value="technician">技术员</option>
-                            <option value="administrator">管理员</option>
+                    
+                    <!-- User Type Selection -->
+                    <div class="form-group mb-4">
+                        <label for="user_type" class="form-label">Sign in as</label>
+                        <select class="form-select" id="user_type" name="user_type" required>
+                            <option value="">Select your role</option>
+                            <option value="technician">Technician</option>
+                            <option value="administrator">Administrator</option>
                         </select>
+                        <div class="invalid-feedback">
+                            Please select your role.
+                        </div>
                     </div>
-
-                    <!-- 记住我 -->
-                    <div class="mb-4">
+                    
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember_me" name="remember_me">
-                            <label class="form-check-label text-muted" for="remember_me">
-                                记住登录状态
+                            <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                            <label class="form-check-label text-sm" for="remember_me">
+                                Remember me
                             </label>
                         </div>
+                        <a href="#" class="text-sm text-primary text-decoration-none">Forgot password?</a>
                     </div>
-
-                    <!-- 登录按钮 -->
-                    <div class="d-grid mb-3">
-                        <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>
-                            <span id="loginBtnText">登录系统</span>
-                            <span id="loginSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
-                        </button>
-                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Sign In
+                    </button>
                 </form>
-
-                <!-- 登录提示 -->
-                <div class="text-center">
-                    <div class="alert alert-info border-0 bg-info bg-opacity-10">
-                        <small class="text-info">
-                            <i class="bi bi-info-circle me-1"></i>
-                            <strong>演示账户：</strong>使用任意用户名，密码：123456
-                        </small>
-                    </div>
-                </div>
-
-                <!-- 功能链接 -->
-                <div class="text-center mt-4 pt-3 border-top">
-                    <div class="row text-muted small">
+                
+                <!-- Demo Credentials Info -->
+                <div class="mt-4 p-3 bg-light border-start border-4 border-info">
+                    <h6 class="text-info mb-2">
+                        <i class="bi bi-info-circle me-2"></i>Demo Credentials
+                    </h6>
+                    <div class="row text-sm">
                         <div class="col-6">
-                            <a href="{{ url_for('main.index') }}" class="text-decoration-none">
-                                <i class="bi bi-house me-1"></i>返回首页
-                            </a>
+                            <strong>Technician:</strong><br>
+                            Username: <code>tech</code><br>
+                            Password: <code>123456</code>
                         </div>
                         <div class="col-6">
-                            <a href="{{ url_for('main.help_page') }}" class="text-decoration-none">
-                                <i class="bi bi-question-circle me-1"></i>使用帮助
-                            </a>
+                            <strong>Administrator:</strong><br>
+                            Username: <code>admin</code><br>
+                            Password: <code>123456</code>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- 系统信息 -->
+        <!-- Footer Links -->
         <div class="text-center mt-4">
-            <small class="text-muted">
+            <p class="text-muted mb-2">
                 <i class="bi bi-shield-check me-1"></i>
-                安全登录 | 数据加密传输
-            </small>
+                Your data is secure and protected
+            </p>
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="{{ url_for('main.index') }}" class="text-muted text-decoration-none text-sm">
+                    <i class="bi bi-house me-1"></i>Back to Home
+                </a>
+                <a href="{{ url_for('main.help_page') }}" class="text-muted text-decoration-none text-sm">
+                    <i class="bi bi-question-circle me-1"></i>Need Help?
+                </a>
+                <a href="{{ url_for('main.about') }}" class="text-muted text-decoration-none text-sm">
+                    <i class="bi bi-info-circle me-1"></i>About
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -124,66 +151,129 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-    const loginBtnText = document.getElementById('loginBtnText');
-    const loginSpinner = document.getElementById('loginSpinner');
+    // Password visibility toggle
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
-    const togglePasswordIcon = document.getElementById('togglePasswordIcon');
-
-    // 密码显示/隐藏切换
-    togglePassword.addEventListener('click', function() {
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            togglePasswordIcon.className = 'bi bi-eye-slash';
-        } else {
-            passwordInput.type = 'password';
-            togglePasswordIcon.className = 'bi bi-eye';
-        }
-    });
-
-    // 表单提交处理
-    loginForm.addEventListener('submit', function(e) {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-        
-        // 基础验证
-        if (!username || !password) {
-            e.preventDefault();
-            return;
-        }
-
-        // 显示加载状态
-        loginBtn.disabled = true;
-        loginBtnText.textContent = '登录中...';
-        loginSpinner.style.display = 'inline-block';
-        
-        // 防止重复提交
-        setTimeout(function() {
-            loginBtn.disabled = false;
-            loginBtnText.textContent = '登录系统';
-            loginSpinner.style.display = 'none';
-        }, 3000);
-    });
-
-    // 输入框焦点处理
-    const inputs = document.querySelectorAll('input, select');
-    inputs.forEach(function(input) {
-        input.addEventListener('invalid', function() {
-            this.classList.add('is-invalid');
+    const toggleIcon = togglePassword.querySelector('i');
+    
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            toggleIcon.className = isPassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted';
+            this.title = isPassword ? 'Hide Password' : 'Show Password';
         });
-        
-        input.addEventListener('input', function() {
-            if (this.validity.valid) {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
+    }
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+    
+    // Auto-fill demo credentials
+    const usernameInput = document.getElementById('username');
+    const userTypeSelect = document.getElementById('user_type');
+    
+    if (usernameInput && userTypeSelect) {
+        // When user type changes, suggest username
+        userTypeSelect.addEventListener('change', function() {
+            if (this.value === 'technician' && !usernameInput.value) {
+                usernameInput.value = 'tech';
+            } else if (this.value === 'administrator' && !usernameInput.value) {
+                usernameInput.value = 'admin';
             }
         });
-    });
-
-    // 自动焦点
-    document.getElementById('username').focus();
+        
+        // When username changes, suggest user type
+        usernameInput.addEventListener('input', function() {
+            if (this.value === 'tech' && !userTypeSelect.value) {
+                userTypeSelect.value = 'technician';
+            } else if (this.value === 'admin' && !userTypeSelect.value) {
+                userTypeSelect.value = 'administrator';
+            }
+        });
+    }
+    
+    // Add animation to the card
+    const card = document.querySelector('.card');
+    if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 100);
+    }
 });
 </script>
-{% endblock %} 
+
+<style>
+/* Custom styles for login page */
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+.input-group-text {
+    border-color: #e2e8f0;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.1);
+}
+
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.1);
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+/* Animation for invalid feedback */
+.invalid-feedback {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Loading state for submit button */
+.btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style> 
