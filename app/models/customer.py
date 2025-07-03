@@ -15,31 +15,31 @@ class Customer(BaseModel):
     _fields = ['customer_id', 'first_name', 'family_name', 'email', 'phone']
     
     def __init__(self, **kwargs):
-        """初始化客户实例"""
+        """Initialize customer instance"""
         super().__init__(**kwargs)
         
-        # 属性验证
+        # Attribute validation
         if hasattr(self, 'email') and self.email:
             self._validate_email()
         if hasattr(self, 'phone') and self.phone:
             self._validate_phone()
     
     def _validate_email(self):
-        """验证邮箱格式"""
+        """Validate email format"""
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, self.email):
-            raise ValueError(f"无效的邮箱格式: {self.email}")
+            raise ValueError(f"Invalid email format: {self.email}")
     
     def _validate_phone(self):
-        """验证手机号格式"""
-        # 简单的手机号验证，可根据需要调整
+        """Validate phone number format"""
+        # Simple phone number validation, can be adjusted as needed
         phone_pattern = r'^\d{10,11}$'
         if not re.match(phone_pattern, self.phone.replace(' ', '').replace('-', '')):
-            raise ValueError(f"无效的手机号格式: {self.phone}")
+            raise ValueError(f"Invalid phone number format: {self.phone}")
     
     @property
     def full_name(self) -> str:
-        """获取完整姓名"""
+        """Get full name"""
         first = self.first_name or ''
         family = self.family_name or ''
         return f"{first} {family}".strip()
@@ -47,14 +47,14 @@ class Customer(BaseModel):
     @classmethod
     def search_by_name(cls, search_term: str, search_type: str = 'both') -> List['Customer']:
         """
-        根据姓名搜索客户
+                Search customers by name
         
         Args:
-            search_term: 搜索词
-            search_type: 搜索类型 ('first_name', 'family_name', 'both')
-        
+            search_term: Search term
+            search_type: Search type ('first_name', 'family_name', 'both')
+            
         Returns:
-            匹配的客户列表
+            List of matching customers
         """
         try:
             search_term = f"%{search_term}%"
@@ -77,22 +77,22 @@ class Customer(BaseModel):
             return [cls(**row) for row in results] if results else []
             
         except Exception as e:
-            raise DatabaseError(f"搜索客户失败: {e}")
+            raise DatabaseError(f"Failed to search customers: {e}")
     
     @classmethod
     def get_all_sorted(cls) -> List['Customer']:
-        """获取所有客户，按姓名排序"""
+        """Get all customers, sorted by name"""
         return cls.find_all(order_by='family_name, first_name')
     
     def get_jobs(self, completed_only: bool = False) -> List[Dict[str, Any]]:
         """
-        获取客户的工作订单
+                Get customer's work orders
         
         Args:
-            completed_only: 是否只获取已完成的订单
-        
+            completed_only: Whether to get only completed orders
+            
         Returns:
-            工作订单列表
+            List of work orders
         """
         try:
             query = """
@@ -111,10 +111,10 @@ class Customer(BaseModel):
             return execute_query(query, (self.customer_id,))
             
         except Exception as e:
-            raise DatabaseError(f"获取客户工作订单失败: {e}")
+            raise DatabaseError(f"Failed to get customer work orders: {e}")
     
     def get_unpaid_jobs(self) -> List[Dict[str, Any]]:
-        """获取客户的未付款订单"""
+        """Get customer's unpaid orders"""
         try:
             query = """
                 SELECT j.*, 
@@ -127,7 +127,7 @@ class Customer(BaseModel):
             return execute_query(query, (self.customer_id,))
             
         except Exception as e:
-            raise DatabaseError(f"获取客户未付款订单失败: {e}")
+            raise DatabaseError(f"Failed to get customer unpaid orders: {e}")
     
     def get_total_unpaid_amount(self) -> float:
         """获取客户未付款总金额"""

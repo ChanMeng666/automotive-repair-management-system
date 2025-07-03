@@ -135,7 +135,7 @@ def customer_list(page=1, per_page=20):
         
     except Exception as e:
         logger.error(f"客户管理页面加载失败: {e}")
-        flash('加载客户列表失败', 'error')
+        flash('Failed to load customer list', 'error')
         return render_template('administrator/customer_list.html',
                              customers=[],
                              page=1,
@@ -186,7 +186,7 @@ def billing_management():
         
     except Exception as e:
         logger.error(f"账单管理页面加载失败: {e}")
-        flash('加载账单管理页面失败', 'error')
+        flash('Failed to load billing management page', 'error')
         return render_template('administrator/billing.html',
                              bills=[],
                              filter_type='unpaid',
@@ -224,7 +224,7 @@ def overdue_bills():
         
     except Exception as e:
         logger.error(f"逾期账单页面加载失败: {e}")
-        flash('加载逾期账单页面失败', 'error')
+        flash('Failed to load overdue bills page', 'error')
         return render_template('administrator/overdue_bills.html',
                              overdue_bills=[],
                              total_overdue_amount=0,
@@ -261,7 +261,7 @@ def pay_bills():
         
     except Exception as e:
         logger.error(f"付款处理页面加载失败: {e}")
-        flash('加载付款处理页面失败', 'error')
+        flash('Failed to load payment processing page', 'error')
         return render_template('administrator/pay_bills.html',
                              unpaid_bills=[],
                              customer_name='',
@@ -280,7 +280,7 @@ def pay_customer_bills(customer_id):
         success, errors, count = billing_service.mark_customer_bills_as_paid(customer_id)
         
         if success:
-            flash(f'成功标记 {count} 个账单为已付款！', 'success')
+            flash(f'Successfully marked {count} bills as paid!', 'success')
         else:
             for error in errors:
                 flash(error, 'error')
@@ -288,15 +288,15 @@ def pay_customer_bills(customer_id):
         return redirect(url_for('administrator.customer_list'))
         
     except Exception as e:
-        logger.error(f"标记客户账单付款失败: {e}")
-        flash('标记付款失败，请稍后重试', 'error')
+        logger.error(f"Failed to mark customer bills as paid: {e}")
+        flash('Failed to mark payment, please try again later', 'error')
         return redirect(url_for('administrator.customer_list'))
 
 
 @administrator_bp.route('/jobs/<int:job_id>/pay', methods=['POST'])
 @handle_database_errors
 def pay_single_bill(job_id):
-    """标记单个工作订单为已付款"""
+    """Mark single work order as paid"""
     redirect_response = require_admin_login()
     if redirect_response:
         return redirect_response
@@ -305,7 +305,7 @@ def pay_single_bill(job_id):
         success, errors = billing_service.mark_job_as_paid(job_id)
         
         if success:
-            flash('账单已标记为已付款！', 'success')
+            flash('Bill has been marked as paid!', 'success')
         else:
             for error in errors:
                 flash(error, 'error')
@@ -318,8 +318,8 @@ def pay_single_bill(job_id):
             return redirect(url_for('administrator.pay_bills'))
         
     except Exception as e:
-        logger.error(f"标记账单付款失败: {e}")
-        flash('标记付款失败，请稍后重试', 'error')
+        logger.error(f"Failed to mark bill as paid: {e}")
+        flash('Failed to mark payment, please try again later', 'error')
         return redirect(url_for('administrator.pay_bills'))
 
 
@@ -370,7 +370,7 @@ def reports():
         
     except Exception as e:
         logger.error(f"报表页面加载失败: {e}")
-        flash('加载报表失败', 'error')
+        flash('Failed to load reports', 'error')
         return render_template('administrator/reports.html',
                              report_data={})
 

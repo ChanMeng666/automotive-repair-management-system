@@ -25,15 +25,15 @@ def handle_database_errors(func: Callable) -> Callable:
             return func(*args, **kwargs)
         except DatabaseError as e:
             logging.error(f"数据库错误在 {func.__name__}: {e}")
-            flash(f"数据库操作失败: {e}", 'error')
+            flash(f"Database operation failed: {e}", 'error')
             return None
         except ValidationError as e:
             logging.warning(f"验证错误在 {func.__name__}: {e}")
-            flash(f"数据验证失败: {e}", 'warning')
+            flash(f"Data validation failed: {e}", 'warning')
             return None
         except Exception as e:
             logging.error(f"未知错误在 {func.__name__}: {e}")
-            flash("系统错误，请稍后重试", 'error')
+            flash("System error, please try again later", 'error')
             return None
     
     return wrapper

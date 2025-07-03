@@ -29,7 +29,7 @@ class BillingService:
         try:
             return Job.get_unpaid_jobs(customer_name)
         except Exception as e:
-            self.logger.error(f"获取未付款账单失败: {e}")
+            self.logger.error(f"Failed to get unpaid bills: {e}")
             return []
     
     def get_overdue_bills(self, days_threshold: int = 14) -> List[Dict[str, Any]]:
@@ -53,7 +53,7 @@ class BillingService:
             return bills
             
         except Exception as e:
-            self.logger.error(f"获取逾期账单失败: {e}")
+            self.logger.error(f"Failed to get overdue bills: {e}")
             return []
     
     def get_all_bills_with_status(self) -> List[Dict[str, Any]]:
@@ -81,7 +81,7 @@ class BillingService:
             return bills
             
         except Exception as e:
-            self.logger.error(f"获取所有账单失败: {e}")
+            self.logger.error(f"Failed to get all bills: {e}")
             return []
     
     def mark_customer_bills_as_paid(self, customer_id: int) -> Tuple[bool, List[str], int]:
@@ -98,12 +98,12 @@ class BillingService:
             # 验证客户存在
             customer = Customer.find_by_id(customer_id)
             if not customer:
-                return False, ["客户不存在"], 0
+                return False, ["Customer does not exist"], 0
             
             # 获取客户的未付款账单
             unpaid_jobs = customer.get_unpaid_jobs()
             if not unpaid_jobs:
-                return False, ["该客户没有未付款账单"], 0
+                return False, ["This customer has no unpaid bills"], 0
             
             # 批量更新为已付款
             job_ids = [job['job_id'] for job in unpaid_jobs]
@@ -113,14 +113,14 @@ class BillingService:
             affected_rows = execute_update(query, tuple(job_ids))
             
             if affected_rows > 0:
-                self.logger.info(f"客户 {customer.full_name} 的 {affected_rows} 个账单标记为已付款")
+                self.logger.info(f"Marked {affected_rows} bills as paid for customer {customer.full_name}")
                 return True, [], affected_rows
             else:
-                return False, ["标记付款失败"], 0
+                return False, ["Failed to mark payment"], 0
                 
         except Exception as e:
-            self.logger.error(f"标记客户账单付款失败: {e}")
-            return False, ["系统错误，请稍后重试"], 0
+            self.logger.error(f"Failed to mark customer bills as paid: {e}")
+            return False, ["System error, please try again later"], 0
     
     def mark_job_as_paid(self, job_id: int) -> Tuple[bool, List[str]]:
         """
@@ -135,21 +135,21 @@ class BillingService:
         try:
             job = Job.find_by_id(job_id)
             if not job:
-                return False, ["工作订单不存在"]
+                return False, ["Work order does not exist"]
             
             if job.paid:
-                return False, ["账单已经付款"]
+                return False, ["Bill is already paid"]
             
             success = job.mark_as_paid()
             if success:
-                self.logger.info(f"工作订单 {job_id} 标记为已付款")
+                self.logger.info(f"Work order {job_id} marked as paid")
                 return True, []
             else:
-                return False, ["标记付款失败"]
+                return False, ["Failed to mark payment"]
                 
         except Exception as e:
-            self.logger.error(f"标记账单付款失败: {e}")
-            return False, ["系统错误，请稍后重试"]
+            self.logger.error(f"Failed to mark bill as paid: {e}")
+            return False, ["System error, please try again later"]
     
     def get_customer_billing_summary(self, customer_id: int) -> Dict[str, Any]:
         """
@@ -194,7 +194,7 @@ class BillingService:
             }
             
         except Exception as e:
-            self.logger.error(f"获取客户账单汇总失败: {e}")
+            self.logger.error(f"Failed to get customer billing summary: {e}")
             return {}
     
     def get_billing_statistics(self) -> Dict[str, Any]:
@@ -259,7 +259,7 @@ class BillingService:
             }
             
         except Exception as e:
-            self.logger.error(f"获取账单统计失败: {e}")
+            self.logger.error(f"Failed to get billing statistics: {e}")
             return self._get_empty_billing_stats()
     
     def get_customers_with_unpaid_bills(self) -> List[Dict[str, Any]]:
@@ -285,7 +285,7 @@ class BillingService:
             return results
             
         except Exception as e:
-            self.logger.error(f"获取有未付款账单的客户失败: {e}")
+            self.logger.error(f"Failed to get customers with unpaid bills: {e}")
             return []
     
     def _is_job_overdue(self, job: Dict[str, Any], days_threshold: int = 14) -> bool:

@@ -51,7 +51,7 @@ class Job(BaseModel):
             count_result = execute_query(count_query, fetch_one=True)
             total = count_result['total'] if count_result else 0
             
-            # 获取分页数据
+            # Get paginated data
             query = """
                 SELECT c.customer_id, c.first_name, c.family_name, 
                        j.job_id, j.job_date, j.total_cost, j.completed, j.paid
@@ -66,11 +66,11 @@ class Job(BaseModel):
             return results or [], total
             
         except Exception as e:
-            raise DatabaseError(f"获取当前工作订单失败: {e}")
+            raise DatabaseError(f"Failed to get current work orders: {e}")
     
     @classmethod
     def get_all_with_customer_info(cls, order_by: str = "j.job_date DESC") -> List[Dict[str, Any]]:
-        """获取所有工作订单及客户信息"""
+        """Get all work orders with customer information"""
         try:
             query = f"""
                 SELECT c.customer_id, c.first_name, c.family_name,
@@ -83,18 +83,18 @@ class Job(BaseModel):
             return execute_query(query)
             
         except Exception as e:
-            raise DatabaseError(f"获取工作订单及客户信息失败: {e}")
+            raise DatabaseError(f"Failed to get work orders with customer info: {e}")
     
     @classmethod
     def get_unpaid_jobs(cls, customer_name: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        获取未付款的工作订单
+                Get unpaid work orders
         
         Args:
-            customer_name: 客户姓名过滤（可选）
-        
+            customer_name: Customer name filter (optional)
+            
         Returns:
-            未付款工作订单列表
+            List of unpaid work orders
         """
         try:
             query = """
@@ -115,18 +115,18 @@ class Job(BaseModel):
             return execute_query(query, tuple(params) if params else None)
             
         except Exception as e:
-            raise DatabaseError(f"获取未付款工作订单失败: {e}")
+            raise DatabaseError(f"Failed to get unpaid work orders: {e}")
     
     @classmethod
     def get_overdue_jobs(cls, days_threshold: int = 14) -> List[Dict[str, Any]]:
         """
-        获取逾期的工作订单
+                Get overdue work orders
         
         Args:
-            days_threshold: 逾期天数阈值
-        
+            days_threshold: Overdue days threshold
+            
         Returns:
-            逾期工作订单列表
+            List of overdue work orders
         """
         try:
             query = """
@@ -143,10 +143,10 @@ class Job(BaseModel):
             return execute_query(query, (days_threshold,))
             
         except Exception as e:
-            raise DatabaseError(f"获取逾期工作订单失败: {e}")
+            raise DatabaseError(f"Failed to get overdue work orders: {e}")
     
     def get_job_details(self) -> Dict[str, Any]:
-        """获取工作订单详细信息（包含客户信息）"""
+        """Get work order details (including customer information)"""
         try:
             query = """
                 SELECT c.customer_id, c.first_name, c.family_name,
@@ -159,10 +159,10 @@ class Job(BaseModel):
             return execute_query(query, (self.job_id,), fetch_one=True)
             
         except Exception as e:
-            raise DatabaseError(f"获取工作订单详情失败: {e}")
+            raise DatabaseError(f"Failed to get work order details: {e}")
     
     def get_services(self) -> List[Dict[str, Any]]:
-        """获取工作订单的服务项目"""
+        """Get work order service items"""
         try:
             query = """
                 SELECT s.service_name, js.qty, s.cost,
@@ -176,10 +176,10 @@ class Job(BaseModel):
             return execute_query(query, (self.job_id,))
             
         except Exception as e:
-            raise DatabaseError(f"获取工作订单服务项目失败: {e}")
+            raise DatabaseError(f"Failed to get work order service items: {e}")
     
     def get_parts(self) -> List[Dict[str, Any]]:
-        """获取工作订单的零件"""
+        """Get work order parts"""
         try:
             query = """
                 SELECT p.part_name, jp.qty, p.cost,
@@ -193,14 +193,14 @@ class Job(BaseModel):
             return execute_query(query, (self.job_id,))
             
         except Exception as e:
-            raise DatabaseError(f"获取工作订单零件失败: {e}")
+            raise DatabaseError(f"Failed to get work order parts: {e}")
     
     def add_service(self, service_id: int, quantity: int) -> bool:
         """
-        为工作订单添加服务
+        Add service to work order
         
         Args:
-            service_id: 服务ID
+            service_id: Service ID
             quantity: 数量
         
         Returns:

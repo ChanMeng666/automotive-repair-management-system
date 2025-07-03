@@ -24,7 +24,7 @@ customer_service = CustomerService()
 def require_technician_login():
     """检查技术员登录状态"""
     if not session.get('logged_in'):
-        flash('请先登录', 'warning')
+        flash('Please log in first', 'warning')
         return redirect(url_for('main.login'))
     return None
 
@@ -52,7 +52,7 @@ def current_jobs(page=1, per_page=10):
         
     except Exception as e:
         logger.error(f"获取当前工作订单失败: {e}")
-        flash('加载工作订单失败', 'error')
+        flash('Failed to load work orders', 'error')
         return render_template('technician/current_jobs.html',
                              jobs=[],
                              page=1,
@@ -75,7 +75,7 @@ def job_detail(job_id):
         job_details = job_service.get_job_details(job_id)
         
         if not job_details:
-            flash('工作订单不存在', 'error')
+            flash('Work order does not exist', 'error')
             return redirect(url_for('technician.current_jobs'))
         
         return render_template('technician/job_detail.html',
@@ -83,7 +83,7 @@ def job_detail(job_id):
         
     except Exception as e:
         logger.error(f"获取工作订单详情失败 (ID: {job_id}): {e}")
-        flash('加载工作订单详情失败', 'error')
+        flash('Failed to load work order details', 'error')
         return redirect(url_for('technician.current_jobs'))
 
 
@@ -101,12 +101,12 @@ def modify_job(job_id):
         job_details = job_service.get_job_details(job_id)
         
         if not job_details:
-            flash('工作订单不存在', 'error')
+            flash('Work order does not exist', 'error')
             return redirect(url_for('technician.current_jobs'))
         
         # 检查工作订单是否已完成
         if job_details.get('job_completed'):
-            flash('无法修改已完成的工作订单', 'warning')
+            flash('Cannot modify completed work order', 'warning')
             return redirect(url_for('technician.job_detail', job_id=job_id))
         
         return render_template('technician/modify_job.html',
@@ -114,7 +114,7 @@ def modify_job(job_id):
         
     except Exception as e:
         logger.error(f"加载工作订单修改页面失败 (ID: {job_id}): {e}")
-        flash('加载修改页面失败', 'error')
+        flash('Failed to load modification page', 'error')
         return redirect(url_for('technician.current_jobs'))
 
 
@@ -132,18 +132,18 @@ def add_service_to_job(job_id):
         
         # 验证输入
         if not service_id or not validate_positive_integer(service_id):
-            flash('请选择有效的服务', 'error')
+            flash('Please select a valid service', 'error')
             return redirect(url_for('technician.modify_job', job_id=job_id))
         
         if not quantity or not validate_positive_integer(quantity):
-            flash('请输入有效的数量', 'error')
+            flash('Please enter a valid quantity', 'error')
             return redirect(url_for('technician.modify_job', job_id=job_id))
         
         # 添加服务
         success, errors = job_service.add_service_to_job(job_id, service_id, quantity)
         
         if success:
-            flash('服务添加成功！', 'success')
+            flash('Service added successfully!', 'success')
         else:
             for error in errors:
                 flash(error, 'error')
@@ -152,7 +152,7 @@ def add_service_to_job(job_id):
         
     except Exception as e:
         logger.error(f"添加服务失败: {e}")
-        flash('添加服务失败，请稍后重试', 'error')
+        flash('Failed to add service, please try again later', 'error')
         return redirect(url_for('technician.modify_job', job_id=job_id))
 
 
@@ -170,18 +170,18 @@ def add_part_to_job(job_id):
         
         # 验证输入
         if not part_id or not validate_positive_integer(part_id):
-            flash('请选择有效的零件', 'error')
+            flash('Please select a valid part', 'error')
             return redirect(url_for('technician.modify_job', job_id=job_id))
         
         if not quantity or not validate_positive_integer(quantity):
-            flash('请输入有效的数量', 'error')
+            flash('Please enter a valid quantity', 'error')
             return redirect(url_for('technician.modify_job', job_id=job_id))
         
         # 添加零件
         success, errors = job_service.add_part_to_job(job_id, part_id, quantity)
         
         if success:
-            flash('零件添加成功！', 'success')
+            flash('Part added successfully!', 'success')
         else:
             for error in errors:
                 flash(error, 'error')
@@ -190,7 +190,7 @@ def add_part_to_job(job_id):
         
     except Exception as e:
         logger.error(f"添加零件失败: {e}")
-        flash('添加零件失败，请稍后重试', 'error')
+        flash('Failed to add part, please try again later', 'error')
         return redirect(url_for('technician.modify_job', job_id=job_id))
 
 
@@ -206,7 +206,7 @@ def complete_job(job_id):
         success, errors = job_service.mark_job_as_completed(job_id)
         
         if success:
-            flash('工作订单已标记为完成！', 'success')
+            flash('Work order marked as completed!', 'success')
             return redirect(url_for('technician.job_detail', job_id=job_id))
         else:
             for error in errors:
@@ -215,7 +215,7 @@ def complete_job(job_id):
         
     except Exception as e:
         logger.error(f"标记工作订单完成失败: {e}")
-        flash('标记完成失败，请稍后重试', 'error')
+        flash('Failed to mark as completed, please try again later', 'error')
         return redirect(url_for('technician.modify_job', job_id=job_id))
 
 
@@ -237,7 +237,7 @@ def new_job():
         
     except Exception as e:
         logger.error(f"加载新建工作订单页面失败: {e}")
-        flash('加载页面失败', 'error')
+        flash('Failed to load page', 'error')
         return redirect(url_for('technician.current_jobs'))
 
 
@@ -255,14 +255,14 @@ def create_job():
         
         # 验证输入
         if not customer_id or not validate_positive_integer(customer_id):
-            flash('请选择有效的客户', 'error')
+            flash('Please select a valid customer', 'error')
             customers = customer_service.get_all_customers()
             return render_template('technician/new_job.html',
                                  customers=customers,
                                  min_date=date.today().isoformat())
         
         if not job_date_str or not validate_date(job_date_str):
-            flash('请输入有效的工作日期', 'error')
+            flash('Please enter a valid work date', 'error')
             customers = customer_service.get_all_customers()
             return render_template('technician/new_job.html',
                                  customers=customers,
@@ -275,7 +275,7 @@ def create_job():
         success, errors, job = job_service.create_job(customer_id, job_date)
         
         if success:
-            flash('工作订单创建成功！', 'success')
+            flash('Work order created successfully!', 'success')
             return redirect(url_for('technician.modify_job', job_id=job.job_id))
         else:
             for error in errors:
@@ -287,7 +287,7 @@ def create_job():
         
     except Exception as e:
         logger.error(f"创建工作订单失败: {e}")
-        flash('创建工作订单失败，请稍后重试', 'error')
+        flash('Failed to create work order, please try again later', 'error')
         return redirect(url_for('technician.current_jobs'))
 
 
@@ -307,7 +307,7 @@ def services():
         
     except Exception as e:
         logger.error(f"获取服务列表失败: {e}")
-        flash('加载服务列表失败', 'error')
+        flash('Failed to load service list', 'error')
         return render_template('technician/services.html',
                              services=[])
 
@@ -328,7 +328,7 @@ def parts():
         
     except Exception as e:
         logger.error(f"获取零件列表失败: {e}")
-        flash('加载零件列表失败', 'error')
+        flash('Failed to load parts list', 'error')
         return render_template('technician/parts.html',
                              parts=[])
 
@@ -364,7 +364,7 @@ def dashboard():
         
     except Exception as e:
         logger.error(f"技术员仪表板加载失败: {e}")
-        flash('加载仪表板失败', 'error')
+        flash('Failed to load dashboard', 'error')
         return render_template('technician/dashboard.html',
                              job_stats={},
                              recent_jobs=[],
