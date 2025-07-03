@@ -42,7 +42,7 @@
 
 .navbar-nav .nav-link:hover {
   color: white !important;
-  background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .navbar-nav .nav-link.active {
@@ -71,7 +71,7 @@
 
 .breadcrumb-item a {
   color: var(--primary);
-  text-decoration: none;
+    text-decoration: none;
 }
 
 .breadcrumb-item a:hover {
@@ -94,7 +94,7 @@
   text-align: center;
   transition: var(--transition-all);
   position: relative;
-  overflow: hidden;
+    overflow: hidden;
 }
 
 .stat-card::before {
@@ -263,8 +263,8 @@
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .status-badge-success {
@@ -385,7 +385,7 @@
 .pagination-item.active {
   background-color: var(--primary);
   border-color: var(--primary);
-  color: white;
+    color: white;
 }
 
 .pagination-item:focus {
@@ -448,15 +448,15 @@
 
 /* Modals */
 .modal {
-  position: fixed;
-  top: 0;
-  left: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
   right: 0;
   bottom: 0;
   background-color: var(--bg-overlay);
-  display: flex;
+    display: flex;
   align-items: center;
-  justify-content: center;
+    justify-content: center;
   z-index: var(--z-index-modal);
   opacity: 0;
   visibility: hidden;

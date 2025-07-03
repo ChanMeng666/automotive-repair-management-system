@@ -5,7 +5,7 @@ Billing History & Overdue Bills - Administrator Portal
 
 {% block breadcrumb_items %}
     <li class="breadcrumb-item">
-        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('home') }}">Dashboard</a>
     </li>
     <li class="breadcrumb-item active">Overdue Bills</li>
 {% endblock %}
@@ -127,13 +127,13 @@ Billing History & Overdue Bills - Administrator Portal
                             <label class="form-label">Select Customer</label>
                             <select class="form-select" name="customer_choose_overduebill">
                                 <option value="">Show all bills...</option>
-                                {% for customer in customers %}
+                                    {% for customer in customers %}
                                     <option value="{{ customer.customer_id }} {{ customer.first_name }} {{ customer.family_name }}"
                                             {% if selected_customer and customer.customer_id == selected_customer.customer_id %}selected{% endif %}>
                                         {{ customer.first_name }} {{ customer.family_name }} (ID: {{ customer.customer_id }})
-                                    </option>
-                                {% endfor %}
-                            </select>
+                                        </option>
+                                    {% endfor %}
+                                </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button class="btn btn-primary w-100" type="submit">
@@ -218,15 +218,15 @@ Billing History & Overdue Bills - Administrator Portal
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-light">
-                                    <tr>
-                                        <th>Job ID</th>
+                                <tr>
+                                    <th>Job ID</th>
                                         <th>Customer</th>
-                                        <th>Job Date</th>
+                                    <th>Job Date</th>
                                         <th>Amount</th>
                                         <th>Job Status</th>
-                                        <th>Payment Status</th>
+                                    <th>Payment Status</th>
                                         <th>Actions</th>
-                                    </tr>
+                                </tr>
                                 </thead>
                                 <tbody>
                                     {% for job in jobs %}
@@ -297,7 +297,7 @@ Billing History & Overdue Bills - Administrator Portal
                                                         {% endif %}
                                                     </div>
                                                 </td>
-                                            </tr>
+                                                </tr>
                                             {% endif %}
                                         {% else %}
                                             <!-- Display jobs for all customers -->
@@ -407,7 +407,7 @@ Billing History & Overdue Bills - Administrator Portal
                                 <i class="bi bi-plus-circle me-1"></i>
                                 Schedule New Job
                             </a>
-                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>

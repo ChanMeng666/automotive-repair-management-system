@@ -5,7 +5,7 @@ Billing Management - Administrator Portal
 
 {% block breadcrumb_items %}
     <li class="breadcrumb-item">
-        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('home') }}">Dashboard</a>
     </li>
     <li class="breadcrumb-item active">Billing Management</li>
 {% endblock %}
@@ -121,20 +121,20 @@ Billing Management - Administrator Portal
                             <label class="form-label">Select Customer</label>
                             <select class="form-select" name="selected_customer">
                                 <option value="">Show all customers...</option>
-                                {% for customer in customers %}
+                                    {% for customer in customers %}
                                     <option value="{{ customer.full_name if customer.full_name.strip() else 'none' }}">
                                         {{ customer.full_name if customer.full_name.strip() else 'Unnamed Customer' }}
                                     </option>
-                                {% endfor %}
-                            </select>
+                                    {% endfor %}
+                                </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button class="btn btn-primary w-100" type="submit">
                                 <i class="bi bi-search me-1"></i>
                                 Filter Bills
                             </button>
-                        </div>
-                    </form>
+                            </div>
+                        </form>
                 </div>
             </div>
         </div>
@@ -156,18 +156,18 @@ Billing Management - Administrator Portal
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead class="table-light">
-                                        <tr>
+                                    <tr>
                                             <th width="50">Select</th>
                                             <th>Customer</th>
                                             <th>Job Details</th>
                                             <th>Amount</th>
                                             <th>Status</th>
                                             <th>Actions</th>
-                                        </tr>
+                                    </tr>
                                     </thead>
                                     <tbody>
-                                        {% for customer in customer_info %}
-                                        <tr>
+                                    {% for customer in customer_info %}
+                                    <tr>
                                             <td>
                                                 <input type="radio" name="bill_select" value="{{ customer.customer_id }}" class="form-check-input">
                                             </td>
@@ -238,8 +238,8 @@ Billing Management - Administrator Portal
                                                     {% endif %}
                                                 </div>
                                             </td>
-                                        </tr>
-                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -266,7 +266,7 @@ Billing Management - Administrator Portal
                                 <i class="bi bi-plus-circle me-1"></i>
                                 Schedule New Job
                             </a>
-                        </div>
+                    </div>
                     {% endif %}
                 </div>
             </div>

@@ -112,12 +112,12 @@
                     <i class="bi bi-check-square me-2"></i>Select All
                 </button>
             </div>
-        </div>
+              </div>
         
         {% if data %}
-            <div class="table-responsive">
+                <div class="table-responsive">
                 <table class="table" id="jobsTable">
-                    <thead>
+                      <thead>
                         <tr>
                             <th width="50">
                                 <div class="form-check">
@@ -125,13 +125,13 @@
                                 </div>
                             </th>
                             <th>Customer</th>
-                            <th>Job ID</th>
+                          <th>Job ID</th>
                             <th>Date</th>
                             <th>Amount</th>
                             <th>Payment</th>
                             <th>Actions</th>
                         </tr>
-                    </thead>
+                      </thead>
                     <tbody>
                         {% for record in data %}
                         <tr class="job-row" data-job-id="{{ record.job_id }}">
@@ -197,10 +197,10 @@
                                     {% endif %}
                                 </div>
                             </td>
-                        </tr>
+                          </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
+                      </tbody>
+                    </table>
             </div>
             
             <!-- Pagination -->
@@ -238,16 +238,16 @@
             </div>
         {% endif %}
     </div>
-</form>
+                  </form>
 
 <!-- Flash Message Display -->
-{% if message %}
+                  {% if message %}
     <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
         <i class="bi bi-exclamation-triangle me-2"></i>
-        {{ message }}
+                      {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-{% endif %}
+                    </div>
+                  {% endif %}
 
 <!-- Job Details Modal -->
 <div class="modal fade" id="jobDetailsModal" tabindex="-1">
@@ -263,15 +263,15 @@
                 <div class="text-center">
                     <div class="loading-spinner"></div>
                     <p class="mt-2">Loading job details...</p>
-                </div>
+              </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <a href="#" class="btn btn-primary" id="editJobBtn">Edit Job</a>
-            </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}

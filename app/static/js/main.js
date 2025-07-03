@@ -102,7 +102,7 @@ const AutoRepairApp = {
     validateForm(form) {
         const inputs = form.querySelectorAll('[required]');
         let isValid = true;
-        
+
         inputs.forEach(input => {
             if (!input.value.trim()) {
                 this.showFieldError(input, 'This field is required');
@@ -122,7 +122,7 @@ const AutoRepairApp = {
                 }
             }
         });
-        
+
         return isValid;
     },
     
@@ -198,7 +198,7 @@ const AutoRepairApp = {
             this.hideSearchResults();
             return;
         }
-        
+
         try {
             // Show loading state
             this.showSearchLoading();
@@ -290,8 +290,8 @@ const AutoRepairApp = {
                 <div class="p-3 text-center">
                     <div class="spinner-border spinner-border-sm me-2"></div>
                     Searching...
-                </div>
-            `;
+            </div>
+        `;
             dropdown.style.display = 'block';
         }
     },
