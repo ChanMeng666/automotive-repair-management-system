@@ -1,188 +1,457 @@
 {% extends "base.html" %}
 {% block title %}
-Administrator Home
+Customer Management - Administrator Portal
 {% endblock %}
+
 {% block content %}
-<div class="container">
-    <nav>
-        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-link" href="{{ url_for('home') }}">Welcome Home</a>
-            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false" disabled>Technician Home</button>
-            <a class="nav-link active" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="true">Administrator Home</a>
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-people-fill text-primary me-2"></i>
+                        Customer Management
+                    </h1>
+                    <p class="text-muted mb-0">Manage customers, schedule jobs, and track work orders</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                        <i class="bi bi-person-plus me-1"></i>
+                        Add Customer
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                        <i class="bi bi-gear-fill me-1"></i>
+                        Add Service
+                    </button>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addPartModal">
+                        <i class="bi bi-puzzle-fill me-1"></i>
+                        Add Part
+                    </button>
+                </div>
+            </div>
         </div>
-    </nav>
-    <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade show active" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
-            <div class="container">
-                <nav>
-                    <div class="nav nav-tabs" id="administrator-tab" role="tablist">
-                        <button class="nav-link active" id="administrator-home-tab" data-bs-toggle="tab" data-bs-target="#administrator-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Customer List & Schedule Job</button>
-                        <button class="nav-link" id="administrator-profile-tab" data-bs-toggle="tab" data-bs-target="#administrator-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Add Customer</button>
-                        <button class="nav-link" id="administrator-contact-tab" data-bs-toggle="tab" data-bs-target="#administrator-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Add Service</button>
-                        <button class="nav-link" id="administrator-disabled-tab" data-bs-toggle="tab" data-bs-target="#administrator-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false">Add Part</button>
-                        <a class="nav-link" href="{{ url_for('administrator_pay_bills') }}">Unpaid & Pay Bills</a>
-                        <a class="nav-link" href="{{ url_for('administrator_overdue_bills') }}">Billing History & Overdue Bills</a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-people-fill text-primary fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Total Customers</div>
+                            <div class="h4 mb-0">{{ customers|length }}</div>
+                        </div>
                     </div>
-                </nav>
-                <div class="tab-content" id="administrator-tabContent">
-                    <div class="tab-pane fade show active" id="administrator-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
-                        <form method="post" action="/administrator_customer_list">
-                            <div class="input-group">
-                                <select class="form-select" name="customer_search" id="customer_search">
-                                    <option selected>Choose...</option>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-briefcase-fill text-success fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Total Jobs</div>
+                            <div class="h4 mb-0">{{ jobs|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-gear-fill text-info fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Available Services</div>
+                            <div class="h4 mb-0">{{ services|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-puzzle-fill text-warning fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Available Parts</div>
+                            <div class="h4 mb-0">{{ parts|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer List and Schedule Job Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people me-2"></i>
+                        Customer List & Job Scheduling
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <form method="post" action="/administrator_customer_list" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Search By</label>
+                                <select class="form-select" name="customer_search">
+                                    <option value="">Select field...</option>
                                     <option value="first_name">First Name</option>
                                     <option value="family_name">Family Name</option>
                                 </select>
-                                <input type="text" class="form-control" name="search_text" placeholder="Support fuzzy search...">
-                                <button class="btn btn-outline-primary" type="submit">Search</button>
                             </div>
-                        </form>
-                        <div class="table-responsive">
-                            <form method="post" action="/schedule_job">
-                                <table class="table table-primary table-hover">
-                                    <thead>
+                            <div class="col-md-6">
+                                <label class="form-label">Search Text</label>
+                                <input type="text" class="form-control" name="search_text" placeholder="Enter search term...">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-outline-primary w-100" type="submit">
+                                    <i class="bi bi-search me-1"></i>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Customer List -->
+                    <div class="table-responsive">
+                        <form method="post" action="/schedule_job">
+                            <table class="table table-hover">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>Select</th>
+                                        <th width="50">Select</th>
                                         <th>Customer ID</th>
-                                        <th>First Name</th>
-                                        <th>Family Name</th>
+                                        <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
+                                        <th>Actions</th>
                                     </tr>
-                                    </thead>
-                                    <tbody class="table-group-divider">
-                                        {% for customer in customers %}
-                                            <tr>
-                                              <td><input type="radio" name="customer_select" id="customer_select" value="{{ customer.customer_id }}"></td>
-                                              <td>{{ customer.customer_id }}</td>
-                                              <td>{{ customer.first_name }}</td>
-                                              <td>{{ customer.family_name }}</td>
-                                              <td>{{ customer.email }}</td>
-                                              <td>{{ customer.phone }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                <input type="date" id="job_date" name="job_date" min="{{ today }}" required>
-                                <button type="submit" class="btn btn-outline-success">Schedule Job</button>
-                            </form>
-                        </div>
-
-                        <div class="table-responsive">
-                          <table class="table table-info table-hover">
-                            <thead>
-                              <tr>
-                                <th>Customer ID</th>
-                                <th>First Name</th>
-                                <th>Family Name</th>
-                                <th>Job ID</th>
-                                <th>Job Date</th>
-                                <th>Total Cost</th>
-                                <th>Completed Status</th>
-                                <th>Payment Status</th>
-                              </tr>
-                            </thead>
-                            <tbody class="table-group-divider">
-                              {% for job in jobs %}
-                                <tr>
-                                    <td>{{ job.customer_id }}</td>
-                                    <td>{{ job.first_name }}</td>
-                                    <td>{{ job.family_name }}</td>
-                                    <td>{{ job.job_id }}</td>
-                                    <td>{{ job.job_date }}</td>
-                                    <td>{{ job.total_cost }}</td>
-                                    <td>{% if job.completed == 1 %} YES {% else %} NO {% endif %}</td>
-                                    <td>{% if job.paid == 1 %} YES {% else %} NO {% endif %}</td>
-                                </tr>
-                              {% endfor %}
-                            </tbody>
-                          </table>
-                        </div>
-
-                    </div>
-
-                    <div class="tab-pane fade" id="administrator-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-                        <form action="/add_customer" method="post" class="input-group input-group-sm mb-2">
-                            <span class="input-group-text">First Name</span>
-                            <input type="text" class="form-control" name="first_name">
-                            <span class="input-group-text">Family Name</span>
-                            <input type="text" class="form-control" name="family_name" REQUIRED>
-                            <span class="input-group-text">Email</span>
-                            <input type="text" class="form-control" name="email" REQUIRED>
-                            <span class="input-group-text">Phone</span>
-                            <input type="text" class="form-control" name="phone" REQUIRED>
-                            <button type="submit" class="btn btn-outline-success">Add</button>
-                        </form>
-                    </div>
-
-                    <div class="tab-pane fade" id="administrator-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
-                        <form method="post" action="/add_service">
-                            <div class="input-group input-group-sm mb-2">
-                                <span class="input-group-text">Service Name</span>
-                                <input type="text" class="form-control" name="service_name" required>
-                                <span class="input-group-text">Service Cost</span>
-                                <input type="number" class="form-control" name="service_cost" step="0.01" min="0" required>
-                                <span class="input-group-text">$</span>
-                                <button type="submit" class="btn btn-outline-success">Add</button>
-                            </div>
-                        </form>
-                        <div class="table-responsive">
-                            <table class="table table-warning table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Service ID</th>
-                                    <th>Service Name</th>
-                                    <th>Service Cost</th>
-                                </tr>
                                 </thead>
-                                <tbody class="table-group-divider">
-                                {% for service in services %}
-                                <tr>
-                                    <td>{{ service.service_id }}</td>
-                                    <td>{{ service.service_name }}</td>
-                                    <td>{{ service.cost }}</td>
-                                </tr>
-                                {% endfor %}
+                                <tbody>
+                                    {% for customer in customers %}
+                                    <tr>
+                                        <td>
+                                            <input type="radio" name="customer_select" value="{{ customer.customer_id }}" class="form-check-input">
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">#{{ customer.customer_id }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-person-circle text-primary me-2"></i>
+                                                <strong>{{ customer.first_name }} {{ customer.family_name }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-envelope text-muted me-1"></i>
+                                            {{ customer.email }}
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-phone text-muted me-1"></i>
+                                            {{ customer.phone }}
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="administrator-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">
-                        <form action="{{url_for('add_part')}}" method="post">
-                            <div class="input-group input-group-sm mb-2">
-                                <span class="input-group-text">Part Name</span>
-                                <input type="text" class="form-control" name="part_name" required>
-                                <span class="input-group-text">Part Cost</span>
-                                <input type="number" class="form-control" name="part_cost" step="0.01" min="0" required>
-                                <span class="input-group-text">$</span>
-                                <button type="submit" class="btn btn-outline-success">Add</button>
+                            
+                            <!-- Schedule Job Form -->
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Job Date</label>
+                                    <input type="date" class="form-control" name="job_date" min="{{ today }}" required>
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-calendar-plus me-1"></i>
+                                        Schedule Job
+                                    </button>
+                                </div>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-warning table-hover">
-                                <thead>
+    <!-- Jobs Overview -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-briefcase me-2"></i>
+                        Jobs Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Part ID</th>
-                                    <th>Part Name</th>
-                                    <th>Part Cost</th>
+                                    <th>Job ID</th>
+                                    <th>Customer</th>
+                                    <th>Job Date</th>
+                                    <th>Total Cost</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Actions</th>
                                 </tr>
-                                </thead>
-                                <tbody class="table-group-divider">
-                                {% for part in parts %}
-                                    <tr>
-                                        <td>{{ part.part_id }}</td>
-                                        <td>{{ part.part_name }}</td>
-                                        <td>{{ part.cost }}</td>
-                                    </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">#{{ job.job_id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle text-primary me-2"></i>
+                                            <div>
+                                                <strong>{{ job.first_name }} {{ job.family_name }}</strong>
+                                                <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar-event text-muted me-1"></i>
+                                        {{ job.job_date }}
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">${{ "%.2f"|format(job.total_cost|float) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if job.completed == 1 %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Completed
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-clock me-1"></i>
+                                                In Progress
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if job.paid == 1 %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-credit-card me-1"></i>
+                                                Paid
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                Unpaid
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('modifyjob', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                                 {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Add New Customer
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/add_customer" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="first_name" placeholder="Enter first name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Family Name *</label>
+                            <input type="text" class="form-control" name="family_name" required placeholder="Enter family name">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" name="email" required placeholder="Enter email address">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Phone *</label>
+                            <input type="tel" class="form-control" name="phone" required placeholder="Enter phone number">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Add Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Service Modal -->
+<div class="modal fade" id="addServiceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-gear-fill me-2"></i>
+                    Add New Service
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/add_service" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Service Name *</label>
+                            <input type="text" class="form-control" name="service_name" required placeholder="Enter service name">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Service Cost *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" name="service_cost" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Services -->
+                    <div class="mt-4">
+                        <h6 class="text-muted">Current Services</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in services %}
+                                    <tr>
+                                        <td>{{ service.service_name }}</td>
+                                        <td>${{ "%.2f"|format(service.cost|float) }}</td>
+                                    </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Add Service
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Part Modal -->
+<div class="modal fade" id="addPartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-puzzle-fill me-2"></i>
+                    Add New Part
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            <form action="/add_part" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Part Name *</label>
+                            <input type="text" class="form-control" name="part_name" required placeholder="Enter part name">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Part Cost *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" name="part_cost" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Parts -->
+                    <div class="mt-4">
+                        <h6 class="text-muted">Current Parts</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Part</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for part in parts %}
+                                    <tr>
+                                        <td>{{ part.part_name }}</td>
+                                        <td>${{ "%.2f"|format(part.cost|float) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Add Part
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

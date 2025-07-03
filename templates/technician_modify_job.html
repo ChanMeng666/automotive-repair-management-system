@@ -1,121 +1,123 @@
 {% extends "base.html" %}
 {% block title %}
-Modify Job
+Modify Job #{{ data.job_id }} - Selwyn Panel Beaters
 {% endblock %}
+
 {% block content %}
-<div class="container">
-    <nav>
-        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-link" href="{{ url_for('home') }}">Welcome Home</a>
-            <button class="nav-link active" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Technician Home</button>
-            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false" disabled>Administrator Home</button>
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-wrench-adjustable text-primary me-2"></i>
+                        Modify Job #{{ data.job_id }}
+                    </h1>
+                    <p class="text-muted mb-0">Update job details, add services and parts</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('currentjoblist') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Back to Jobs
+                    </a>
+                </div>
+            </div>
         </div>
-    </nav>
-    <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade show active" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+    </div>
 
-            <div class="container">
-                <nav>
-                    <div class="nav nav-tabs" id="technician-tab" role="tablist">
-                        <a class="nav-link" href="{{ url_for('currentjoblist') }}">Current Jobs</a>
-                        <button class="nav-link active" id="technician-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="true">Modify Job</button>
-                    </div>
-                </nav>
-                <div class="tab-content" id="technician-tabContent">
-                    <div class="tab-pane fade show active" id="technician-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-                        <div class="table-responsive">
-                            <table class="table table-success table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Customer ID</th>
-                                    <th>First Name</th>
-                                    <th>Family Name</th>
-                                    <th>Job ID</th>
-                                    <th>Job Date</th>
-                                    <th>Total Cost</th>
-                                    <th>Completed Status</th>
-                                    <th>Payment Status</th>
-                                </tr>
-                                </thead>
-                                <tbody class="table-group-divider">
-                                <tr>
-                                    <td>{{ data.customer_id }}</td>
-                                    <td>{{ data.first_name }}</td>
-                                    <td>{{ data.family_name }}</td>
-                                    <td>{{ data.job_id }}</td>
-                                    <td>{{ data.job_date }}</td>
-                                    <td>{{ data.total_cost }}</td>
-                                    <td>{{ 'YES' if data.completed else 'NO' }}</td>
-                                    <td>{{ 'YES' if data.paid else 'NO' }}</td>
-                                </tr>
-                                </tbody>
-                            </table>
+    <!-- Job Status Alert -->
+    {% if data.completed %}
+    <div class="alert alert-success border-0 shadow-sm mb-4">
+        <div class="d-flex">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <div>
+                <strong>Job Completed</strong>
+                <p class="mb-0">This job has been marked as completed. No further modifications are allowed.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Customer & Job Information Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-circle me-2"></i>
+                        Customer & Job Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Customer</label>
+                                <div class="info-value">
+                                    <i class="bi bi-person me-2 text-primary"></i>
+                                    {{ data.first_name }} {{ data.family_name }}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">Customer ID</label>
+                                <div class="info-value">
+                                    <i class="bi bi-hash me-2 text-secondary"></i>
+                                    {{ data.customer_id }}
+                                </div>
+                            </div>
                         </div>
-
-                        <div class="container">
-
-                            <nav>
-                                <div class="nav nav-tabs" id="technician_modify_job-tab" role="tablist">
-                                    <button class="nav-link active" id="technician_modify_job-home-tab" data-bs-toggle="tab" data-bs-target="#technician_modify_job-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Add Service</button>
-                                    <button class="nav-link" id="technician_modify_job-profile-tab" data-bs-toggle="tab" data-bs-target="#technician_modify_job-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Add Part</button>
-                                    <button class="nav-link" id="technician_modify_job-contact-tab" data-bs-toggle="tab" data-bs-target="#technician_modify_job-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Mark as Completed</button>
-
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Job Date</label>
+                                <div class="info-value">
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                    {{ data.job_date }}
                                 </div>
-                            </nav>
-                            <div class="tab-content" id="technician_modify_job-tabContent">
-                                <div class="tab-pane fade show active" id="technician_modify_job-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
-                                    <form method="POST" action="{{ url_for('add_service_to_job', job_id=data.job_id) }}">
-                                        <div class="input-group">
-                                            <select class="form-select" name="service_id" aria-label="optional_services" required>
-                                                <option selected>Optional Services...</option>
-                                                {% for service in all_services %}
-                                                    <option value="{{ service.service_id }}">{{ service.service_name }} (Cost: ${{ service.cost }})</option>
-                                                {% endfor %}
-                                            </select>
-                                            <span class="input-group-text">Quantity</span>
-                                            <input  type="number" name="service_qty" aria-label="service_quantity" class="form-control" min="1" required>
-                                            <button type="submit" class="btn btn-outline-success" {% if job_completed %} disabled{% endif %}>Add</button>
-                                        </div>
-                                    </form>
-                                    <select class="form-select" size="5" aria-label="added_services">
-                                        <option selected>Added Services...</option>
-                                        {% for service in services %}
-                                            <option value="{{ service.service_id }}">{{ service.service_name }} (Quantity: {{ service.qty }})</option>
-                                        {% endfor %}
-                                    </select>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">Total Cost</label>
+                                <div class="info-value">
+                                    <i class="bi bi-currency-dollar me-2 text-success"></i>
+                                    ${{ "%.2f"|format(data.total_cost|float) }}
                                 </div>
-
-                                <div class="tab-pane fade" id="technician_modify_job-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-                                    <form method="POST" action="{{ url_for('add_part_to_job', job_id=data.job_id) }}">
-                                        <div class="input-group">
-                                            <select class="form-select" name="part_id" aria-label="optional_parts" required>
-                                                <option selected>Optional Parts...</option>
-                                                {% for part in all_parts %}
-                                                    <option value="{{ part.part_id }}">{{ part.part_name }} (Cost: ${{ part.cost }})</option>
-                                                {% endfor %}
-                                            </select>
-                                            <span class="input-group-text">Quantity</span>
-                                            <input  type="number" name="part_qty" aria-label="part_quantity" class="form-control" min="1" required>
-                                            <button type="submit" class="btn btn-outline-success" {% if job_completed %} disabled{% endif %}>Add</button>
-                                        </div>
-                                    </form>
-                                    <select class="form-select" size="5" aria-label="added_parts">
-                                        <option selected>Added Parts...</option>
-                                        {% for part in parts %}
-                                            <option value="{{ part.part_id }}">{{ part.part_name }} (Quantity: {{ part.qty }})</option>
-                                        {% endfor %}
-                                    </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Completion Status</label>
+                                <div class="info-value">
+                                    {% if data.completed %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Completed
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock me-1"></i>
+                                            In Progress
+                                        </span>
+                                    {% endif %}
                                 </div>
-                                <div class="tab-pane fade" id="technician_modify_job-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
-                                    <div class="card">
-                                      <h5 class="card-header">Please Note</h5>
-                                      <div class="card-body">
-                                        <h5 class="card-title">Once the job is marked complete, it cannot be modified.</h5>
-                                        <form action="{{ url_for('mark_job_as_completed', job_id=data['job_id']) }}" method="POST">
-                                            <button type="submit" class="btn btn-dark">Still marked as completed</button>
-                                        </form>
-                                      </div>
-                                    </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Payment Status</label>
+                                <div class="info-value">
+                                    {% if data.paid %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-credit-card me-1"></i>
+                                            Paid
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Unpaid
+                                        </span>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -124,5 +126,250 @@ Modify Job
             </div>
         </div>
     </div>
+
+    <!-- Services and Parts Section -->
+    <div class="row">
+        <!-- Add Service Card -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear me-2"></i>
+                        Services Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add Service Form -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add New Service
+                        </h6>
+                        <form method="POST" action="{{ url_for('add_service_to_job', job_id=data.job_id) }}">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Service Type</label>
+                                    <select class="form-select" name="service_id" required {% if job_completed %}disabled{% endif %}>
+                                        <option value="">Select a service...</option>
+                                        {% for service in all_services %}
+                                            <option value="{{ service.service_id }}">
+                                                {{ service.service_name }} - ${{ "%.2f"|format(service.cost|float) }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" name="service_qty" class="form-control" min="1" value="1" required {% if job_completed %}disabled{% endif %}>
+                                </div>
+                                <div class="col-6 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-info w-100" {% if job_completed %}disabled{% endif %}>
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Add Service
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Current Services -->
+                    <div>
+                        <h6 class="text-secondary mb-3">
+                            <i class="bi bi-list-check me-2"></i>
+                            Current Services
+                        </h6>
+                        {% if services %}
+                            <div class="list-group">
+                                {% for service in services %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ service.service_name }}</h6>
+                                            <small class="text-muted">Quantity: {{ service.qty }}</small>
+                                        </div>
+                                        <span class="badge bg-info rounded-pill">{{ service.qty }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-gear text-muted" style="font-size: 2rem;"></i>
+                                <p class="text-muted mt-2">No services added yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Parts Card -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-puzzle me-2"></i>
+                        Parts Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Add Part Form -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add New Part
+                        </h6>
+                        <form method="POST" action="{{ url_for('add_part_to_job', job_id=data.job_id) }}">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Part Type</label>
+                                    <select class="form-select" name="part_id" required {% if job_completed %}disabled{% endif %}>
+                                        <option value="">Select a part...</option>
+                                        {% for part in all_parts %}
+                                            <option value="{{ part.part_id }}">
+                                                {{ part.part_name }} - ${{ "%.2f"|format(part.cost|float) }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" name="part_qty" class="form-control" min="1" value="1" required {% if job_completed %}disabled{% endif %}>
+                                </div>
+                                <div class="col-6 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-success w-100" {% if job_completed %}disabled{% endif %}>
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Add Part
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Current Parts -->
+                    <div>
+                        <h6 class="text-secondary mb-3">
+                            <i class="bi bi-list-check me-2"></i>
+                            Current Parts
+                        </h6>
+                        {% if parts %}
+                            <div class="list-group">
+                                {% for part in parts %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ part.part_name }}</h6>
+                                            <small class="text-muted">Quantity: {{ part.qty }}</small>
+                                        </div>
+                                        <span class="badge bg-success rounded-pill">{{ part.qty }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-puzzle text-muted" style="font-size: 2rem;"></i>
+                                <p class="text-muted mt-2">No parts added yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Job Section -->
+    {% if not data.completed %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Complete Job
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="alert alert-warning border-0 mb-3">
+                                <div class="d-flex">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <div>
+                                        <strong>Important Notice</strong>
+                                        <p class="mb-0">Once this job is marked as completed, no further modifications can be made. Please ensure all services and parts have been added before completing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-0">
+                                Current total cost: <strong>${{ "%.2f"|format(data.total_cost|float) }}</strong>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <form action="{{ url_for('mark_job_as_completed', job_id=data['job_id']) }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-warning btn-lg" onclick="return confirm('Are you sure you want to mark this job as completed? This action cannot be undone.')">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Mark as Completed
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<style>
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--bs-secondary);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--bs-dark);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.list-group-item {
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: 0.375rem !important;
+    margin-bottom: 0.5rem;
+}
+
+.list-group-item:last-child {
+    margin-bottom: 0;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.alert {
+    border-left: 4px solid currentColor;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+</style>
 {% endblock %}

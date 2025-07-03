@@ -1,107 +1,456 @@
 {% extends "base.html" %}
 {% block title %}
-Billing History & Overdue Bills
+Billing History & Overdue Bills - Administrator Portal
 {% endblock %}
-{% block content %}
-<div class="container">
-    <nav>
-        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-link" href="{{ url_for('home') }}">Welcome Home</a>
-            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false" disabled>Technician Home</button>
-            <a class="nav-link active" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="true">Administrator Home</a>
-        </div>
-    </nav>
-    <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade show active" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
-            <div class="container">
-                <nav>
-                    <div class="nav nav-tabs" id="administrator-tab" role="tablist">
-                        <a class="nav-link" href="{{ url_for('administrator_customer_list') }}">Customer List & Schedule Job</a>
-                        <a class="nav-link" href="{{ url_for('administrator_customer_list') }}">Add Customer</a>
-                        <a class="nav-link" href="{{ url_for('administrator_customer_list') }}">Add Service</a>
-                        <a class="nav-link" href="{{ url_for('administrator_customer_list') }}">Add Part</a>
-                        <a class="nav-link" href="{{ url_for('administrator_pay_bills') }}">Unpaid & Pay Bills</a>
-                        <button class="nav-link active" id="administrator-overduebills-tab" data-bs-toggle="tab" data-bs-target="#administrator-overduebills" type="button" role="tab" aria-controls="nav-disabled" aria-selected="true">Billing History & Overdue Bills</button>
-                    </div>
-                </nav>
-                <div class="tab-content" id="administrator-tabContent">
 
-                    <div class="tab-pane fade show active" id="administrator-overduebills" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">
-                        <form method="POST" action="/administrator_overdue_bills">
-                            <div class="input-group">
-                                <select class="form-select" id="customer_choose_overduebill" name="customer_choose_overduebill">
-                                    <option  selected>Show all bills...</option>
-                                    {% for customer in customers %}
-                                        <option value="{{ customer.customer_id }} {{ customer.first_name }} {{ customer.family_name }}" {% if customer.customer_id == selected_customer.customer_id %}selected{% endif %}>
-                                            {{ customer.first_name }} {{ customer.family_name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <button class="btn btn-outline-primary" type="submit">Choose</button>
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-clock-history text-primary me-2"></i>
+                        Billing History & Overdue Bills
+                    </h1>
+                    <p class="text-muted mb-0">View billing history and manage overdue payments</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('administrator_customer_list') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-people me-1"></i>
+                        Customer Management
+                    </a>
+                    <a href="{{ url_for('administrator_pay_bills') }}" class="btn btn-outline-success">
+                        <i class="bi bi-credit-card me-1"></i>
+                        Process Payments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Overview Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Overdue Bills</div>
+                            <div class="h4 mb-0">
+                                {{ jobs|selectattr('overdue')|list|length if jobs else 0 }}
                             </div>
-                        </form>
-                        {% if selected_customer %}
-                            <div class="card">
-                                <div class="card-header">Customer Details</div>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item">Customer ID: {{ selected_customer.customer_id }}</li>
-                                    <li class="list-group-item">First Name: {{ selected_customer.first_name }}</li>
-                                    <li class="list-group-item">Family Name: {{ selected_customer.family_name }}</li>
-                                    <li class="list-group-item">Email: {{ selected_customer.email }}</li>
-                                    <li class="list-group-item">Phone: {{ selected_customer.phone }}</li>
-                                </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-file-text-fill text-info fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Total Bills</div>
+                            <div class="h4 mb-0">{{ jobs|length if jobs else 0 }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Paid Bills</div>
+                            <div class="h4 mb-0">
+                                {{ jobs|selectattr('paid')|list|length if jobs else 0 }}
                             </div>
-                        {% endif %}
-                        <div class="table-responsive">
-                            <table class="table table-success table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Customer ID</th>
-                                    <th>First Name</th>
-                                    <th>Family Name</th>
-                                    <th>Job ID</th>
-                                    <th>Job Date</th>
-                                    <th>Total Cost</th>
-                                    <th>Completed Status</th>
-                                    <th>Payment Status</th>
-                                </tr>
-                                </thead>
-                                <tbody class="table-group-divider">
-                                    {% for job in jobs %}
-                                        {% if selected_customer %}
-                                            {% if job.customer_id == selected_customer.customer_id %}
-                                                <tr class="{% if job.overdue %}table-danger{% elif job.paid == 1 %}table-secondary{% endif %}">
-                                                    <td> {{ job.customer_id }}</td>
-                                                    <td> {{ job.first_name }}</td>
-                                                    <td> {{ job.family_name }}</td>
-                                                    <td> {{ job.job_id }}</td>
-                                                    <td> {{ job.job_date }}</td>
-                                                    <td> {{ job.total_cost }}</td>
-                                                    <td> {{ 'YES' if job.completed else 'NO' }}</td>
-                                                    <td> {{ 'YES' if job.paid else 'NO' }}</td>
-                                                </tr>
-                                            {% endif %}
-                                        {% else %}
-                                            <!-- Display jobs for all customers when 'Choose...' option is selected -->
-                                            <tr class="{% if job.overdue %}table-danger{% elif job.paid == 1 %}table-secondary{% endif %}">
-                                                <td> {{ job.customer_id }}</td>
-                                                <td> {{ job.first_name }}</td>
-                                                <td> {{ job.family_name }}</td>
-                                                <td> {{ job.job_id }}</td>
-                                                <td> {{ job.job_date }}</td>
-                                                <td> {{ job.total_cost }}</td>
-                                                <td> {{ 'YES' if job.completed else 'NO' }}</td>
-                                                <td> {{ 'YES' if job.paid else 'NO' }}</td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-currency-dollar text-success fs-1"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Total Revenue</div>
+                            <div class="h4 mb-0">
+                                {% if jobs %}
+                                    ${{ "%.2f"|format(jobs|selectattr('paid')|sum(attribute='total_cost')|float) }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Customer Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-funnel me-2"></i>
+                        Filter Bills by Customer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/administrator_overdue_bills" class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Select Customer</label>
+                            <select class="form-select" name="customer_choose_overduebill">
+                                <option value="">Show all bills...</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.customer_id }} {{ customer.first_name }} {{ customer.family_name }}"
+                                            {% if selected_customer and customer.customer_id == selected_customer.customer_id %}selected{% endif %}>
+                                        {{ customer.first_name }} {{ customer.family_name }} (ID: {{ customer.customer_id }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" type="submit">
+                                <i class="bi bi-search me-1"></i>
+                                Apply Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Customer Details -->
+    {% if selected_customer %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Customer Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Customer Name</label>
+                                <div class="info-value">
+                                    <i class="bi bi-person me-2 text-primary"></i>
+                                    {{ selected_customer.first_name }} {{ selected_customer.family_name }}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">Customer ID</label>
+                                <div class="info-value">
+                                    <i class="bi bi-hash me-2 text-secondary"></i>
+                                    {{ selected_customer.customer_id }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label">Email</label>
+                                <div class="info-value">
+                                    <i class="bi bi-envelope me-2 text-primary"></i>
+                                    {{ selected_customer.email }}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">Phone</label>
+                                <div class="info-value">
+                                    <i class="bi bi-phone me-2 text-primary"></i>
+                                    {{ selected_customer.phone }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bills Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-receipt me-2"></i>
+                        {% if selected_customer %}
+                            Bills for {{ selected_customer.first_name }} {{ selected_customer.family_name }}
+                        {% else %}
+                            All Bills
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if jobs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Job ID</th>
+                                        <th>Customer</th>
+                                        <th>Job Date</th>
+                                        <th>Amount</th>
+                                        <th>Job Status</th>
+                                        <th>Payment Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in jobs %}
+                                        {% if selected_customer %}
+                                            {% if job.customer_id == selected_customer.customer_id %}
+                                            <tr class="{% if job.overdue %}table-warning{% elif job.paid == 1 %}table-light{% endif %}">
+                                                <td>
+                                                    <span class="badge bg-primary">#{{ job.job_id }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                                        <div>
+                                                            <strong>{{ job.first_name }} {{ job.family_name }}</strong>
+                                                            <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <i class="bi bi-calendar-event text-muted me-1"></i>
+                                                    {{ job.job_date }}
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-success">${{ "%.2f"|format(job.total_cost|float) }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if job.completed %}
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-check-circle me-1"></i>
+                                                            Completed
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            In Progress
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if job.paid %}
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-credit-card me-1"></i>
+                                                            Paid
+                                                        </span>
+                                                    {% else %}
+                                                        {% if job.overdue %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                Overdue
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                Pending
+                                                            </span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex gap-2">
+                                                        <a href="{{ url_for('modifyjob', job_id=job.job_id) }}" class="btn btn-sm btn-outline-info">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        {% if not job.paid %}
+                                                            <a href="{{ url_for('administrator_pay_bills') }}" class="btn btn-sm btn-outline-success">
+                                                                <i class="bi bi-credit-card"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        {% else %}
+                                            <!-- Display jobs for all customers -->
+                                            <tr class="{% if job.overdue %}table-warning{% elif job.paid == 1 %}table-light{% endif %}">
+                                                <td>
+                                                    <span class="badge bg-primary">#{{ job.job_id }}</span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                                        <div>
+                                                            <strong>{{ job.first_name }} {{ job.family_name }}</strong>
+                                                            <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <i class="bi bi-calendar-event text-muted me-1"></i>
+                                                    {{ job.job_date }}
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-success">${{ "%.2f"|format(job.total_cost|float) }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if job.completed %}
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-check-circle me-1"></i>
+                                                            Completed
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            In Progress
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if job.paid %}
+                                                        <span class="badge bg-success">
+                                                            <i class="bi bi-credit-card me-1"></i>
+                                                            Paid
+                                                        </span>
+                                                    {% else %}
+                                                        {% if job.overdue %}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                Overdue
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-clock me-1"></i>
+                                                                Pending
+                                                            </span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex gap-2">
+                                                        <a href="{{ url_for('modifyjob', job_id=job.job_id) }}" class="btn btn-sm btn-outline-info">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        {% if not job.paid %}
+                                                            <a href="{{ url_for('administrator_pay_bills') }}" class="btn btn-sm btn-outline-success">
+                                                                <i class="bi bi-credit-card"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="mt-3">
+                            <h6 class="text-muted mb-2">Legend:</h6>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="table-warning" style="width: 20px; height: 20px; border-radius: 3px; margin-right: 8px;"></div>
+                                    <small>Overdue Bills</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="table-light" style="width: 20px; height: 20px; border-radius: 3px; margin-right: 8px; border: 1px solid #dee2e6;"></div>
+                                    <small>Paid Bills</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-white" style="width: 20px; height: 20px; border-radius: 3px; margin-right: 8px; border: 1px solid #dee2e6;"></div>
+                                    <small>Regular Bills</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="bi bi-receipt text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="mt-3">No Bills Found</h4>
+                            <p class="text-muted">
+                                {% if selected_customer %}
+                                    This customer has no bills on record.
+                                {% else %}
+                                    There are no bills in the system yet.
+                                {% endif %}
+                            </p>
+                            <a href="{{ url_for('administrator_customer_list') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Schedule New Job
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--bs-secondary);
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--bs-dark);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.table-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.table-light {
+    background-color: rgba(248, 249, 250, 0.8) !important;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.fw-bold {
+    font-weight: 600 !important;
+}
+</style>
 {% endblock %}
