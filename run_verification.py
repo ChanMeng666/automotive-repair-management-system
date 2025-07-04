@@ -143,19 +143,24 @@ def test_database_queries(app):
             from app.utils.database_pythonanywhere import execute_query
             
             # 测试客户查询
-            customers = execute_query("SELECT COUNT(*) as count FROM customers")
+            customers = execute_query("SELECT COUNT(*) as count FROM customer")
             if customers:
                 print(f"✅ 客户数量查询成功: {customers[0]['count']} 个客户")
             
             # 测试工作订单查询
-            jobs = execute_query("SELECT COUNT(*) as count FROM jobs")
+            jobs = execute_query("SELECT COUNT(*) as count FROM job")
             if jobs:
                 print(f"✅ 工作订单数量查询成功: {jobs[0]['count']} 个订单")
             
             # 测试服务查询
-            services = execute_query("SELECT COUNT(*) as count FROM services")
+            services = execute_query("SELECT COUNT(*) as count FROM service")
             if services:
                 print(f"✅ 服务数量查询成功: {services[0]['count']} 个服务")
+            
+            # 测试零件查询
+            parts = execute_query("SELECT COUNT(*) as count FROM part")
+            if parts:
+                print(f"✅ 零件数量查询成功: {parts[0]['count']} 个零件")
             
             return True
     except Exception as e:
