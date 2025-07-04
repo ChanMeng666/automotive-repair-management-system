@@ -4,7 +4,6 @@ Flask应用工厂和应用初始化
 """
 from flask import Flask
 from config.base import get_config
-from app.utils.database import init_database
 from app.utils.error_handler import ErrorHandler, LoggerConfig
 from app.utils.security import SecurityConfig, CSRFProtection
 import os
@@ -47,8 +46,15 @@ def init_extensions(app):
     # 设置日志系统
     LoggerConfig.setup_logging(app)
     
-    # 初始化数据库
-    init_database(app)
+    # 根据环境选择数据库连接方式
+    if app.config.get('ENV') == 'production' or os.environ.get('FLASK_ENV') == 'production':
+        # 生产环境使用PythonAnywhere优化的数据库连接
+        from app.utils.database_pythonanywhere import init_database
+        init_database(app)
+    else:
+        # 开发环境使用标准数据库连接
+        from app.utils.database import init_database
+        init_database(app)
     
     # 初始化错误处理器
     error_handler = ErrorHandler(app)
