@@ -67,39 +67,43 @@ def login():
 @csrf_protect
 @handle_database_errors
 def login_post():
-    """Handle login submission (simplified version)"""
+    """Handle login submission"""
+    from app.services.auth_service import AuthService
+
     username = InputSanitizer.sanitize_string(request.form.get('username', ''))
     password = request.form.get('password', '')
     user_type = InputSanitizer.sanitize_string(request.form.get('user_type', 'technician'))
-    
+
     # Check for SQL injection
     if SQLInjectionProtection.scan_sql_injection(username):
         raise ValidationError("Username contains illegal characters")
     if SQLInjectionProtection.scan_sql_injection(user_type):
         raise ValidationError("User type contains illegal characters")
-    
-    # Simplified login validation (actual project needs complete authentication system)
-    if username and password:
-        # Actual user verification should be performed here
-        # Currently using simple validation for demonstration purposes
-        if password == '123456':  # Temporary validation logic
-            session['user_id'] = username
-            session['user_type'] = user_type
-            session['logged_in'] = True
-            
-            flash(f'Welcome back, {username}!', 'success')
-            
-            # Redirect based on user type
-            if user_type == 'administrator':
-                return redirect(url_for('administrator.dashboard'))
-            else:
-                return redirect(url_for('technician.current_jobs'))
-        else:
-            flash('Incorrect username or password', 'error')
-    else:
+
+    if not username or not password:
         flash('Please enter username and password', 'error')
-    
-    return render_template('auth/login.html')
+        return render_template('auth/login.html')
+
+    # Use AuthService for authentication
+    auth_service = AuthService()
+    success, user_data, error_message = auth_service.authenticate(username, password, user_type)
+
+    if success:
+        session['user_id'] = user_data.get('user_id', username)
+        session['username'] = user_data.get('username', username)
+        session['user_type'] = user_data.get('role', user_type)
+        session['logged_in'] = True
+
+        flash(f'Welcome back, {username}!', 'success')
+
+        # Redirect based on user type
+        if user_data.get('role', user_type) == 'administrator':
+            return redirect(url_for('administrator.dashboard'))
+        else:
+            return redirect(url_for('technician.current_jobs'))
+    else:
+        flash(error_message or 'Incorrect username or password', 'error')
+        return render_template('auth/login.html')
 
 
 @main_bp.route('/logout')

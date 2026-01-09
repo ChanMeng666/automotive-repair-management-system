@@ -5,10 +5,20 @@ import os
 from datetime import timedelta
 
 
+class ConfigurationError(Exception):
+    """配置错误异常"""
+    pass
+
+
 class BaseConfig:
     """基础配置类"""
-    # 安全配置
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    # 安全配置 - 从环境变量读取，开发环境允许默认值
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+
+    @classmethod
+    def validate_config(cls):
+        """验证必要的配置项"""
+        pass  # 基础配置不强制验证
     
     # 数据库配置
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
@@ -45,26 +55,55 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = True
     TESTING = False
 
+    # 开发环境使用默认密钥（仅用于本地开发）
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-only-secret-key-not-for-production'
+
+    @classmethod
+    def validate_config(cls):
+        """开发环境配置验证"""
+        import logging
+        if not os.environ.get('SECRET_KEY'):
+            logging.warning(
+                "WARNING: SECRET_KEY not set in environment. "
+                "Using development default. DO NOT use in production!"
+            )
+
 
 class ProductionConfig(BaseConfig):
     """生产环境配置"""
     DEBUG = False
     TESTING = False
-    
+
     # 生产环境安全配置
     SESSION_COOKIE_SECURE = True  # 生产环境必须启用HTTPS
-    
+
+    @classmethod
+    def validate_config(cls):
+        """生产环境配置验证 - 强制要求必要配置"""
+        errors = []
+
+        if not os.environ.get('SECRET_KEY'):
+            errors.append("SECRET_KEY environment variable is required in production")
+
+        if not os.environ.get('DB_PASSWORD'):
+            errors.append("DB_PASSWORD environment variable is required in production")
+
+        if errors:
+            raise ConfigurationError(
+                "Production configuration errors:\n" + "\n".join(f"  - {e}" for e in errors)
+            )
+
     @staticmethod
     def init_app(app):
         BaseConfig.init_app(app)
-        
+
         # 生产环境特定配置
         import logging
         from logging.handlers import RotatingFileHandler
-        
+
         if not os.path.exists('logs'):
             os.mkdir('logs')
-        
+
         file_handler = RotatingFileHandler(
             'logs/app.log', maxBytes=10240000, backupCount=10
         )

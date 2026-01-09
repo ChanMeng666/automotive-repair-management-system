@@ -1,4 +1,7 @@
-create schema spb;
+-- Automotive Repair Management System Database Schema
+-- Version: 2.0
+
+create schema if not exists spb;
 
 use spb;
 
@@ -91,3 +94,34 @@ INSERT into job_part (job_id,part_id, qty) VALUES (1,2,2);
 INSERT into job_part (job_id,part_id, qty) VALUES (1,4,1);
 INSERT into job_service (job_id,service_id, qty) VALUES (1,2,1);
 INSERT into job_service (job_id,service_id, qty) VALUES (1,5,1);
+
+-- ============================================================================
+-- User Authentication Table (Added in v2.0)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS user
+(
+    user_id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(320) UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('technician', 'administrator') NOT NULL DEFAULT 'technician',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    INDEX idx_username (username),
+    INDEX idx_email (email),
+    INDEX idx_role (role)
+);
+
+-- Create default administrator account
+-- Password should be changed on first login
+-- Default password hash is for 'changeme' - MUST be changed in production
+-- To generate a new hash: python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('your_password'))"
+INSERT INTO user (username, email, password_hash, role) VALUES
+('admin', 'admin@autorepair.local', 'scrypt:32768:8:1$placeholder$changeme', 'administrator');
+
+-- Note: The above password hash is a placeholder.
+-- Run this SQL after application deployment to set a proper password:
+-- UPDATE user SET password_hash = '<generated_hash>' WHERE username = 'admin';

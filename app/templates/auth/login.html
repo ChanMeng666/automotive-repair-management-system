@@ -105,23 +105,14 @@
                     </button>
                 </form>
                 
-                <!-- Demo Credentials Info -->
-                <div class="mt-4 p-3 bg-light border-start border-4 border-info">
-                    <h6 class="text-info mb-2">
-                        <i class="bi bi-info-circle me-2"></i>Demo Credentials
+                <!-- System Info -->
+                <div class="mt-4 p-3 bg-light border-start border-4 border-primary">
+                    <h6 class="text-primary mb-2">
+                        <i class="bi bi-shield-lock me-2"></i>Secure Login
                     </h6>
-                    <div class="row text-sm">
-                        <div class="col-6">
-                            <strong>Technician:</strong><br>
-                            Username: <code>tech</code><br>
-                            Password: <code>123456</code>
-                        </div>
-                        <div class="col-6">
-                            <strong>Administrator:</strong><br>
-                            Username: <code>admin</code><br>
-                            Password: <code>123456</code>
-                        </div>
-                    </div>
+                    <p class="text-muted text-sm mb-0">
+                        Please contact your system administrator if you need login credentials or have forgotten your password.
+                    </p>
                 </div>
             </div>
         </div>
@@ -177,29 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Auto-fill demo credentials
-    const usernameInput = document.getElementById('username');
-    const userTypeSelect = document.getElementById('user_type');
-    
-    if (usernameInput && userTypeSelect) {
-        // When user type changes, suggest username
-        userTypeSelect.addEventListener('change', function() {
-            if (this.value === 'technician' && !usernameInput.value) {
-                usernameInput.value = 'tech';
-            } else if (this.value === 'administrator' && !usernameInput.value) {
-                usernameInput.value = 'admin';
-            }
-        });
-        
-        // When username changes, suggest user type
-        usernameInput.addEventListener('input', function() {
-            if (this.value === 'tech' && !userTypeSelect.value) {
-                userTypeSelect.value = 'technician';
-            } else if (this.value === 'admin' && !userTypeSelect.value) {
-                userTypeSelect.value = 'administrator';
-            }
-        });
-    }
     
     // Add animation to the card
     const card = document.querySelector('.card');

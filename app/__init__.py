@@ -12,17 +12,26 @@ import os
 def create_app(config_name=None):
     """应用工厂函数"""
     app = Flask(__name__)
-    
+
     # 加载配置
     if config_name is None:
         config_name = os.environ.get('FLASK_ENV', 'development')
-    
+
     config = get_config(config_name)
     app.config.from_object(config)
-    
-    # 设置密钥
+
+    # 验证配置
+    if hasattr(config, 'validate_config'):
+        config.validate_config()
+
+    # 确保密钥已设置
     if not app.config.get('SECRET_KEY'):
-        app.config['SECRET_KEY'] = 'dev-secret-key-change-in-production'
+        if config_name == 'production':
+            raise ValueError("SECRET_KEY must be set in production environment")
+        # 开发环境使用配置类中的默认值
+        app.config['SECRET_KEY'] = getattr(config, 'SECRET_KEY', None)
+        if not app.config['SECRET_KEY']:
+            raise ValueError("SECRET_KEY is required")
     
     # 初始化扩展
     init_extensions(app)

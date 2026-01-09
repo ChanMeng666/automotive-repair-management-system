@@ -1,11 +1,36 @@
+"""
+DEPRECATED: This file is deprecated and will be removed in a future version.
+Please use 'run.py' as the application entry point instead.
+
+This file is kept for backward compatibility only.
+All new development should use the modular architecture in the 'app/' directory.
+"""
+import warnings
+import os
 from datetime import datetime
 from flask import Flask, flash, render_template, request, redirect, url_for
 import mysql.connector
 import connect
 import re
 
+# Issue deprecation warning
+warnings.warn(
+    "app.py is deprecated. Please use 'run.py' instead. "
+    "This file will be removed in a future version.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 app = Flask(__name__)
-app.secret_key = '123456'
+
+# Get secret key from environment variable (required for security)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-only-fallback-key')
+if app.secret_key == 'dev-only-fallback-key':
+    warnings.warn(
+        "SECRET_KEY not set in environment. Using insecure default. "
+        "Set SECRET_KEY environment variable for production!",
+        UserWarning
+    )
 
 dbconn = None
 connection = None
@@ -434,12 +459,14 @@ def administrator_overdue_bills():
         selected_customer = None
     else:
         customer_id = int(customer_id_name.split(' ')[0])  # assume the customer id is the first part of the option value
-        cursor.execute(f"""
+        # Fixed: Use parameterized query to prevent SQL injection
+        cursor.execute("""
             SELECT customer_id, first_name, family_name, email, phone
             FROM customer
-            WHERE customer_id = {customer_id}
-        """)
-        selected_customer = cursor.fetchall()[0]  # the first and only one asked customer
+            WHERE customer_id = %s
+        """, (customer_id,))
+        result = cursor.fetchall()
+        selected_customer = result[0] if result else None
 
     cursor.execute("""
         SELECT customer_id, first_name, family_name

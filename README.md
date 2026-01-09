@@ -423,23 +423,42 @@ mysql -u root -p
 mysql -u root -p < spb_local.sql
 ```
 
-**4. Configure Database Connection**
+**4. Configure Environment Variables**
 
-Create `connect.py` file with your MySQL credentials:
+Copy the example environment file and configure your settings:
 
-```python
-# connect.py
-dbuser = "your_mysql_username"
-dbpass = "your_mysql_password"  
-dbhost = "localhost"
-dbname = "spb"
+```bash
+cp .env.example .env
 ```
+
+Edit `.env` with your configuration:
+
+```bash
+# Flask Configuration
+FLASK_ENV=development
+SECRET_KEY=your-secure-secret-key-generate-one-for-production
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=your_mysql_username
+DB_PASSWORD=your_mysql_password
+DB_NAME=spb
+
+# Authentication (for development only)
+AUTH_DEMO_MODE=true
+DEMO_PASSWORD=your_demo_password
+```
+
+> **Security Note**: Never commit your `.env` file to version control. Generate a secure secret key for production using: `python -c "import secrets; print(secrets.token_hex(32))"`
 
 **5. Run Application**
 
 ```bash
-python app.py
+python run.py
 ```
+
+> **Note**: The legacy `app.py` is deprecated. Please use `run.py` as the application entry point.
 
 🎉 **Success!** Open [http://localhost:5000](http://localhost:5000) to access the system.
 

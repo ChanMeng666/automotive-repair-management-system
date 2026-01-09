@@ -1,0 +1,61 @@
+# Bandit security linter configuration
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Exclude paths from analysis
+exclude_dirs:
+  - tests
+  - .venv
+  - venv
+  - .git
+  - __pycache__
+  - migrations
+
+# Skip specific tests
+skips:
+  # B101: Use of assert detected - acceptable in tests
+  - B101
+  # B104: Possible binding to all interfaces - we handle this in config
+  - B104
+
+# Confidence and severity levels
+# LOW, MEDIUM, HIGH
+severity: MEDIUM
+confidence: MEDIUM
+
+# Test specific configurations
+tests:
+  # Check for SQL injection
+  - B608
+  # Check for hardcoded passwords
+  - B105
+  - B106
+  - B107
+  # Check for shell injection
+  - B602
+  - B603
+  - B604
+  - B605
+  - B606
+  - B607
+  # Check for insecure hash functions
+  - B303
+  - B304
+  - B305
+  # Check for insecure SSL/TLS
+  - B309
+  - B310
+  - B311
+  - B312
+  - B313
+  - B314
+  - B315
+  - B316
+  - B317
+  - B318
+  - B319
+  - B320
+  - B321
+  - B322
+  - B323
+  - B324
+  - B325

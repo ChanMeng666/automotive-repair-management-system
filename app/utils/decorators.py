@@ -1,11 +1,12 @@
 """
-装饰器工具模块
+Decorator utility module
+Contains decorators for authentication, authorization, logging, and error handling
 """
 import functools
 import logging
+from typing import Callable, Any, List, Union
 import time
-from typing import Callable, Any
-from flask import jsonify, flash, request
+from flask import jsonify, flash, request, session, redirect, url_for, abort
 from app.utils.database import DatabaseError, ValidationError
 
 
@@ -277,20 +278,127 @@ def validate_pagination(func: Callable) -> Callable:
     return wrapper
 
 
-def admin_required(func: Callable) -> Callable:
+def login_required(func: Callable) -> Callable:
     """
-    管理员权限验证装饰器（简化版本，实际项目中需要完整的认证系统）
-    
+    Login required decorator - ensures user is authenticated
+
     Args:
-        func: 被装饰的函数
-    
+        func: The function to decorate
+
     Returns:
-        装饰后的函数
+        Decorated function that checks for authentication
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # 这里可以添加实际的权限验证逻辑
-        # 目前为演示目的，默认允许访问
+        if not session.get('logged_in'):
+            flash('Please login to access this page', 'warning')
+            return redirect(url_for('main.login'))
         return func(*args, **kwargs)
-    
+
+    return wrapper
+
+
+def role_required(*roles: str) -> Callable:
+    """
+    Role-based access control decorator
+
+    Args:
+        *roles: One or more roles that are allowed to access the decorated function
+                Valid roles: 'technician', 'administrator'
+
+    Returns:
+        Decorator function
+
+    Usage:
+        @role_required('administrator')
+        def admin_only_function():
+            ...
+
+        @role_required('technician', 'administrator')
+        def staff_function():
+            ...
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # Check if user is logged in
+            if not session.get('logged_in'):
+                flash('Please login to access this page', 'warning')
+                return redirect(url_for('main.login'))
+
+            # Check if user has required role
+            user_role = session.get('user_type')
+            if user_role not in roles:
+                logging.warning(
+                    f"Access denied: user role '{user_role}' not in {roles} "
+                    f"for {func.__name__}"
+                )
+                flash('You do not have permission to access this page', 'error')
+                abort(403)
+
+            return func(*args, **kwargs)
+
+        return wrapper
+    return decorator
+
+
+def admin_required(func: Callable) -> Callable:
+    """
+    Administrator permission decorator - shortcut for role_required('administrator')
+
+    Args:
+        func: The function to decorate
+
+    Returns:
+        Decorated function that checks for admin role
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Check if user is logged in
+        if not session.get('logged_in'):
+            flash('Please login to access this page', 'warning')
+            return redirect(url_for('main.login'))
+
+        # Check if user is an administrator
+        user_role = session.get('user_type')
+        if user_role != 'administrator':
+            logging.warning(
+                f"Admin access denied: user role '{user_role}' for {func.__name__}"
+            )
+            flash('Administrator permission required', 'error')
+            abort(403)
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def technician_required(func: Callable) -> Callable:
+    """
+    Technician or higher permission decorator
+
+    Args:
+        func: The function to decorate
+
+    Returns:
+        Decorated function that checks for technician or admin role
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Check if user is logged in
+        if not session.get('logged_in'):
+            flash('Please login to access this page', 'warning')
+            return redirect(url_for('main.login'))
+
+        # Check if user is a technician or administrator
+        user_role = session.get('user_type')
+        if user_role not in ('technician', 'administrator'):
+            logging.warning(
+                f"Technician access denied: user role '{user_role}' for {func.__name__}"
+            )
+            flash('Technician permission required', 'error')
+            abort(403)
+
+        return func(*args, **kwargs)
+
     return wrapper 
