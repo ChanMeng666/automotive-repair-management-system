@@ -1,6 +1,7 @@
 """
 User Model - SQLAlchemy ORM
-Authentication and authorization with Stack Auth JWT support
+Authentication and authorization with Neon Auth JWT support
+Neon Auth is powered by Better Auth and stores users in neon_auth schema
 """
 from typing import Optional, List
 from datetime import datetime
@@ -30,8 +31,8 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
-    # Stack Auth integration fields
-    stack_auth_user_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True, index=True)
+    # Neon Auth integration fields (powered by Better Auth)
+    neon_auth_user_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True, index=True)
 
     @property
     def is_admin(self) -> bool:
@@ -66,9 +67,9 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
         return db.session.execute(query).scalar_one_or_none()
 
     @classmethod
-    def find_by_stack_auth_id(cls, stack_auth_user_id: str) -> Optional['User']:
-        """Find user by Stack Auth user ID"""
-        query = db.select(cls).where(cls.stack_auth_user_id == stack_auth_user_id)
+    def find_by_neon_auth_id(cls, neon_auth_user_id: str) -> Optional['User']:
+        """Find user by Neon Auth user ID"""
+        query = db.select(cls).where(cls.neon_auth_user_id == neon_auth_user_id)
         return db.session.execute(query).scalar_one_or_none()
 
     @classmethod
@@ -83,40 +84,43 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
     @classmethod
     def authenticate_with_jwt(cls, jwt_payload: dict) -> Optional['User']:
         """
-        Authenticate user with Stack Auth JWT payload
+        Authenticate user with Neon Auth JWT payload
 
         Args:
-            jwt_payload: Decoded JWT payload from Stack Auth
+            jwt_payload: Decoded JWT payload from Neon Auth
 
         Returns:
             User instance if found/created, None otherwise
         """
-        stack_auth_user_id = jwt_payload.get('sub')
-        if not stack_auth_user_id:
+        # Neon Auth uses 'sub' for user ID
+        neon_auth_user_id = jwt_payload.get('sub')
+        if not neon_auth_user_id:
             return None
 
-        # Try to find existing user
-        user = cls.find_by_stack_auth_id(stack_auth_user_id)
+        # Try to find existing user by Neon Auth ID
+        user = cls.find_by_neon_auth_id(neon_auth_user_id)
         if user:
             if user.is_active:
                 user.update_last_login()
                 return user
             return None
 
-        # Create new user from JWT if not found
+        # Get email from JWT payload
         email = jwt_payload.get('email')
+        name = jwt_payload.get('name', '')
+
         if email:
             # Check if email already exists
             existing = cls.find_by_email(email)
             if existing:
-                # Link existing user to Stack Auth
-                existing.stack_auth_user_id = stack_auth_user_id
+                # Link existing user to Neon Auth
+                existing.neon_auth_user_id = neon_auth_user_id
                 existing.update_last_login()
                 db.session.commit()
                 return existing
 
-        # Create new user
-        username = email.split('@')[0] if email else f"user_{stack_auth_user_id[:8]}"
+        # Create new user from Neon Auth
+        username = email.split('@')[0] if email else f"user_{neon_auth_user_id[:8]}"
         # Ensure unique username
         base_username = username
         counter = 1
@@ -129,7 +133,7 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
             email=email,
             password_hash=generate_password_hash(__import__('secrets').token_urlsafe(32)),
             role=cls.ROLE_TECHNICIAN,
-            stack_auth_user_id=stack_auth_user_id,
+            neon_auth_user_id=neon_auth_user_id,
             is_active=True
         )
         db.session.add(user)
@@ -214,7 +218,7 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
 
         if include_sensitive:
             data['updated_at'] = self.updated_at.isoformat() if self.updated_at else None
-            data['stack_auth_user_id'] = self.stack_auth_user_id
+            data['neon_auth_user_id'] = self.neon_auth_user_id
 
         return data
 

@@ -1,7 +1,7 @@
 """
 Configuration Management System
 Supports DATABASE_URL for cloud databases (Neon, Heroku)
-Includes Stack Auth configuration for JWT authentication
+Includes Neon Auth configuration for JWT authentication
 """
 import os
 from datetime import timedelta
@@ -36,9 +36,11 @@ class BaseConfig:
     # SSL mode for cloud databases
     DB_SSLMODE = os.environ.get('DB_SSLMODE', 'require')
 
-    # Stack Auth configuration
-    STACK_AUTH_PROJECT_ID = os.environ.get('STACK_AUTH_PROJECT_ID')
-    STACK_AUTH_ENABLED = bool(os.environ.get('STACK_AUTH_PROJECT_ID'))
+    # Neon Auth configuration (powered by Better Auth)
+    # Auth URL format: https://ep-xxx.neonauth.xxx.aws.neon.tech/dbname/auth
+    NEON_AUTH_URL = os.environ.get('NEON_AUTH_URL')
+    NEON_AUTH_JWKS_URL = os.environ.get('NEON_AUTH_JWKS_URL')
+    NEON_AUTH_ENABLED = bool(os.environ.get('NEON_AUTH_URL'))
 
     # Flask configuration
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)

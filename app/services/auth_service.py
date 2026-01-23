@@ -1,6 +1,7 @@
 """
 Authentication Service
-Handles both traditional and Stack Auth JWT authentication
+Handles both traditional password auth and Neon Auth JWT authentication
+Neon Auth is powered by Better Auth and stores users in the neon_auth schema
 """
 from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime, timedelta
@@ -15,8 +16,8 @@ from app.extensions import db
 logger = logging.getLogger(__name__)
 
 
-class StackAuthService:
-    """Stack Auth integration service for JWT authentication"""
+class NeonAuthService:
+    """Neon Auth integration service for JWT authentication"""
 
     def __init__(self, app=None):
         self.app = app
@@ -28,20 +29,22 @@ class StackAuthService:
         self.app = app
 
     @property
-    def project_id(self) -> Optional[str]:
-        """Get Stack Auth project ID from config"""
-        return current_app.config.get('STACK_AUTH_PROJECT_ID')
+    def auth_url(self) -> Optional[str]:
+        """Get Neon Auth URL from config"""
+        return current_app.config.get('NEON_AUTH_URL')
 
     @property
     def jwks_url(self) -> str:
-        """Get JWKS URL for Stack Auth"""
-        project_id = self.project_id
-        if not project_id:
-            raise ValueError("STACK_AUTH_PROJECT_ID not configured")
-        return f"https://api.stack-auth.com/api/v1/projects/{project_id}/.well-known/jwks.json"
+        """Get JWKS URL for Neon Auth"""
+        auth_url = self.auth_url
+        if not auth_url:
+            raise ValueError("NEON_AUTH_URL not configured")
+        # Ensure no trailing slash
+        auth_url = auth_url.rstrip('/')
+        return f"{auth_url}/.well-known/jwks.json"
 
     def get_jwks(self) -> Dict[str, Any]:
-        """Fetch JWKS from Stack Auth (cached for 1 hour)"""
+        """Fetch JWKS from Neon Auth (cached for 1 hour)"""
         now = datetime.utcnow()
 
         # Return cached JWKS if still valid
@@ -50,7 +53,9 @@ class StackAuthService:
                 return self._jwks
 
         try:
-            response = requests.get(self.jwks_url, timeout=10)
+            jwks_url = current_app.config.get('NEON_AUTH_JWKS_URL') or self.jwks_url
+            logger.info(f"Fetching JWKS from: {jwks_url}")
+            response = requests.get(jwks_url, timeout=10)
             response.raise_for_status()
             self._jwks = response.json()
             self._jwks_fetched_at = now
@@ -63,7 +68,7 @@ class StackAuthService:
 
     def verify_token(self, token: str) -> Optional[Dict[str, Any]]:
         """
-        Verify a Stack Auth JWT token
+        Verify a Neon Auth JWT token
 
         Args:
             token: JWT token string
@@ -78,6 +83,7 @@ class StackAuthService:
             # Get token header to find key ID
             unverified_header = jwt.get_unverified_header(token)
             kid = unverified_header.get('kid')
+            alg = unverified_header.get('alg', 'RS256')
 
             # Find matching key
             rsa_key = None
@@ -87,16 +93,19 @@ class StackAuthService:
                     break
 
             if not rsa_key:
-                logger.warning("No matching key found in JWKS")
-                return None
+                logger.warning(f"No matching key found in JWKS for kid: {kid}")
+                # Try with first available key if no kid match
+                if jwks.get('keys'):
+                    rsa_key = jwt.algorithms.RSAAlgorithm.from_jwk(jwks['keys'][0])
+                else:
+                    return None
 
             # Verify token
             payload = jwt.decode(
                 token,
                 rsa_key,
-                algorithms=['RS256'],
-                audience=self.project_id,
-                options={'verify_exp': True}
+                algorithms=[alg],
+                options={'verify_exp': True, 'verify_aud': False}
             )
 
             return payload
@@ -113,7 +122,7 @@ class StackAuthService:
 
     def get_user_from_token(self, token: str) -> Optional[User]:
         """
-        Get or create user from Stack Auth token
+        Get or create user from Neon Auth token
 
         Args:
             token: JWT token string
@@ -127,9 +136,45 @@ class StackAuthService:
 
         return User.authenticate_with_jwt(payload)
 
+    def get_neon_auth_user(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch user details from Neon Auth neon_auth schema
+
+        Args:
+            user_id: The user ID from the JWT
+
+        Returns:
+            User data dict or None
+        """
+        try:
+            # Query the neon_auth.user table
+            result = db.session.execute(
+                db.text("""
+                    SELECT id, email, name, email_verified, image, created_at, updated_at
+                    FROM neon_auth.user
+                    WHERE id = :user_id
+                """),
+                {'user_id': user_id}
+            ).fetchone()
+
+            if result:
+                return {
+                    'id': result.id,
+                    'email': result.email,
+                    'name': result.name,
+                    'email_verified': result.email_verified,
+                    'image': result.image,
+                    'created_at': result.created_at,
+                    'updated_at': result.updated_at
+                }
+            return None
+        except Exception as e:
+            logger.error(f"Failed to fetch Neon Auth user: {e}")
+            return None
+
 
 # Global instance
-stack_auth = StackAuthService()
+neon_auth = NeonAuthService()
 
 
 class AuthService:
@@ -153,7 +198,7 @@ class AuthService:
 
     def authenticate_jwt(self, token: str) -> Optional[User]:
         """
-        Authenticate with Stack Auth JWT
+        Authenticate with Neon Auth JWT
 
         Args:
             token: JWT token
@@ -162,7 +207,7 @@ class AuthService:
             User if authenticated, None otherwise
         """
         try:
-            return stack_auth.get_user_from_token(token)
+            return neon_auth.get_user_from_token(token)
         except Exception as e:
             self.logger.error(f"JWT authentication error: {e}")
             return None
@@ -170,13 +215,21 @@ class AuthService:
     def get_current_user(self) -> Optional[User]:
         """Get current authenticated user from request context"""
         # Check if already loaded
-        if hasattr(g, 'current_user'):
+        if hasattr(g, 'current_user') and g.current_user is not None:
             return g.current_user
 
         # Try JWT authentication first (Authorization header)
         auth_header = request.headers.get('Authorization', '')
         if auth_header.startswith('Bearer '):
             token = auth_header[7:]
+            user = self.authenticate_jwt(token)
+            if user:
+                g.current_user = user
+                return user
+
+        # Check for token in cookie (for Neon Auth web flow)
+        token = request.cookies.get('better-auth.session_token')
+        if token:
             user = self.authenticate_jwt(token)
             if user:
                 g.current_user = user

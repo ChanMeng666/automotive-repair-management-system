@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS "user" (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
-    stack_auth_user_id VARCHAR(255) UNIQUE NULL
+    neon_auth_user_id VARCHAR(255) UNIQUE NULL
 );
 
 -- Create indexes for user table
