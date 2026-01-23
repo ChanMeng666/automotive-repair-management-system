@@ -1,63 +1,179 @@
-# 🚀 PythonAnywhere 快速部署指南
+# Quick Start Guide
 
-## 简要步骤
+Get the Automotive Repair Management System running in 5 minutes.
 
-### 1. 准备配置文件
-在本地运行配置更新脚本：
+## Prerequisites
+
+- Python 3.10+
+- Git
+- Neon account ([sign up](https://neon.tech))
+- Heroku account ([sign up](https://signup.heroku.com)) - for deployment
+
+---
+
+## Local Development (5 minutes)
+
+### 1. Clone and Setup
+
 ```bash
-python update_db_config.py
-```
-输入你的PythonAnywhere用户名和数据库密码。
-
-### 2. 上传代码到PythonAnywhere
-在PythonAnywhere的Bash控制台中：
-```bash
-cd ~
-git clone https://github.com/yourusername/automotive-repair-management-system.git
+# Clone repository
+git clone https://github.com/ChanMeng666/automotive-repair-management-system.git
 cd automotive-repair-management-system
+
+# Create virtual environment
+python -m venv venv
+
+# Activate (Windows)
+venv\Scripts\activate
+
+# Activate (macOS/Linux)
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### 3. 运行部署脚本
+### 2. Setup Database
+
 ```bash
-export PA_USERNAME=你的用户名
-bash deploy_to_pythonanywhere.sh
+# Run the Neon setup script
+python scripts/setup_neon.py
 ```
 
-### 4. 创建数据库
-1. 在PythonAnywhere控制面板，点击"Databases"
-2. 创建数据库：`yourusername$spb`
-3. 在MySQL控制台中导入架构：
-```sql
--- 复制粘贴 spb_local.sql 的内容
+Or manually create a Neon database and add to `.env`:
+
+```bash
+cp .env.example .env
+# Edit .env with your DATABASE_URL
 ```
 
-### 5. 配置Web应用
-1. 点击"Web"标签 → "Add a new web app"
-2. 选择"Manual configuration" → Python 3.10
-3. 设置虚拟环境：`/home/yourusername/automotive-repair-management-system/venv`
-4. 复制 `wsgi.py` 内容到WSGI配置文件
-5. 配置静态文件：`/static/` → `/home/yourusername/automotive-repair-management-system/app/static/`
+### 3. Initialize Schema
 
-### 6. 测试部署
-点击"Reload"按钮，然后访问：`https://yourusername.pythonanywhere.com`
+```bash
+psql "YOUR_DATABASE_URL" -f scripts/database/schema.sql
+```
 
-## 📁 重要文件
+### 4. Run Application
 
-- `PYTHONANYWHERE_DEPLOYMENT_GUIDE.md` - 详细部署指南
-- `update_db_config.py` - 配置更新脚本
-- `deploy_to_pythonanywhere.sh` - 自动部署脚本
-- `wsgi.py` - WSGI配置文件
-- `connect.py` - 数据库连接配置
+```bash
+python run.py
+```
 
-## 🆘 遇到问题？
+Open http://localhost:5000
 
-1. 查看详细部署指南：`PYTHONANYWHERE_DEPLOYMENT_GUIDE.md`
-2. 检查PythonAnywhere错误日志
-3. 确认数据库配置正确
-4. 验证所有依赖包已安装
+---
 
-## 🔗 有用链接
+## Production Deployment (10 minutes)
 
-- [PythonAnywhere帮助文档](https://help.pythonanywhere.com/)
-- [Flask部署指南](https://flask.palletsprojects.com/en/latest/deploying/)
-- [MySQL连接问题排查](https://help.pythonanywhere.com/pages/MySQLdb/) 
+### 1. Install Heroku CLI
+
+```bash
+npm install -g heroku
+heroku login
+```
+
+### 2. Create Heroku App
+
+```bash
+heroku create your-app-name
+```
+
+### 3. Configure Environment
+
+```bash
+# Database
+heroku config:set DATABASE_URL="your-neon-connection-string"
+
+# Flask
+heroku config:set SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+heroku config:set FLASK_ENV=production
+heroku config:set LOG_TO_STDOUT=true
+```
+
+### 4. Deploy
+
+```bash
+git push heroku main
+heroku open
+```
+
+---
+
+## Add Google OAuth (Optional)
+
+### 1. Create OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create OAuth 2.0 Client ID
+3. Set redirect URI: `https://your-app.herokuapp.com/auth/google/callback`
+
+### 2. Configure Heroku
+
+```bash
+heroku config:set GOOGLE_CLIENT_ID="your-client-id"
+heroku config:set GOOGLE_CLIENT_SECRET="your-secret"
+```
+
+---
+
+## Default Login
+
+If Google OAuth is not configured, use traditional login:
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | (set in database) |
+| Technician | tech | (set in database) |
+
+---
+
+## Useful Commands
+
+```bash
+# View logs
+heroku logs --tail
+
+# Check config
+heroku config
+
+# Open app
+heroku open
+
+# Run shell
+heroku run bash
+```
+
+---
+
+## Next Steps
+
+- [Full Heroku Guide](heroku.md)
+- [Neon Database Setup](neon.md)
+- [API Documentation](../../README.md#-api-endpoints)
+
+---
+
+## Troubleshooting
+
+**App crashes on startup:**
+```bash
+heroku logs --tail
+# Check for missing environment variables
+heroku config
+```
+
+**Database connection fails:**
+- Verify DATABASE_URL is set correctly
+- Ensure `?sslmode=require` is in the URL
+
+**Google OAuth not working:**
+- Check redirect URI matches exactly
+- Verify Client ID and Secret are correct
+- Make sure OAuth app is published (not in test mode)
+
+---
+
+## Support
+
+- [GitHub Issues](https://github.com/ChanMeng666/automotive-repair-management-system/issues)
+- [Documentation](../../README.md)

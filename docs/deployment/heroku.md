@@ -1,6 +1,6 @@
 # Heroku Deployment Guide
 
-Complete guide to deploying the Automotive Repair Management System to Heroku with Neon PostgreSQL.
+Complete guide to deploying the Automotive Repair Management System to Heroku with Neon PostgreSQL and Google OAuth.
 
 ## Prerequisites
 
@@ -8,6 +8,7 @@ Complete guide to deploying the Automotive Repair Management System to Heroku wi
 - Heroku CLI ([download](https://devcenter.heroku.com/articles/heroku-cli))
 - Git installed
 - Neon database set up (see [neon.md](neon.md))
+- Google Cloud Console account (for OAuth)
 
 ## Quick Deploy
 
@@ -28,16 +29,10 @@ heroku create
 
 ### Step 3: Configure Database
 
-**Option A: Use Neon PostgreSQL (Recommended)**
+**Using Neon PostgreSQL (Recommended)**
 
 ```bash
 heroku config:set DATABASE_URL="postgresql://user:pass@ep-xxx.neon.tech/db?sslmode=require"
-```
-
-**Option B: Use Heroku Postgres**
-
-```bash
-heroku addons:create heroku-postgresql:mini
 ```
 
 ### Step 4: Set Environment Variables
@@ -51,36 +46,82 @@ heroku config:set FLASK_ENV=production
 
 # Enable stdout logging
 heroku config:set LOG_TO_STDOUT=true
-
-# Optional: Stack Auth
-heroku config:set STACK_AUTH_PROJECT_ID="your-stack-auth-project-id"
 ```
 
-### Step 5: Deploy
+### Step 5: Configure Google OAuth
+
+```bash
+heroku config:set GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+heroku config:set GOOGLE_CLIENT_SECRET="your-client-secret"
+```
+
+### Step 6: Deploy
 
 ```bash
 git push heroku main
 ```
 
-### Step 6: Initialize Database
+### Step 7: Initialize Database
 
 ```bash
-# If using Neon (schema already applied via setup script)
-# Or run manually:
+# Run schema if not already done
 heroku run "psql \$DATABASE_URL -f scripts/database/schema.sql"
 ```
 
-### Step 7: Open Application
+### Step 8: Open Application
 
 ```bash
 heroku open
 ```
 
+---
+
+## Google OAuth Setup
+
+Google OAuth provides secure "Sign in with Google" functionality.
+
+### Step 1: Create OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create a new project or select existing
+3. Click **"Create Credentials"** > **"OAuth client ID"**
+4. Select **"Web application"**
+
+### Step 2: Configure OAuth Client
+
+**Application type:** Web application
+
+**Authorized JavaScript origins:**
+```
+https://your-app-name.herokuapp.com
+```
+
+**Authorized redirect URIs:**
+```
+https://your-app-name.herokuapp.com/auth/google/callback
+```
+
+### Step 3: Set Credentials in Heroku
+
+```bash
+heroku config:set GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+heroku config:set GOOGLE_CLIENT_SECRET="your-client-secret"
+```
+
+### Step 4: Publish OAuth App (Optional)
+
+For public access:
+1. Go to **OAuth consent screen**
+2. Click **"Publish App"**
+3. Confirm publication
+
+> **Note:** In testing mode, only added test users can sign in.
+
+---
+
 ## Configuration Files
 
 ### Procfile
-
-The project includes a `Procfile` for Heroku:
 
 ```
 web: gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
@@ -88,88 +129,56 @@ web: gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
 
 ### runtime.txt
 
-Specifies Python version:
-
 ```
 python-3.10.13
 ```
+
+---
 
 ## Environment Variables Reference
 
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
-| `DATABASE_URL` | Yes | PostgreSQL URL | `postgresql://...` |
-| `SECRET_KEY` | Yes | Flask secret | 64-char hex |
+| `DATABASE_URL` | Yes | Neon PostgreSQL URL | `postgresql://...` |
+| `SECRET_KEY` | Yes | Flask secret key | 64-char hex string |
 | `FLASK_ENV` | Yes | Environment | `production` |
 | `LOG_TO_STDOUT` | Yes | Cloud logging | `true` |
-| `STACK_AUTH_PROJECT_ID` | No | Stack Auth | `abc123` |
+| `GOOGLE_CLIENT_ID` | No* | Google OAuth ID | `xxx.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | No* | Google OAuth Secret | `GOCSPX-xxx` |
 
-## Using Neon with Heroku
+*Required for Google Sign-In functionality
 
-### Why Neon?
-
-- Free tier with 100 compute hours/month
-- Serverless scaling
-- Built-in connection pooling
-- Stack Auth integration
-
-### Setup Steps
-
-1. **Create Neon Project**
-
-```bash
-# Using Neon CLI
-neonctl auth
-neonctl projects create --name automotive-repair
-neonctl connection-string PROJECT_ID
-```
-
-2. **Set in Heroku**
-
-```bash
-heroku config:set DATABASE_URL="postgresql://..."
-```
-
-3. **Initialize Schema**
-
-The schema is in `scripts/database/schema.sql`. Initialize it:
-
-```bash
-psql "YOUR_NEON_URL" -f scripts/database/schema.sql
-```
-
-## Stack Auth Integration
-
-Stack Auth provides JWT-based authentication that works with Neon.
-
-### Setup
-
-1. Create account at [Stack Auth](https://app.stack-auth.com)
-2. Create a new project
-3. Get your Project ID
-4. Configure in Heroku:
-
-```bash
-heroku config:set STACK_AUTH_PROJECT_ID="your-project-id"
-```
-
-### How It Works
-
-1. Users authenticate via Stack Auth
-2. Stack Auth issues JWT tokens
-3. App validates tokens via JWKS
-4. Users are created/linked automatically
+---
 
 ## Useful Commands
 
 ### Logs
 
 ```bash
-# View logs
+# View live logs
 heroku logs --tail
 
 # Filter by dyno
 heroku logs --dyno web
+
+# Recent logs
+heroku logs -n 200
+```
+
+### Configuration
+
+```bash
+# View all config vars
+heroku config
+
+# Get specific variable
+heroku config:get DATABASE_URL
+
+# Set variable
+heroku config:set KEY=value
+
+# Remove variable
+heroku config:unset KEY
 ```
 
 ### Shell Access
@@ -180,6 +189,9 @@ heroku run python -c "from app import create_app; print('OK')"
 
 # Interactive shell
 heroku run bash
+
+# Python shell
+heroku run python
 ```
 
 ### Database
@@ -188,53 +200,87 @@ heroku run bash
 # Connect to database
 heroku run psql \$DATABASE_URL
 
-# For Neon, use your Neon connection string directly
+# Run SQL file
+heroku run "psql \$DATABASE_URL -f scripts/database/schema.sql"
 ```
 
 ### Scaling
 
 ```bash
-# Scale to 1 web dyno
+# Check dyno status
+heroku ps
+
+# Scale web dynos
 heroku ps:scale web=1
 
-# Check status
-heroku ps
+# Restart all dynos
+heroku restart
 ```
+
+---
 
 ## Troubleshooting
 
 ### Application Error (H10)
 
+**Cause:** Application crash at startup
+
+**Solutions:**
 1. Check logs: `heroku logs --tail`
-2. Verify all env vars are set: `heroku config`
-3. Ensure database is initialized
+2. Verify all env vars: `heroku config`
+3. Test locally: `python run.py`
+4. Ensure `Procfile` exists and is correct
 
 ### Database Connection Error
 
-1. Verify DATABASE_URL: `heroku config:get DATABASE_URL`
-2. Ensure SSL mode is `require`
-3. For Neon: compute may be suspended, first request wakes it
+**Cause:** Invalid or missing DATABASE_URL
+
+**Solutions:**
+1. Verify URL: `heroku config:get DATABASE_URL`
+2. Ensure SSL mode: `?sslmode=require`
+3. Neon compute may be sleeping (auto-wakes on request)
+4. Check connection string format
+
+### Google OAuth Error
+
+**Cause:** Misconfigured OAuth credentials
+
+**Solutions:**
+1. Verify Client ID and Secret are set
+2. Check redirect URI matches exactly:
+   ```
+   https://your-app.herokuapp.com/auth/google/callback
+   ```
+3. Ensure domain is in authorized origins
+4. Publish OAuth app for public access
 
 ### Memory Issues (R14)
 
-1. Reduce gunicorn workers in Procfile
-2. Upgrade dyno type
-3. Optimize database queries
+**Cause:** Memory quota exceeded
+
+**Solutions:**
+1. Reduce gunicorn workers in `Procfile`
+2. Optimize database queries
+3. Upgrade dyno type
 
 ### Static Files Not Loading
 
-Flask serves static files in development. For production:
-- Files are served via Flask
-- Consider using a CDN for high-traffic apps
+**Cause:** Flask static file serving
+
+**Solutions:**
+- Flask serves static files automatically
+- For high-traffic: consider WhiteNoise or CDN
+
+---
 
 ## Continuous Deployment
 
 ### GitHub Integration
 
-1. Go to Heroku Dashboard > Deploy
-2. Connect to GitHub
-3. Enable "Automatic Deploys"
-4. Optionally: "Wait for CI to pass"
+1. Go to Heroku Dashboard > Deploy tab
+2. Connect to GitHub repository
+3. Enable **"Automatic Deploys"**
+4. Optionally: **"Wait for CI to pass"**
 
 ### Manual Deploy
 
@@ -242,31 +288,20 @@ Flask serves static files in development. For production:
 git push heroku main
 ```
 
-## Costs
+### Rollback
 
-### Heroku
+```bash
+# List releases
+heroku releases
 
-| Plan | Cost | Features |
-|------|------|----------|
-| Eco | $5/mo | 1000 dyno hours |
-| Basic | $7/mo | Always-on |
+# Rollback to previous
+heroku rollback
 
-### Neon (Database)
+# Rollback to specific version
+heroku rollback v5
+```
 
-| Plan | Cost | Features |
-|------|------|----------|
-| Free | $0 | 100 compute hours |
-| Pro | $19/mo | 300 compute hours |
-
-**Total minimum cost: $5-7/month** (Heroku only, Neon free tier)
-
-## Security Checklist
-
-- [ ] SECRET_KEY is set and secure
-- [ ] FLASK_ENV is `production`
-- [ ] DATABASE_URL uses SSL (`sslmode=require`)
-- [ ] No sensitive data in git history
-- [ ] Stack Auth configured (if using JWT)
+---
 
 ## Custom Domain
 
@@ -277,8 +312,60 @@ heroku domains:add www.yourdomain.com
 # Get DNS target
 heroku domains
 
-# Configure DNS with CNAME to target
+# Configure DNS: CNAME record to the target
 
-# Enable SSL
+# Enable SSL (automatic with paid dynos)
 heroku certs:auto:enable
+```
+
+---
+
+## Costs
+
+### Heroku Pricing
+
+| Plan | Cost | Features |
+|------|------|----------|
+| Eco | $5/month | 1000 dyno hours, sleeps after 30min |
+| Basic | $7/month | Always on, 1 dyno |
+| Standard | $25/month | Horizontal scaling |
+
+### Neon Database (Free Tier)
+
+- 100 compute hours/month
+- 0.5 GB storage
+- 1 project
+- Unlimited branches
+
+**Total Minimum Cost: $5-7/month** (Heroku Eco/Basic + Neon Free)
+
+---
+
+## Security Checklist
+
+- [ ] `SECRET_KEY` is set and unique
+- [ ] `FLASK_ENV` is `production`
+- [ ] `DATABASE_URL` uses SSL (`sslmode=require`)
+- [ ] Google OAuth credentials are configured
+- [ ] No sensitive data in git history
+- [ ] HTTPS enabled (automatic on Heroku)
+
+---
+
+## Architecture
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│    Browser      │────>│   Heroku App    │
+│                 │     │   (Flask +      │
+│                 │<────│    Gunicorn)    │
+└─────────────────┘     └────────┬────────┘
+                                 │
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+        v                        v                        v
+┌───────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│ Google OAuth  │      │ Neon PostgreSQL │      │    Neon Auth    │
+│ (Sign In)     │      │   (Database)    │      │  (JWKS/JWT)     │
+└───────────────┘      └─────────────────┘      └─────────────────┘
 ```

@@ -1,6 +1,14 @@
 # Neon PostgreSQL Setup Guide
 
-This guide explains how to set up Neon PostgreSQL with Stack Auth for the Automotive Repair Management System.
+This guide explains how to set up Neon PostgreSQL for the Automotive Repair Management System.
+
+## What is Neon?
+
+Neon is a serverless PostgreSQL database with:
+- **Free tier** with 100 compute hours/month
+- **Automatic scaling** and sleeping
+- **Branching** for development/testing
+- **Built-in connection pooling**
 
 ## Prerequisites
 
@@ -8,9 +16,11 @@ This guide explains how to set up Neon PostgreSQL with Stack Auth for the Automo
 - Python 3.9+ (for setup script)
 - A Neon account ([sign up here](https://neon.tech))
 
+---
+
 ## Quick Setup with Script
 
-The easiest way to set up Neon is using the provided setup script:
+The easiest way to set up Neon:
 
 ```bash
 python scripts/setup_neon.py
@@ -24,6 +34,8 @@ This script will:
 5. Initialize the database schema
 6. Save configuration to `.env`
 
+---
+
 ## Manual Setup
 
 ### Step 1: Install Neon CLI
@@ -31,9 +43,6 @@ This script will:
 ```bash
 # Using npm
 npm install -g neonctl
-
-# Or using Homebrew (macOS)
-brew install neonctl
 
 # Verify installation
 neonctl --version
@@ -86,41 +95,9 @@ Add to your `.env` file:
 DATABASE_URL=postgresql://user:password@ep-xxx.neon.tech/neondb?sslmode=require
 ```
 
-## Stack Auth Integration
+---
 
-Stack Auth provides authentication that integrates seamlessly with Neon.
-
-### Step 1: Create Stack Auth Project
-
-1. Go to [Stack Auth Console](https://app.stack-auth.com)
-2. Create a new project
-3. Copy your Project ID
-
-### Step 2: Configure Stack Auth
-
-Add to your `.env`:
-
-```bash
-STACK_AUTH_PROJECT_ID=your-stack-auth-project-id
-```
-
-### Step 3: Get JWKS URL
-
-Your JWKS URL is:
-```
-https://api.stack-auth.com/api/v1/projects/YOUR_PROJECT_ID/.well-known/jwks.json
-```
-
-### Step 4: Configure Neon RLS (Optional)
-
-For Row-Level Security with Stack Auth:
-
-1. Go to Neon Console > Settings > RLS
-2. Add Stack Auth as authentication provider
-3. Paste your JWKS URL
-4. Configure RLS policies in your database
-
-## Neon CLI Commands Reference
+## Neon CLI Commands
 
 ### Projects
 
@@ -133,6 +110,9 @@ neonctl projects create --name my-project
 
 # Delete project
 neonctl projects delete PROJECT_ID
+
+# Get project details
+neonctl projects get PROJECT_ID
 ```
 
 ### Branches
@@ -158,13 +138,26 @@ neonctl databases list --project-id PROJECT_ID
 neonctl databases create --project-id PROJECT_ID --name mydb
 ```
 
+### Account
+
+```bash
+# View current account
+neonctl me
+
+# Logout
+neonctl auth logout
+```
+
+---
+
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | Yes | Neon PostgreSQL connection string |
-| `STACK_AUTH_PROJECT_ID` | Optional | Stack Auth project ID for JWT auth |
 | `DB_SSLMODE` | No | SSL mode (default: `require`) |
+
+---
 
 ## Heroku Configuration
 
@@ -174,56 +167,167 @@ Set environment variables in Heroku:
 # Set DATABASE_URL
 heroku config:set DATABASE_URL="postgresql://..."
 
-# Set Stack Auth (if using)
-heroku config:set STACK_AUTH_PROJECT_ID="your-project-id"
-
 # Set Flask environment
 heroku config:set FLASK_ENV=production
 heroku config:set SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+heroku config:set LOG_TO_STDOUT=true
+
+# Set Google OAuth (optional)
+heroku config:set GOOGLE_CLIENT_ID="your-client-id"
+heroku config:set GOOGLE_CLIENT_SECRET="your-secret"
 ```
+
+---
 
 ## Connection Pooling
 
-Neon provides built-in connection pooling. Use the pooled connection string for better performance:
+Neon provides built-in connection pooling for better performance.
 
-1. In Neon Console, go to Connection Details
-2. Enable "Pooled Connection"
+### Enable Pooling
+
+1. In Neon Console, go to **Connection Details**
+2. Enable **"Pooled Connection"**
 3. Use the pooled connection string
+
+### Pooled URL Format
 
 The pooled URL contains `-pooler` in the hostname:
 ```
 postgresql://user:pass@ep-xxx-pooler.neon.tech/db?sslmode=require
 ```
 
+### When to Use Pooling
+
+- High-concurrency applications
+- Serverless deployments
+- Connection limit issues
+
+---
+
+## Database Schema
+
+The schema file is located at `scripts/database/schema.sql`.
+
+### Initialize Schema
+
+```bash
+# Using psql
+psql "YOUR_CONNECTION_STRING" -f scripts/database/schema.sql
+
+# Using Neon SQL Editor
+# 1. Go to Neon Console
+# 2. Select your project
+# 3. Open SQL Editor
+# 4. Paste and run the schema
+```
+
+### Tables
+
+| Table | Description |
+|-------|-------------|
+| `customer` | Customer information |
+| `job` | Repair job records |
+| `service` | Available services |
+| `part` | Parts inventory |
+| `job_service` | Services on jobs (junction) |
+| `job_part` | Parts on jobs (junction) |
+| `user` | User authentication |
+
+---
+
+## Branching for Development
+
+Neon supports database branching for isolated development:
+
+### Create Development Branch
+
+```bash
+# Create branch from main
+neonctl branches create --project-id PROJECT_ID --name dev
+
+# Get connection string for branch
+neonctl connection-string PROJECT_ID --branch dev
+```
+
+### Use Cases
+
+- **Feature development** - Test changes without affecting production
+- **CI/CD** - Create branches for each pull request
+- **Data testing** - Experiment with production-like data
+
+### Delete Branch
+
+```bash
+neonctl branches delete --project-id PROJECT_ID dev
+```
+
+---
+
 ## Troubleshooting
 
 ### Connection Timeout
 
-- Verify SSL mode is `require`
-- Check if compute is suspended (auto-resumes on connection)
-- Use pooled connection string
+**Cause:** Compute is suspended (auto-sleep after inactivity)
+
+**Solution:** First request wakes the compute (5-10 second delay)
 
 ### Authentication Failed
 
-- Reset password in Neon Console
-- Verify username/password in connection string
-- Check for special characters that need URL encoding
+**Solutions:**
+1. Reset password in Neon Console
+2. Verify username/password in connection string
+3. URL-encode special characters in password
+
+### SSL Connection Error
+
+**Solution:** Ensure `sslmode=require` in connection string
 
 ### Import Error
 
-If schema import fails:
 ```bash
 # Check for syntax errors
 psql "CONNECTION_STRING" -f schema.sql 2>&1 | head -50
 ```
 
+---
+
+## Neon vs Other Options
+
+| Feature | Neon | Heroku Postgres | Supabase |
+|---------|------|-----------------|----------|
+| Free Tier | 100 compute hours | 10K rows | 500MB |
+| Serverless | Yes | No | Yes |
+| Branching | Yes | No | No |
+| Auto-sleep | Yes | No | Yes |
+| Connection Pool | Built-in | Add-on | Built-in |
+
+---
+
 ## Costs
 
-| Feature | Free Tier | Pro ($19/mo) |
-|---------|-----------|--------------|
-| Compute Hours | 100/month | 300/month |
-| Storage | 0.5 GB | 10 GB |
-| Projects | 1 | 10 |
-| Branches | Unlimited | Unlimited |
+| Plan | Cost | Features |
+|------|------|----------|
+| Free | $0 | 100 compute hours, 0.5GB |
+| Launch | $19/mo | 300 compute hours, 10GB |
+| Scale | $69/mo | 750 compute hours, 50GB |
 
 The free tier is sufficient for development and small production workloads.
+
+---
+
+## Security Best Practices
+
+1. **Use SSL**: Always use `sslmode=require`
+2. **Rotate credentials**: Change passwords periodically
+3. **IP restrictions**: Configure allowed IPs in Neon Console
+4. **Audit logs**: Monitor connection attempts
+5. **Backup**: Enable point-in-time recovery (Pro plan)
+
+---
+
+## Resources
+
+- [Neon Documentation](https://neon.tech/docs)
+- [Neon CLI Reference](https://neon.tech/docs/reference/cli)
+- [PostgreSQL Tutorial](https://neon.tech/postgresql)
+- [Neon Discord Community](https://discord.gg/92vNTzKDGp)
