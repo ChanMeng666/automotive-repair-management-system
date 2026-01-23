@@ -1,6 +1,8 @@
 /**
  * Neon Auth Client Integration
  * Handles OAuth and email-based authentication with Neon Auth (Better Auth)
+ * 
+ * Based on Better Auth REST API endpoints
  */
 
 class NeonAuthClient {
@@ -11,11 +13,54 @@ class NeonAuthClient {
 
     /**
      * Sign in with Google OAuth
+     * Uses Better Auth's social sign-in endpoint
      */
     async signInWithGoogle() {
         const callbackUrl = `${window.location.origin}/auth/callback`;
-        const authUrl = `${this.authUrl}/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackUrl)}`;
-        window.location.href = authUrl;
+        
+        try {
+            // POST to the social sign-in endpoint
+            const response = await fetch(`${this.authUrl}/sign-in/social`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: 'google',
+                    callbackURL: callbackUrl
+                }),
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Better Auth returns a redirect URL for OAuth
+                if (data.url) {
+                    window.location.href = data.url;
+                    return;
+                }
+            }
+
+            // If the API doesn't return a redirect, try direct OAuth URL
+            // This is a fallback for direct OAuth initiation
+            const oauthUrl = `${this.authUrl}/callback/google?callbackURL=${encodeURIComponent(callbackUrl)}`;
+            window.location.href = oauthUrl;
+            
+        } catch (error) {
+            console.error('Google sign-in error:', error);
+            // Fallback: try the direct OAuth approach
+            this.initiateGoogleOAuthDirect();
+        }
+    }
+
+    /**
+     * Direct OAuth initiation (fallback method)
+     */
+    initiateGoogleOAuthDirect() {
+        const callbackUrl = `${window.location.origin}/auth/callback`;
+        // Better Auth OAuth callback pattern
+        const oauthUrl = `${this.authUrl}/callback/google?callbackURL=${encodeURIComponent(callbackUrl)}`;
+        window.location.href = oauthUrl;
     }
 
     /**
@@ -103,7 +148,7 @@ class NeonAuthClient {
 
             const data = await response.json();
             
-            // Store session token
+            // Store session token if returned
             if (data.session && data.session.token) {
                 this.setSession(data.session.token);
             }
@@ -224,6 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (authUrl) {
         window.neonAuth = new NeonAuthClient(authUrl);
-        console.log('Neon Auth client initialized');
+        console.log('Neon Auth client initialized with URL:', authUrl);
     }
 });

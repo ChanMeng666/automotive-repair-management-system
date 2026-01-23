@@ -108,6 +108,10 @@ def init_extensions(app):
         if app.config.get('ENV') != 'production':
             db.create_all()
 
+    # Initialize OAuth
+    from app.services.oauth_service import init_oauth
+    init_oauth(app)
+
     # Initialize error handler
     ErrorHandler(app)
 

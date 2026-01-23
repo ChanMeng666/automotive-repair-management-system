@@ -42,6 +42,11 @@ class BaseConfig:
     NEON_AUTH_JWKS_URL = os.environ.get('NEON_AUTH_JWKS_URL')
     NEON_AUTH_ENABLED = bool(os.environ.get('NEON_AUTH_URL'))
 
+    # Google OAuth configuration (direct integration for Flask apps)
+    # Get credentials from Google Cloud Console: https://console.cloud.google.com/apis/credentials
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+
     # Flask configuration
     PERMANENT_SESSION_LIFETIME = timedelta(hours=2)
     JSON_AS_ASCII = False

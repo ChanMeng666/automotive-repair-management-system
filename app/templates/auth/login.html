@@ -164,9 +164,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Neon Auth URL meta tag -->
-<meta name="neon-auth-url" content="{{ config.get('NEON_AUTH_URL', '') }}">
-
 <div class="row justify-content-center min-vh-100 align-items-center">
     <div class="col-xl-4 col-lg-5 col-md-6 col-sm-8">
         <!-- Login Card -->
@@ -184,10 +181,10 @@
                 <!-- Message display area -->
                 <div id="auth-message" class="alert d-none mb-4"></div>
 
-                {% if config.get('NEON_AUTH_URL') %}
-                <!-- OAuth Sign In Options -->
+                {% if config.get('GOOGLE_CLIENT_ID') %}
+                <!-- Google OAuth Sign In -->
                 <div class="mb-4">
-                    <button type="button" id="googleSignIn" class="btn btn-oauth btn-google w-100 mb-2">
+                    <a href="{{ url_for('auth.google_login') }}" class="btn btn-oauth btn-google w-100 mb-2">
                         <svg width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -195,7 +192,7 @@
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                         <span>Continue with Google</span>
-                    </button>
+                    </a>
                 </div>
 
                 <div class="divider mb-4">
@@ -208,11 +205,6 @@
                     <button type="button" class="auth-tab active" data-tab="password">
                         <i class="bi bi-key me-2"></i>Password
                     </button>
-                    {% if config.get('NEON_AUTH_URL') %}
-                    <button type="button" class="auth-tab" data-tab="email">
-                        <i class="bi bi-envelope me-2"></i>Email Link
-                    </button>
-                    {% endif %}
                 </div>
 
                 <!-- Password Login Form -->
@@ -301,42 +293,6 @@
                     </form>
                 </div>
 
-                {% if config.get('NEON_AUTH_URL') %}
-                <!-- Email Link Login Form -->
-                <div id="email-content" class="auth-content">
-                    <form id="emailLinkForm" class="needs-validation" novalidate>
-                        <div class="form-group mb-4">
-                            <label for="email" class="form-label">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0">
-                                    <i class="bi bi-envelope text-muted"></i>
-                                </span>
-                                <input 
-                                    type="email" 
-                                    class="form-control border-start-0 ps-0" 
-                                    id="email" 
-                                    name="email" 
-                                    placeholder="Enter your email"
-                                    required
-                                    autocomplete="email"
-                                >
-                                <div class="invalid-feedback">
-                                    Please enter a valid email address.
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" id="sendEmailLink" class="btn btn-primary w-100 py-3 fw-semibold">
-                            <i class="bi bi-send me-2"></i>
-                            Send Sign In Link
-                        </button>
-                        
-                        <p class="text-muted text-sm text-center mt-3">
-                            We'll send a magic link to your email for passwordless sign in.
-                        </p>
-                    </form>
-                </div>
-                {% endif %}
                 
                 <!-- System Info -->
                 <div class="mt-4 p-3 bg-light border-start border-4 border-primary">
@@ -344,8 +300,8 @@
                         <i class="bi bi-shield-lock me-2"></i>Secure Login
                     </h6>
                     <p class="text-muted text-sm mb-0">
-                        {% if config.get('NEON_AUTH_URL') %}
-                        Sign in securely using Google or your email. Your data is protected with industry-standard encryption.
+                        {% if config.get('GOOGLE_CLIENT_ID') %}
+                        Sign in securely using Google or your credentials. Your data is protected with industry-standard encryption.
                         {% else %}
                         Please contact your system administrator if you need login credentials.
                         {% endif %}
@@ -377,9 +333,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Neon Auth Client -->
-<script src="{{ url_for('static', filename='js/neon-auth.js') }}"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Password visibility toggle
@@ -407,76 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         });
     });
-
-    // Auth tab switching
-    const tabs = document.querySelectorAll('.auth-tab');
-    const contents = document.querySelectorAll('.auth-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const target = this.dataset.tab;
-
-            // Update tab active state
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-
-            // Update content visibility
-            contents.forEach(c => c.classList.remove('active'));
-            document.getElementById(`${target}-content`).classList.add('active');
-        });
-    });
-
-    // Message display helper
-    function showMessage(message, type = 'info') {
-        const messageDiv = document.getElementById('auth-message');
-        messageDiv.className = `alert alert-${type}`;
-        messageDiv.textContent = message;
-        messageDiv.classList.remove('d-none');
-
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            messageDiv.classList.add('d-none');
-        }, 5000);
-    }
-
-    // Google Sign In
-    const googleBtn = document.getElementById('googleSignIn');
-    if (googleBtn && window.neonAuth) {
-        googleBtn.addEventListener('click', function() {
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Redirecting...';
-            window.neonAuth.signInWithGoogle();
-        });
-    }
-
-    // Email Link Form
-    const emailForm = document.getElementById('emailLinkForm');
-    if (emailForm && window.neonAuth) {
-        emailForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!emailForm.checkValidity()) {
-                emailForm.classList.add('was-validated');
-                return;
-            }
-
-            const email = document.getElementById('email').value;
-            const submitBtn = document.getElementById('sendEmailLink');
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
-
-            try {
-                const result = await window.neonAuth.signInWithEmail(email);
-                showMessage('Check your email for the sign-in link!', 'success');
-                submitBtn.innerHTML = '<i class="bi bi-check2 me-2"></i>Email Sent';
-            } catch (error) {
-                showMessage(error.message || 'Failed to send email link', 'danger');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-send me-2"></i>Send Sign In Link';
-            }
-        });
-    }
     
     // Add animation to the card
     const card = document.querySelector('.card');
