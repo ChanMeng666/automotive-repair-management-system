@@ -183,6 +183,40 @@ class AuthService:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
+    def authenticate(self, username: str, password: str, user_type: str = 'technician') -> Tuple[bool, Dict[str, Any], Optional[str]]:
+        """
+        Authenticate with username and password (main login method)
+
+        Args:
+            username: Username
+            password: Plain text password
+            user_type: Expected role ('technician' or 'administrator')
+
+        Returns:
+            Tuple of (success, user_data, error_message)
+        """
+        try:
+            user = User.authenticate(username, password)
+            
+            if user:
+                # Check if user role matches expected type (or allow admin to log in as any role)
+                if user.role != user_type and not user.is_admin:
+                    return False, {}, f"Your account is not registered as a {user_type}"
+                
+                user_data = {
+                    'user_id': user.user_id,
+                    'username': user.username,
+                    'role': user.role,
+                    'email': user.email
+                }
+                return True, user_data, None
+            else:
+                return False, {}, "Invalid username or password"
+                
+        except Exception as e:
+            self.logger.error(f"Authentication error: {e}")
+            return False, {}, "Authentication failed. Please try again."
+
     def authenticate_password(self, username: str, password: str) -> Optional[User]:
         """
         Authenticate with username and password

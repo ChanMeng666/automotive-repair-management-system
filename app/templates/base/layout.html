@@ -6,6 +6,11 @@
     <meta name="description" content="Automotive Repair Management System - Professional repair order and customer management platform">
     <meta name="author" content="Automotive Repair Management System">
     
+    <!-- Neon Auth Configuration -->
+    {% if config and config.get('NEON_AUTH_URL') %}
+    <meta name="neon-auth-url" content="{{ config.get('NEON_AUTH_URL') }}">
+    {% endif %}
+    
     <title>{% block title %}Automotive Repair Management System{% endblock %}</title>
     
     <!-- Favicon -->
