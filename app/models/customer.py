@@ -1,201 +1,120 @@
 """
-Customer model
+Customer Model - SQLAlchemy ORM
 """
-from typing import List, Optional, Dict, Any
-from .base import BaseModel
-from app.utils.database import execute_query, DatabaseError
+from typing import List, Optional
 import re
+from sqlalchemy import String, and_
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.extensions import db
+from app.models.base import BaseModelMixin
 
 
-class Customer(BaseModel):
+class Customer(db.Model, BaseModelMixin):
     """Customer model class"""
-    
-    _table_name = 'customer'
-    _primary_key = 'customer_id'
-    _fields = ['customer_id', 'first_name', 'family_name', 'email', 'phone']
-    
-    def __init__(self, **kwargs):
-        """Initialize customer instance"""
-        super().__init__(**kwargs)
-        
-        # Attribute validation
-        if hasattr(self, 'email') and self.email:
-            self._validate_email()
-        if hasattr(self, 'phone') and self.phone:
-            self._validate_phone()
-    
-    def _validate_email(self):
-        """Validate email format"""
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_pattern, self.email):
-            raise ValueError(f"Invalid email format: {self.email}")
-    
-    def _validate_phone(self):
-        """Validate phone number format"""
-        # Simple phone number validation, can be adjusted as needed
-        phone_pattern = r'^\d{10,11}$'
-        if not re.match(phone_pattern, self.phone.replace(' ', '').replace('-', '')):
-            raise ValueError(f"Invalid phone number format: {self.phone}")
-    
+
+    __tablename__ = 'customer'
+
+    customer_id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[Optional[str]] = mapped_column(String(25), nullable=True)
+    family_name: Mapped[str] = mapped_column(String(25), nullable=False)
+    email: Mapped[str] = mapped_column(String(320), nullable=False)
+    phone: Mapped[str] = mapped_column(String(11), nullable=False)
+
+    # Relationships
+    jobs: Mapped[List["Job"]] = relationship("Job", back_populates="customer_rel", lazy="dynamic")
+
     @property
     def full_name(self) -> str:
         """Get full name"""
         first = self.first_name or ''
         family = self.family_name or ''
         return f"{first} {family}".strip()
-    
+
     @classmethod
     def search_by_name(cls, search_term: str, search_type: str = 'both') -> List['Customer']:
         """
-                Search customers by name
-        
+        Search customers by name
+
         Args:
             search_term: Search term
             search_type: Search type ('first_name', 'family_name', 'both')
-            
+
         Returns:
             List of matching customers
         """
-        try:
-            search_term = f"%{search_term}%"
-            
-            if search_type == 'first_name':
-                query = f"SELECT * FROM {cls._table_name} WHERE first_name LIKE %s ORDER BY family_name, first_name"
-                params = (search_term,)
-            elif search_type == 'family_name':
-                query = f"SELECT * FROM {cls._table_name} WHERE family_name LIKE %s ORDER BY family_name, first_name"
-                params = (search_term,)
-            else:  # both
-                query = f"""
-                    SELECT * FROM {cls._table_name} 
-                    WHERE first_name LIKE %s OR family_name LIKE %s 
-                    ORDER BY family_name, first_name
-                """
-                params = (search_term, search_term)
-            
-            results = execute_query(query, params)
-            return [cls(**row) for row in results] if results else []
-            
-        except Exception as e:
-            raise DatabaseError(f"Failed to search customers: {e}")
-    
+        search_pattern = f"%{search_term}%"
+
+        if search_type == 'first_name':
+            query = db.select(cls).where(
+                cls.first_name.ilike(search_pattern)
+            ).order_by(cls.family_name, cls.first_name)
+        elif search_type == 'family_name':
+            query = db.select(cls).where(
+                cls.family_name.ilike(search_pattern)
+            ).order_by(cls.family_name, cls.first_name)
+        else:  # both
+            query = db.select(cls).where(
+                db.or_(
+                    cls.first_name.ilike(search_pattern),
+                    cls.family_name.ilike(search_pattern)
+                )
+            ).order_by(cls.family_name, cls.first_name)
+
+        return list(db.session.execute(query).scalars())
+
     @classmethod
     def get_all_sorted(cls) -> List['Customer']:
         """Get all customers, sorted by name"""
-        return cls.find_all(order_by='family_name, first_name')
-    
-    def get_jobs(self, completed_only: bool = False) -> List[Dict[str, Any]]:
-        """
-                Get customer's work orders
-        
-        Args:
-            completed_only: Whether to get only completed orders
-            
-        Returns:
-            List of work orders
-        """
-        try:
-            query = """
-                SELECT j.*, 
-                       CASE WHEN j.completed = 1 THEN 'YES' ELSE 'NO' END as completed_status,
-                       CASE WHEN j.paid = 1 THEN 'YES' ELSE 'NO' END as paid_status
-                FROM job j 
-                WHERE j.customer = %s
-            """
-            
-            if completed_only:
-                query += " AND j.completed = 1"
-            
-            query += " ORDER BY j.job_date DESC"
-            
-            return execute_query(query, (self.customer_id,))
-            
-        except Exception as e:
-            raise DatabaseError(f"Failed to get customer work orders: {e}")
-    
-    def get_unpaid_jobs(self) -> List[Dict[str, Any]]:
+        query = db.select(cls).order_by(cls.family_name, cls.first_name)
+        return list(db.session.execute(query).scalars())
+
+    def get_jobs(self, completed_only: bool = False) -> List["Job"]:
+        """Get customer's work orders"""
+        from app.models.job import Job
+        query = self.jobs
+        if completed_only:
+            query = query.filter(Job.completed == True)
+        return query.order_by(Job.job_date.desc()).all()
+
+    def get_unpaid_jobs(self) -> List["Job"]:
         """Get customer's unpaid orders"""
-        try:
-            query = """
-                SELECT j.*, 
-                       DATEDIFF(CURDATE(), j.job_date) as days_since_job
-                FROM job j 
-                WHERE j.customer = %s AND j.paid = 0
-                ORDER BY j.job_date ASC
-            """
-            
-            return execute_query(query, (self.customer_id,))
-            
-        except Exception as e:
-            raise DatabaseError(f"Failed to get customer unpaid orders: {e}")
-    
+        from app.models.job import Job
+        return self.jobs.filter(Job.paid == False).order_by(Job.job_date.asc()).all()
+
     def get_total_unpaid_amount(self) -> float:
-        """获取客户未付款总金额"""
-        try:
-            query = """
-                SELECT COALESCE(SUM(total_cost), 0) as total_unpaid
-                FROM job 
-                WHERE customer = %s AND paid = 0
-            """
-            
-            result = execute_query(query, (self.customer_id,), fetch_one=True)
-            return float(result['total_unpaid']) if result else 0.0
-            
-        except Exception as e:
-            raise DatabaseError(f"获取客户未付款总金额失败: {e}")
-    
-    def has_overdue_bills(self, days_threshold: int = 14) -> bool:
-        """
-        检查客户是否有逾期账单
-        
-        Args:
-            days_threshold: 逾期天数阈值
-        
-        Returns:
-            是否有逾期账单
-        """
-        try:
-            query = """
-                SELECT COUNT(*) as overdue_count
-                FROM job 
-                WHERE customer = %s 
-                  AND paid = 0 
-                  AND DATEDIFF(CURDATE(), job_date) > %s
-            """
-            
-            result = execute_query(query, (self.customer_id, days_threshold), fetch_one=True)
-            return result['overdue_count'] > 0 if result else False
-            
-        except Exception as e:
-            raise DatabaseError(f"检查逾期账单失败: {e}")
-    
+        """Get customer's total unpaid amount"""
+        from app.models.job import Job
+        result = db.session.execute(
+            db.select(db.func.coalesce(db.func.sum(Job.total_cost), 0))
+            .where(and_(Job.customer == self.customer_id, Job.paid == False))
+        ).scalar()
+        return float(result or 0)
+
     def validate(self) -> List[str]:
-        """验证客户数据"""
+        """Validate customer data"""
         errors = []
-        
+
         if not self.family_name or not self.family_name.strip():
-            errors.append("姓氏不能为空")
-        
+            errors.append("Family name is required")
+
         if not self.email or not self.email.strip():
-            errors.append("邮箱不能为空")
+            errors.append("Email is required")
         else:
-            try:
-                self._validate_email()
-            except ValueError as e:
-                errors.append(str(e))
-        
+            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, self.email):
+                errors.append(f"Invalid email format: {self.email}")
+
         if not self.phone or not self.phone.strip():
-            errors.append("手机号不能为空")
-        else:
-            try:
-                self._validate_phone()
-            except ValueError as e:
-                errors.append(str(e))
-        
+            errors.append("Phone number is required")
+
         return errors
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """转换为字典，包含计算字段"""
+
+    def to_dict(self):
+        """Convert to dictionary with computed fields"""
         data = super().to_dict()
         data['full_name'] = self.full_name
-        return data 
+        return data
+
+
+# Import Job here to avoid circular imports - needed for type hints
+from app.models.job import Job

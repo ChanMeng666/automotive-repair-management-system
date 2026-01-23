@@ -1,9 +1,0 @@
-1.
-pip install flask-paginate
-
-#python.exe -m pip install --upgrade pip
-#Successfully uninstalled pip-23.2.1
-#Successfully installed pip-23.3.2
-
-2.
-

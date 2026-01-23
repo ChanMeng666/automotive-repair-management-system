@@ -1,185 +1,156 @@
 """
-账单服务类
-封装账单和付款相关的业务逻辑
+Billing Service
+Business logic for billing and payment operations using SQLAlchemy ORM
 """
 from typing import List, Optional, Dict, Any, Tuple
-from datetime import date, timedelta
+from datetime import date
 import logging
+from app.extensions import db
 from app.models.job import Job
 from app.models.customer import Customer
-from app.utils.database import execute_query, execute_update, DatabaseError
 
 
 class BillingService:
-    """账单服务类"""
-    
+    """Billing service class"""
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-    
-    def get_unpaid_bills(self, customer_name: Optional[str] = None) -> List[Dict[str, Any]]:
+
+    def get_unpaid_bills(self, customer_name: Optional[str] = None) -> List[Job]:
         """
-        获取未付款账单
-        
+        Get unpaid bills
+
         Args:
-            customer_name: 客户姓名过滤（可选）
-        
+            customer_name: Customer name filter (optional)
+
         Returns:
-            未付款账单列表
+            List of unpaid jobs
         """
         try:
             return Job.get_unpaid_jobs(customer_name)
         except Exception as e:
             self.logger.error(f"Failed to get unpaid bills: {e}")
             return []
-    
-    def get_overdue_bills(self, days_threshold: int = 14) -> List[Dict[str, Any]]:
+
+    def get_overdue_bills(self, days_threshold: int = 14) -> List[Job]:
         """
-        获取逾期账单
-        
+        Get overdue bills
+
         Args:
-            days_threshold: 逾期天数阈值
-        
+            days_threshold: Overdue days threshold
+
         Returns:
-            逾期账单列表
+            List of overdue jobs
         """
         try:
-            bills = Job.get_overdue_jobs(days_threshold)
-            
-            # 添加逾期状态
-            for bill in bills:
-                bill['overdue'] = True
-                bill['days_overdue'] = bill.get('days_overdue', 0)
-            
-            return bills
-            
+            return Job.get_overdue_jobs(days_threshold)
         except Exception as e:
             self.logger.error(f"Failed to get overdue bills: {e}")
             return []
-    
+
     def get_all_bills_with_status(self) -> List[Dict[str, Any]]:
-        """获取所有账单及其状态"""
+        """Get all bills with status information"""
         try:
-            # 获取所有工作订单
-            bills = Job.get_all_with_customer_info()
-            
-            # 添加逾期状态
-            today = date.today()
-            for bill in bills:
-                job_date = bill.get('job_date')
-                if isinstance(job_date, str):
-                    job_date = date.fromisoformat(job_date)
-                
-                # 计算逾期天数
-                if job_date and not bill.get('paid'):
-                    days_diff = (today - job_date).days
-                    bill['overdue'] = days_diff > 14
-                    bill['days_overdue'] = days_diff if days_diff > 14 else 0
-                else:
-                    bill['overdue'] = False
-                    bill['days_overdue'] = 0
-            
+            jobs = Job.get_all_with_customer_info()
+
+            bills = []
+            for job in jobs:
+                bill = job.to_dict()
+                bill['overdue'] = job.is_overdue
+                bill['days_overdue'] = job.days_since_job if job.is_overdue else 0
+                bills.append(bill)
+
             return bills
-            
+
         except Exception as e:
             self.logger.error(f"Failed to get all bills: {e}")
             return []
-    
+
     def mark_customer_bills_as_paid(self, customer_id: int) -> Tuple[bool, List[str], int]:
         """
-        标记客户的所有未付款账单为已付款
-        
+        Mark all unpaid bills for a customer as paid
+
         Args:
-            customer_id: 客户ID
-        
+            customer_id: Customer ID
+
         Returns:
-            (是否成功, 错误信息列表, 标记付款的账单数量)
+            (success, error_messages, count_marked)
         """
         try:
-            # 验证客户存在
             customer = Customer.find_by_id(customer_id)
             if not customer:
                 return False, ["Customer does not exist"], 0
-            
-            # 获取客户的未付款账单
+
             unpaid_jobs = customer.get_unpaid_jobs()
             if not unpaid_jobs:
                 return False, ["This customer has no unpaid bills"], 0
-            
-            # 批量更新为已付款
-            job_ids = [job['job_id'] for job in unpaid_jobs]
-            placeholders = ','.join(['%s'] * len(job_ids))
-            query = f"UPDATE job SET paid = 1 WHERE job_id IN ({placeholders})"
-            
-            affected_rows = execute_update(query, tuple(job_ids))
-            
-            if affected_rows > 0:
-                self.logger.info(f"Marked {affected_rows} bills as paid for customer {customer.full_name}")
-                return True, [], affected_rows
-            else:
-                return False, ["Failed to mark payment"], 0
-                
+
+            count = 0
+            for job in unpaid_jobs:
+                job.paid = True
+                count += 1
+
+            db.session.commit()
+            self.logger.info(f"Marked {count} bills as paid for customer {customer.full_name}")
+            return True, [], count
+
         except Exception as e:
             self.logger.error(f"Failed to mark customer bills as paid: {e}")
-            return False, ["System error, please try again later"], 0
-    
+            db.session.rollback()
+            return False, ["System error, please try again"], 0
+
     def mark_job_as_paid(self, job_id: int) -> Tuple[bool, List[str]]:
         """
-        标记单个工作订单为已付款
-        
+        Mark a single job as paid
+
         Args:
-            job_id: 工作订单ID
-        
+            job_id: Job ID
+
         Returns:
-            (是否成功, 错误信息列表)
+            (success, error_messages)
         """
         try:
             job = Job.find_by_id(job_id)
             if not job:
-                return False, ["Work order does not exist"]
-            
+                return False, ["Job does not exist"]
+
             if job.paid:
                 return False, ["Bill is already paid"]
-            
-            success = job.mark_as_paid()
-            if success:
-                self.logger.info(f"Work order {job_id} marked as paid")
-                return True, []
-            else:
-                return False, ["Failed to mark payment"]
-                
+
+            job.mark_as_paid()
+            self.logger.info(f"Job {job_id} marked as paid")
+            return True, []
+
         except Exception as e:
             self.logger.error(f"Failed to mark bill as paid: {e}")
-            return False, ["System error, please try again later"]
-    
+            db.session.rollback()
+            return False, ["System error, please try again"]
+
     def get_customer_billing_summary(self, customer_id: int) -> Dict[str, Any]:
         """
-        获取客户账单汇总
-        
+        Get customer billing summary
+
         Args:
-            customer_id: 客户ID
-        
+            customer_id: Customer ID
+
         Returns:
-            客户账单汇总信息
+            Customer billing summary
         """
         try:
             customer = Customer.find_by_id(customer_id)
             if not customer:
                 return {}
-            
-            # 获取所有账单
+
             all_jobs = customer.get_jobs()
             unpaid_jobs = customer.get_unpaid_jobs()
-            
-            # 计算汇总信息
-            total_amount = sum(float(job.get('total_cost', 0)) for job in all_jobs)
-            unpaid_amount = sum(float(job.get('total_cost', 0)) for job in unpaid_jobs)
+
+            total_amount = sum(float(job.total_cost or 0) for job in all_jobs)
+            unpaid_amount = sum(float(job.total_cost or 0) for job in unpaid_jobs)
             paid_amount = total_amount - unpaid_amount
-            
-            # 逾期账单
-            overdue_jobs = [job for job in unpaid_jobs 
-                           if self._is_job_overdue(job)]
-            overdue_amount = sum(float(job.get('total_cost', 0)) for job in overdue_jobs)
-            
+
+            overdue_jobs = [job for job in unpaid_jobs if job.is_overdue]
+            overdue_amount = sum(float(job.total_cost or 0) for job in overdue_jobs)
+
             return {
                 'customer_info': customer.to_dict(),
                 'total_jobs': len(all_jobs),
@@ -192,119 +163,88 @@ class BillingService:
                 'overdue_amount': overdue_amount,
                 'payment_rate': (paid_amount / total_amount * 100) if total_amount > 0 else 0
             }
-            
+
         except Exception as e:
             self.logger.error(f"Failed to get customer billing summary: {e}")
             return {}
-    
+
     def get_billing_statistics(self) -> Dict[str, Any]:
-        """获取账单统计信息"""
+        """Get overall billing statistics"""
         try:
-            # 总账单统计
-            query = """
-                SELECT 
-                    COUNT(*) as total_bills,
-                    COALESCE(SUM(total_cost), 0) as total_amount,
-                    COUNT(CASE WHEN paid = 1 THEN 1 END) as paid_bills,
-                    COALESCE(SUM(CASE WHEN paid = 1 THEN total_cost ELSE 0 END), 0) as paid_amount,
-                    COUNT(CASE WHEN paid = 0 THEN 1 END) as unpaid_bills,
-                    COALESCE(SUM(CASE WHEN paid = 0 THEN total_cost ELSE 0 END), 0) as unpaid_amount
-                FROM job
-                WHERE total_cost > 0
-            """
-            
-            result = execute_query(query, fetch_one=True)
-            
-            if not result:
-                return self._get_empty_billing_stats()
-            
-            # 逾期账单统计
+            # Get all jobs with costs
+            query = db.select(
+                db.func.count(Job.job_id).label('total_bills'),
+                db.func.coalesce(db.func.sum(Job.total_cost), 0).label('total_amount'),
+                db.func.count(db.case((Job.paid == True, 1))).label('paid_bills'),
+                db.func.coalesce(db.func.sum(db.case((Job.paid == True, Job.total_cost), else_=0)), 0).label('paid_amount'),
+                db.func.count(db.case((Job.paid == False, 1))).label('unpaid_bills'),
+                db.func.coalesce(db.func.sum(db.case((Job.paid == False, Job.total_cost), else_=0)), 0).label('unpaid_amount')
+            ).where(Job.total_cost > 0)
+
+            result = db.session.execute(query).one()
+
             overdue_bills = self.get_overdue_bills()
-            overdue_amount = sum(float(bill.get('total_cost', 0)) for bill in overdue_bills)
-            
-            # 本月统计
-            today = date.today()
-            month_start = today.replace(day=1)
-            
-            month_query = """
-                SELECT 
-                    COUNT(*) as month_bills,
-                    COALESCE(SUM(total_cost), 0) as month_amount,
-                    COUNT(CASE WHEN paid = 1 THEN 1 END) as month_paid_bills,
-                    COALESCE(SUM(CASE WHEN paid = 1 THEN total_cost ELSE 0 END), 0) as month_paid_amount
-                FROM job
-                WHERE job_date >= %s AND total_cost > 0
-            """
-            
-            month_result = execute_query(month_query, (month_start,), fetch_one=True)
-            
-            total_amount = float(result['total_amount'])
-            paid_amount = float(result['paid_amount'])
-            unpaid_amount = float(result['unpaid_amount'])
-            
+            overdue_amount = sum(float(job.total_cost or 0) for job in overdue_bills)
+
+            total_amount = float(result.total_amount)
+            paid_amount = float(result.paid_amount)
+
             return {
-                'total_bills': result['total_bills'],
+                'total_bills': result.total_bills,
                 'total_amount': total_amount,
-                'paid_bills': result['paid_bills'],
+                'paid_bills': result.paid_bills,
                 'paid_amount': paid_amount,
-                'unpaid_bills': result['unpaid_bills'],
-                'unpaid_amount': unpaid_amount,
+                'unpaid_bills': result.unpaid_bills,
+                'unpaid_amount': float(result.unpaid_amount),
                 'overdue_bills': len(overdue_bills),
                 'overdue_amount': overdue_amount,
-                'payment_rate': (paid_amount / total_amount * 100) if total_amount > 0 else 0,
-                'month_bills': month_result['month_bills'] if month_result else 0,
-                'month_amount': float(month_result['month_amount']) if month_result else 0,
-                'month_paid_bills': month_result['month_paid_bills'] if month_result else 0,
-                'month_paid_amount': float(month_result['month_paid_amount']) if month_result else 0
+                'payment_rate': (paid_amount / total_amount * 100) if total_amount > 0 else 0
             }
-            
+
         except Exception as e:
             self.logger.error(f"Failed to get billing statistics: {e}")
             return self._get_empty_billing_stats()
-    
+
     def get_customers_with_unpaid_bills(self) -> List[Dict[str, Any]]:
-        """获取有未付款账单的客户列表"""
+        """Get customers with unpaid bills"""
         try:
-            query = """
-                SELECT DISTINCT c.customer_id, c.first_name, c.family_name, c.email, c.phone,
-                       COUNT(j.job_id) as unpaid_count,
-                       COALESCE(SUM(j.total_cost), 0) as unpaid_amount
-                FROM customer c
-                JOIN job j ON c.customer_id = j.customer
-                WHERE j.paid = 0
-                GROUP BY c.customer_id, c.first_name, c.family_name, c.email, c.phone
-                ORDER BY unpaid_amount DESC, c.family_name, c.first_name
-            """
-            
-            results = execute_query(query)
-            
-            # 转换数据类型
-            for result in results:
-                result['unpaid_amount'] = float(result['unpaid_amount'])
-            
-            return results
-            
+            query = db.select(
+                Customer.customer_id,
+                Customer.first_name,
+                Customer.family_name,
+                Customer.email,
+                Customer.phone,
+                db.func.count(Job.job_id).label('unpaid_count'),
+                db.func.coalesce(db.func.sum(Job.total_cost), 0).label('unpaid_amount')
+            ).join(Job).where(Job.paid == False).group_by(
+                Customer.customer_id,
+                Customer.first_name,
+                Customer.family_name,
+                Customer.email,
+                Customer.phone
+            ).order_by(db.desc('unpaid_amount'), Customer.family_name, Customer.first_name)
+
+            results = db.session.execute(query).all()
+
+            return [
+                {
+                    'customer_id': r.customer_id,
+                    'first_name': r.first_name,
+                    'family_name': r.family_name,
+                    'email': r.email,
+                    'phone': r.phone,
+                    'unpaid_count': r.unpaid_count,
+                    'unpaid_amount': float(r.unpaid_amount)
+                }
+                for r in results
+            ]
+
         except Exception as e:
             self.logger.error(f"Failed to get customers with unpaid bills: {e}")
             return []
-    
-    def _is_job_overdue(self, job: Dict[str, Any], days_threshold: int = 14) -> bool:
-        """检查工作订单是否逾期"""
-        if job.get('paid'):
-            return False
-        
-        job_date = job.get('job_date')
-        if isinstance(job_date, str):
-            job_date = date.fromisoformat(job_date)
-        
-        if job_date:
-            days_diff = (date.today() - job_date).days
-            return days_diff > days_threshold
-        
-        return False
-    
+
     def _get_empty_billing_stats(self) -> Dict[str, Any]:
-        """返回空的账单统计"""
+        """Return empty billing statistics"""
         return {
             'total_bills': 0,
             'total_amount': 0.0,
@@ -314,9 +254,5 @@ class BillingService:
             'unpaid_amount': 0.0,
             'overdue_bills': 0,
             'overdue_amount': 0.0,
-            'payment_rate': 0.0,
-            'month_bills': 0,
-            'month_amount': 0.0,
-            'month_paid_bills': 0,
-            'month_paid_amount': 0.0
-        } 
+            'payment_rate': 0.0
+        }

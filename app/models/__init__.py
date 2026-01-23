@@ -1,9 +1,21 @@
 """
-Data model module
+Models Package
+SQLAlchemy ORM models for the Automotive Repair Management System
 """
-from .customer import Customer
-from .job import Job
-from .service import Service
-from .part import Part
+from app.extensions import db
+from app.models.customer import Customer
+from app.models.job import Job, JobService, JobPart
+from app.models.service import Service
+from app.models.part import Part
+from app.models.user import User
 
-__all__ = ['Customer', 'Job', 'Service', 'Part'] 
+__all__ = [
+    'db',
+    'Customer',
+    'Job',
+    'JobService',
+    'JobPart',
+    'Service',
+    'Part',
+    'User'
+]

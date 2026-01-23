@@ -1,33 +1,37 @@
 """
-User model for authentication and authorization
+User Model - SQLAlchemy ORM
+Authentication and authorization with Stack Auth JWT support
 """
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime
 import logging
+from sqlalchemy import String, Boolean, DateTime, Enum
+from sqlalchemy.orm import Mapped, mapped_column
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models.base import BaseModel
-from app.utils.database import execute_query, execute_update, DatabaseError
+from app.extensions import db
+from app.models.base import BaseModelMixin, TimestampMixin
 
 
-class User(BaseModel):
+class User(db.Model, BaseModelMixin, TimestampMixin):
     """User model for authentication"""
 
-    _table_name = 'user'
-    _primary_key = 'user_id'
-    _fields = [
-        'user_id', 'username', 'email', 'password_hash',
-        'role', 'is_active', 'created_at', 'updated_at', 'last_login'
-    ]
+    __tablename__ = 'user'
 
-    # Valid roles
+    # Role constants
     ROLE_TECHNICIAN = 'technician'
     ROLE_ADMINISTRATOR = 'administrator'
     VALID_ROLES = [ROLE_TECHNICIAN, ROLE_ADMINISTRATOR]
 
-    def __init__(self, **kwargs):
-        """Initialize user instance"""
-        super().__init__(**kwargs)
-        self.logger = logging.getLogger(__name__)
+    user_id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    email: Mapped[Optional[str]] = mapped_column(String(320), unique=True, nullable=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default=ROLE_TECHNICIAN, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    # Stack Auth integration fields
+    stack_auth_user_id: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True, index=True)
 
     @property
     def is_admin(self) -> bool:
@@ -40,99 +44,104 @@ class User(BaseModel):
         return self.role == self.ROLE_TECHNICIAN
 
     def check_password(self, password: str) -> bool:
-        """
-        Verify password against stored hash
-
-        Args:
-            password: Plain text password to verify
-
-        Returns:
-            True if password matches, False otherwise
-        """
+        """Verify password against stored hash"""
         if not self.password_hash:
             return False
         return check_password_hash(self.password_hash, password)
 
     def set_password(self, password: str) -> None:
-        """
-        Set a new password (hashed)
-
-        Args:
-            password: Plain text password to hash and store
-        """
+        """Set a new password (hashed)"""
         self.password_hash = generate_password_hash(password)
 
     @classmethod
     def find_by_username(cls, username: str) -> Optional['User']:
-        """
-        Find user by username
-
-        Args:
-            username: The username to search for
-
-        Returns:
-            User instance if found, None otherwise
-        """
-        try:
-            query = f"SELECT * FROM {cls._table_name} WHERE username = %s"
-            result = execute_query(query, (username,), fetch_one=True)
-            return cls(**result) if result else None
-        except Exception as e:
-            logging.error(f"Failed to find user by username: {e}")
-            raise DatabaseError(f"Failed to find user: {e}")
+        """Find user by username"""
+        query = db.select(cls).where(cls.username == username)
+        return db.session.execute(query).scalar_one_or_none()
 
     @classmethod
     def find_by_email(cls, email: str) -> Optional['User']:
-        """
-        Find user by email
+        """Find user by email"""
+        query = db.select(cls).where(cls.email == email)
+        return db.session.execute(query).scalar_one_or_none()
 
-        Args:
-            email: The email to search for
-
-        Returns:
-            User instance if found, None otherwise
-        """
-        try:
-            query = f"SELECT * FROM {cls._table_name} WHERE email = %s"
-            result = execute_query(query, (email,), fetch_one=True)
-            return cls(**result) if result else None
-        except Exception as e:
-            logging.error(f"Failed to find user by email: {e}")
-            raise DatabaseError(f"Failed to find user: {e}")
+    @classmethod
+    def find_by_stack_auth_id(cls, stack_auth_user_id: str) -> Optional['User']:
+        """Find user by Stack Auth user ID"""
+        query = db.select(cls).where(cls.stack_auth_user_id == stack_auth_user_id)
+        return db.session.execute(query).scalar_one_or_none()
 
     @classmethod
     def authenticate(cls, username: str, password: str) -> Optional['User']:
+        """Authenticate user with username and password"""
+        user = cls.find_by_username(username)
+        if user and user.is_active and user.check_password(password):
+            user.update_last_login()
+            return user
+        return None
+
+    @classmethod
+    def authenticate_with_jwt(cls, jwt_payload: dict) -> Optional['User']:
         """
-        Authenticate user with username and password
+        Authenticate user with Stack Auth JWT payload
 
         Args:
-            username: The username
-            password: The plain text password
+            jwt_payload: Decoded JWT payload from Stack Auth
 
         Returns:
-            User instance if authentication successful, None otherwise
+            User instance if found/created, None otherwise
         """
-        try:
-            user = cls.find_by_username(username)
-            if user and user.is_active and user.check_password(password):
-                # Update last login time
+        stack_auth_user_id = jwt_payload.get('sub')
+        if not stack_auth_user_id:
+            return None
+
+        # Try to find existing user
+        user = cls.find_by_stack_auth_id(stack_auth_user_id)
+        if user:
+            if user.is_active:
                 user.update_last_login()
                 return user
             return None
-        except Exception as e:
-            logging.error(f"Authentication error: {e}")
-            return None
+
+        # Create new user from JWT if not found
+        email = jwt_payload.get('email')
+        if email:
+            # Check if email already exists
+            existing = cls.find_by_email(email)
+            if existing:
+                # Link existing user to Stack Auth
+                existing.stack_auth_user_id = stack_auth_user_id
+                existing.update_last_login()
+                db.session.commit()
+                return existing
+
+        # Create new user
+        username = email.split('@')[0] if email else f"user_{stack_auth_user_id[:8]}"
+        # Ensure unique username
+        base_username = username
+        counter = 1
+        while cls.find_by_username(username):
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        user = cls(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(__import__('secrets').token_urlsafe(32)),
+            role=cls.ROLE_TECHNICIAN,
+            stack_auth_user_id=stack_auth_user_id,
+            is_active=True
+        )
+        db.session.add(user)
+        db.session.commit()
+        user.update_last_login()
+        return user
 
     def update_last_login(self) -> bool:
         """Update the last login timestamp"""
-        try:
-            query = f"UPDATE {self._table_name} SET last_login = %s WHERE {self._primary_key} = %s"
-            execute_update(query, (datetime.now(), self.user_id))
-            self.last_login = datetime.now()
-            return True
-        except Exception as e:
-            logging.error(f"Failed to update last login: {e}")
-            return False
+        self.last_login = datetime.utcnow()
+        db.session.commit()
+        return True
 
     @classmethod
     def create(
@@ -142,139 +151,70 @@ class User(BaseModel):
         email: Optional[str] = None,
         role: str = ROLE_TECHNICIAN
     ) -> Optional['User']:
-        """
-        Create a new user
+        """Create a new user"""
+        # Validate role
+        if role not in cls.VALID_ROLES:
+            raise ValueError(f"Invalid role: {role}")
 
-        Args:
-            username: The username (must be unique)
-            password: The plain text password (will be hashed)
-            email: Optional email address
-            role: User role (technician or administrator)
+        # Check if username exists
+        if cls.find_by_username(username):
+            raise ValueError("Username already exists")
 
-        Returns:
-            Created User instance, or None if creation failed
-        """
-        try:
-            # Validate role
-            if role not in cls.VALID_ROLES:
-                raise ValueError(f"Invalid role: {role}")
+        # Check if email exists
+        if email and cls.find_by_email(email):
+            raise ValueError("Email already registered")
 
-            # Check if username exists
-            if cls.find_by_username(username):
-                raise ValueError("Username already exists")
-
-            # Check if email exists
-            if email and cls.find_by_email(email):
-                raise ValueError("Email already registered")
-
-            # Hash password
-            password_hash = generate_password_hash(password)
-
-            # Insert user
-            query = f"""
-                INSERT INTO {cls._table_name}
-                (username, email, password_hash, role, is_active)
-                VALUES (%s, %s, %s, %s, 1)
-            """
-            user_id = execute_update(query, (username, email, password_hash, role))
-
-            if user_id:
-                return cls.find_by_id(user_id)
-            return None
-
-        except Exception as e:
-            logging.error(f"Failed to create user: {e}")
-            raise DatabaseError(f"Failed to create user: {e}")
+        # Create user
+        user = cls(
+            username=username,
+            password_hash=generate_password_hash(password),
+            email=email,
+            role=role,
+            is_active=True
+        )
+        db.session.add(user)
+        db.session.commit()
+        return user
 
     def update_password(self, new_password: str) -> bool:
-        """
-        Update user's password
-
-        Args:
-            new_password: The new plain text password
-
-        Returns:
-            True if successful, False otherwise
-        """
-        try:
-            new_hash = generate_password_hash(new_password)
-            query = f"""
-                UPDATE {self._table_name}
-                SET password_hash = %s, updated_at = %s
-                WHERE {self._primary_key} = %s
-            """
-            execute_update(query, (new_hash, datetime.now(), self.user_id))
-            self.password_hash = new_hash
-            return True
-        except Exception as e:
-            logging.error(f"Failed to update password: {e}")
-            return False
+        """Update user's password"""
+        self.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        return True
 
     def deactivate(self) -> bool:
         """Deactivate user account"""
-        try:
-            query = f"""
-                UPDATE {self._table_name}
-                SET is_active = 0, updated_at = %s
-                WHERE {self._primary_key} = %s
-            """
-            execute_update(query, (datetime.now(), self.user_id))
-            self.is_active = False
-            return True
-        except Exception as e:
-            logging.error(f"Failed to deactivate user: {e}")
-            return False
+        self.is_active = False
+        db.session.commit()
+        return True
 
     def activate(self) -> bool:
         """Activate user account"""
-        try:
-            query = f"""
-                UPDATE {self._table_name}
-                SET is_active = 1, updated_at = %s
-                WHERE {self._primary_key} = %s
-            """
-            execute_update(query, (datetime.now(), self.user_id))
-            self.is_active = True
-            return True
-        except Exception as e:
-            logging.error(f"Failed to activate user: {e}")
-            return False
+        self.is_active = True
+        db.session.commit()
+        return True
 
     @classmethod
     def get_by_role(cls, role: str) -> List['User']:
-        """
-        Get all users with a specific role
+        """Get all users with a specific role"""
+        query = db.select(cls).where(db.and_(cls.role == role, cls.is_active == True))
+        return list(db.session.execute(query).scalars())
 
-        Args:
-            role: The role to filter by
-
-        Returns:
-            List of User instances
-        """
-        return cls.find_by_condition({'role': role, 'is_active': True})
-
-    def to_dict(self, include_sensitive: bool = False) -> Dict[str, Any]:
-        """
-        Convert user to dictionary
-
-        Args:
-            include_sensitive: Whether to include sensitive fields
-
-        Returns:
-            Dictionary representation of user
-        """
+    def to_dict(self, include_sensitive: bool = False) -> dict:
+        """Convert user to dictionary"""
         data = {
             'user_id': self.user_id,
             'username': self.username,
             'email': self.email,
             'role': self.role,
             'is_active': self.is_active,
-            'created_at': str(self.created_at) if self.created_at else None,
-            'last_login': str(self.last_login) if self.last_login else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'last_login': self.last_login.isoformat() if self.last_login else None
         }
 
         if include_sensitive:
-            data['updated_at'] = str(self.updated_at) if self.updated_at else None
+            data['updated_at'] = self.updated_at.isoformat() if self.updated_at else None
+            data['stack_auth_user_id'] = self.stack_auth_user_id
 
         return data
 

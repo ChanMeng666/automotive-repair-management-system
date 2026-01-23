@@ -1,175 +1,92 @@
 """
-Base model class
-Provides common database operation methods
+Base Model Mixins
+Provides common functionality for SQLAlchemy models
 """
-from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any, Union
-import logging
-from app.utils.database import execute_query, execute_update, DatabaseError
+from datetime import datetime
+from typing import Dict, Any, List, Optional, Type, TypeVar
+from sqlalchemy import inspect
+from app.extensions import db
+
+T = TypeVar('T', bound='BaseModelMixin')
 
 
-class BaseModel(ABC):
-    """Base model class"""
-    
-    # Attributes that subclasses need to define
-    _table_name: str = None
-    _primary_key: str = 'id'
-    _fields: List[str] = []
-    
-    def __init__(self, **kwargs):
-        """Initialize model instance"""
-        self.logger = logging.getLogger(self.__class__.__name__)
-        
-        # Set attributes
-        for field in self._fields:
-            setattr(self, field, kwargs.get(field))
-    
-    @classmethod
-    def find_by_id(cls, pk_value: Any) -> Optional['BaseModel']:
-        """Find record by primary key"""
-        try:
-            query = f"SELECT * FROM {cls._table_name} WHERE {cls._primary_key} = %s"
-            result = execute_query(query, (pk_value,), fetch_one=True)
-            
-            if result:
-                return cls(**result)
-            return None
-            
-        except Exception as e:
-            logging.error(f"Failed to find record [{cls.__name__}]: {e}")
-            raise DatabaseError(f"Failed to find record: {e}")
-    
-    @classmethod
-    def find_all(cls, limit: Optional[int] = None, offset: int = 0, 
-                 order_by: Optional[str] = None) -> List['BaseModel']:
-        """Find all records"""
-        try:
-            query = f"SELECT * FROM {cls._table_name}"
-            
-            if order_by:
-                query += f" ORDER BY {order_by}"
-            
-            if limit:
-                query += f" LIMIT {limit} OFFSET {offset}"
-            
-            results = execute_query(query)
-            return [cls(**row) for row in results] if results else []
-            
-        except Exception as e:
-            logging.error(f"Failed to find all records [{cls.__name__}]: {e}")
-            raise DatabaseError(f"Failed to find all records: {e}")
-    
-    @classmethod
-    def find_by_condition(cls, conditions: Dict[str, Any], 
-                         limit: Optional[int] = None, 
-                         order_by: Optional[str] = None) -> List['BaseModel']:
-        """Find records by conditions"""
-        try:
-            where_clause = " AND ".join([f"{key} = %s" for key in conditions.keys()])
-            query = f"SELECT * FROM {cls._table_name} WHERE {where_clause}"
-            
-            if order_by:
-                query += f" ORDER BY {order_by}"
-            
-            if limit:
-                query += f" LIMIT {limit}"
-            
-            params = tuple(conditions.values())
-            results = execute_query(query, params)
-            
-            return [cls(**row) for row in results] if results else []
-            
-        except Exception as e:
-            logging.error(f"Conditional search failed [{cls.__name__}]: {e}")
-            raise DatabaseError(f"Conditional search failed: {e}")
-    
-    @classmethod
-    def count(cls, conditions: Optional[Dict[str, Any]] = None) -> int:
-        """Count number of records"""
-        try:
-            query = f"SELECT COUNT(*) as count FROM {cls._table_name}"
-            params = None
-            
-            if conditions:
-                where_clause = " AND ".join([f"{key} = %s" for key in conditions.keys()])
-                query += f" WHERE {where_clause}"
-                params = tuple(conditions.values())
-            
-            result = execute_query(query, params, fetch_one=True)
-            return result['count'] if result else 0
-            
-        except Exception as e:
-            logging.error(f"Failed to count records [{cls.__name__}]: {e}")
-            raise DatabaseError(f"Failed to count records: {e}")
-    
-    def save(self) -> bool:
-        """Save record (insert or update)"""
-        try:
-            pk_value = getattr(self, self._primary_key, None)
-            
-            if pk_value and self.find_by_id(pk_value):
-                return self._update()
-            else:
-                return self._insert()
-                
-        except Exception as e:
-            self.logger.error(f"Failed to save record: {e}")
-            raise DatabaseError(f"Failed to save record: {e}")
-    
-    def _insert(self) -> bool:
-        """Insert new record"""
-        data = self._get_data_dict()
-        
-        # Exclude primary key (if auto-increment)
-        if self._primary_key in data and data[self._primary_key] is None:
-            data.pop(self._primary_key)
-        
-        fields = list(data.keys())
-        placeholders = ', '.join(['%s'] * len(fields))
-        field_names = ', '.join(fields)
-        
-        query = f"INSERT INTO {self._table_name} ({field_names}) VALUES ({placeholders})"
-        params = tuple(data.values())
-        
-        affected_rows = execute_update(query, params)
-        return affected_rows > 0
-    
-    def _update(self) -> bool:
-        """Update record"""
-        data = self._get_data_dict()
-        pk_value = data.pop(self._primary_key)
-        
-        set_clause = ', '.join([f"{key} = %s" for key in data.keys()])
-        query = f"UPDATE {self._table_name} SET {set_clause} WHERE {self._primary_key} = %s"
-        
-        params = tuple(list(data.values()) + [pk_value])
-        affected_rows = execute_update(query, params)
-        return affected_rows > 0
-    
+class BaseModelMixin:
+    """Mixin providing common model functionality"""
+
+    def save(self) -> 'BaseModelMixin':
+        """Save the model instance to database"""
+        db.session.add(self)
+        db.session.commit()
+        return self
+
     def delete(self) -> bool:
-        """Delete record"""
-        try:
-            pk_value = getattr(self, self._primary_key)
-            if not pk_value:
-                raise ValueError("Cannot delete: missing primary key value")
-            
-            query = f"DELETE FROM {self._table_name} WHERE {self._primary_key} = %s"
-            affected_rows = execute_update(query, (pk_value,))
-            return affected_rows > 0
-            
-        except Exception as e:
-            self.logger.error(f"Failed to delete record: {e}")
-            raise DatabaseError(f"Failed to delete record: {e}")
-    
-    def _get_data_dict(self) -> Dict[str, Any]:
-        """Get model data dictionary"""
-        return {field: getattr(self, field, None) for field in self._fields}
-    
+        """Delete the model instance from database"""
+        db.session.delete(self)
+        db.session.commit()
+        return True
+
+    @classmethod
+    def find_by_id(cls: Type[T], pk_value: Any) -> Optional[T]:
+        """Find a record by primary key"""
+        return db.session.get(cls, pk_value)
+
+    @classmethod
+    def find_all(cls: Type[T], order_by: Optional[str] = None) -> List[T]:
+        """Find all records, optionally ordered"""
+        query = db.select(cls)
+        if order_by:
+            # Parse order_by string to column references
+            order_parts = [part.strip() for part in order_by.split(',')]
+            for part in order_parts:
+                if ' DESC' in part.upper():
+                    col_name = part.upper().replace(' DESC', '').strip().lower()
+                    if hasattr(cls, col_name):
+                        query = query.order_by(getattr(cls, col_name).desc())
+                else:
+                    col_name = part.upper().replace(' ASC', '').strip().lower()
+                    if hasattr(cls, col_name):
+                        query = query.order_by(getattr(cls, col_name))
+        return list(db.session.execute(query).scalars())
+
+    @classmethod
+    def count(cls: Type[T], **filters) -> int:
+        """Count records matching filters"""
+        query = db.select(db.func.count()).select_from(cls)
+        for key, value in filters.items():
+            if hasattr(cls, key):
+                query = query.where(getattr(cls, key) == value)
+        result = db.session.execute(query).scalar()
+        return result or 0
+
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary"""
-        return self._get_data_dict()
-    
+        """Convert model to dictionary"""
+        result = {}
+        for column in inspect(self.__class__).columns:
+            value = getattr(self, column.key)
+            # Handle datetime objects
+            if isinstance(value, datetime):
+                value = value.isoformat()
+            result[column.key] = value
+        return result
+
+    def update(self, **kwargs) -> 'BaseModelMixin':
+        """Update model attributes"""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        db.session.commit()
+        return self
+
     def __repr__(self) -> str:
         """String representation"""
-        pk_value = getattr(self, self._primary_key, 'Unknown')
-        return f"<{self.__class__.__name__}({self._primary_key}={pk_value})>" 
+        mapper = inspect(self.__class__)
+        pk_cols = [col.key for col in mapper.primary_key]
+        pk_values = [getattr(self, col) for col in pk_cols]
+        pk_str = ', '.join(f"{k}={v}" for k, v in zip(pk_cols, pk_values))
+        return f"<{self.__class__.__name__}({pk_str})>"
+
+
+class TimestampMixin:
+    """Mixin for created_at and updated_at timestamps"""
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
