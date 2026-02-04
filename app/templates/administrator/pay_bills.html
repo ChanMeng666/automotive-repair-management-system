@@ -17,19 +17,19 @@ Billing Management - Administrator Portal
         <div class="col-12">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-credit-card text-primary me-2"></i>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="credit-card" class="text-primary" style="width: 28px; height: 28px;"></i>
                         Billing Management
                     </h1>
                     <p class="text-muted mb-0">Manage unpaid bills and process payments</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ url_for('administrator_customer_list') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-people me-1"></i>
+                        <i data-lucide="users" class="me-1" style="width: 16px; height: 16px;"></i>
                         Customer Management
                     </a>
                     <a href="{{ url_for('administrator_overdue_bills') }}" class="btn btn-outline-warning">
-                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        <i data-lucide="alert-triangle" class="me-1" style="width: 16px; height: 16px;"></i>
                         Overdue Bills
                     </a>
                 </div>
@@ -38,103 +38,64 @@ Billing Management - Administrator Portal
     </div>
 
     <!-- Billing Statistics -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-exclamation-triangle-fill text-danger fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Unpaid Bills</div>
-                            <div class="h4 mb-0">{{ customer_info|length }}</div>
-                        </div>
-                    </div>
-                </div>
+    <div class="stats-grid mb-4">
+        <div class="stat-card stat-card--error">
+            <div class="stat-card-icon text-error">
+                <i data-lucide="alert-triangle"></i>
             </div>
+            <div class="stat-card-value">{{ customer_info|length }}</div>
+            <div class="stat-card-label">Unpaid Bills</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-currency-dollar text-success fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Total Outstanding</div>
-                            <div class="h4 mb-0">
-                                ${{ "%.2f"|format(customer_info|sum(attribute='total_cost')|float) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-card--success">
+            <div class="stat-card-icon text-success">
+                <i data-lucide="dollar-sign"></i>
             </div>
+            <div class="stat-card-value">
+                ${{ "%.2f"|format(customer_info|sum(attribute='total_cost')|float) }}
+            </div>
+            <div class="stat-card-label">Total Outstanding</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Completed Jobs</div>
-                            <div class="h4 mb-0">
-                                {{ customer_info|selectattr('completed')|list|length }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-card--primary">
+            <div class="stat-card-icon text-success">
+                <i data-lucide="check-circle"></i>
             </div>
+            <div class="stat-card-value">
+                {{ customer_info|selectattr('completed')|list|length }}
+            </div>
+            <div class="stat-card-label">Completed Jobs</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-people-fill text-info fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Unique Customers</div>
-                            <div class="h4 mb-0">{{ customers|length }}</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-card--accent">
+            <div class="stat-card-icon text-info">
+                <i data-lucide="users"></i>
             </div>
+            <div class="stat-card-value">{{ customers|length }}</div>
+            <div class="stat-card-label">Unique Customers</div>
         </div>
     </div>
 
     <!-- Customer Filter -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-filter me-2"></i>
+            <div class="filter-bar">
+                <div class="filter-group" style="flex-grow: 1;">
+                    <label class="filter-label d-flex align-items-center gap-1">
+                        <i data-lucide="filter" style="width: 16px; height: 16px;"></i>
                         Filter by Customer
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label">Select Customer</label>
-                            <select class="form-select" name="selected_customer">
-                                <option value="">Show all customers...</option>
-                                    {% for customer in customers %}
-                                    <option value="{{ customer.full_name if customer.full_name.strip() else 'none' }}">
-                                        {{ customer.full_name if customer.full_name.strip() else 'Unnamed Customer' }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button class="btn btn-primary w-100" type="submit">
-                                <i class="bi bi-search me-1"></i>
-                                Filter Bills
-                            </button>
-                            </div>
-                        </form>
+                    </label>
+                    <form method="post" class="d-flex gap-3 align-items-end" style="flex-grow: 1;">
+                        <select class="form-select" name="selected_customer" style="max-width: 400px;">
+                            <option value="">Show all customers...</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.full_name if customer.full_name.strip() else 'none' }}">
+                                {{ customer.full_name if customer.full_name.strip() else 'Unnamed Customer' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-primary" type="submit">
+                            <i data-lucide="search" class="me-1" style="width: 16px; height: 16px;"></i>
+                            Filter Bills
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -143,10 +104,10 @@ Billing Management - Administrator Portal
     <!-- Unpaid Bills Table -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-credit-card-2-front me-2"></i>
+            <div class="table-container card--status card--status-error">
+                <div class="table-header" style="background: var(--error); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="credit-card" style="width: 20px; height: 20px;"></i>
                         Unpaid Bills
                     </h5>
                 </div>
@@ -173,7 +134,7 @@ Billing Management - Administrator Portal
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="bi bi-person-circle text-primary me-2"></i>
+                                                    <i data-lucide="user" class="text-primary me-2" style="width: 18px; height: 18px;"></i>
                                                     <div>
                                                         <strong>{{ customer.first_name }} {{ customer.family_name }}</strong>
                                                         <small class="text-muted d-block">ID: {{ customer.customer_id }}</small>
@@ -182,11 +143,11 @@ Billing Management - Administrator Portal
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="bi bi-briefcase text-info me-2"></i>
+                                                    <i data-lucide="briefcase" class="text-info me-2" style="width: 18px; height: 18px;"></i>
                                                     <div>
                                                         <strong>Job #{{ customer.job_id }}</strong>
-                                                        <small class="text-muted d-block">
-                                                            <i class="bi bi-calendar-event me-1"></i>
+                                                        <small class="text-muted d-block d-flex align-items-center gap-1">
+                                                            <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
                                                             {{ customer.job_date }}
                                                         </small>
                                                     </div>
@@ -194,7 +155,7 @@ Billing Management - Administrator Portal
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <i class="bi bi-currency-dollar text-success me-2"></i>
+                                                    <i data-lucide="dollar-sign" class="text-success me-2" style="width: 18px; height: 18px;"></i>
                                                     <span class="h5 mb-0 text-success">
                                                         ${{ "%.2f"|format(customer.total_cost|float) }}
                                                     </span>
@@ -203,24 +164,24 @@ Billing Management - Administrator Portal
                                             <td>
                                                 <div class="d-flex flex-column gap-1">
                                                     {% if customer.completed %}
-                                                        <span class="badge bg-success">
-                                                            <i class="bi bi-check-circle me-1"></i>
+                                                        <span class="status-badge status-badge-success">
+                                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
                                                             Completed
                                                         </span>
                                                     {% else %}
-                                                        <span class="badge bg-warning">
-                                                            <i class="bi bi-clock me-1"></i>
+                                                        <span class="status-badge status-badge-warning">
+                                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
                                                             In Progress
                                                         </span>
                                                     {% endif %}
                                                     {% if customer.paid %}
-                                                        <span class="badge bg-success">
-                                                            <i class="bi bi-credit-card me-1"></i>
+                                                        <span class="status-badge status-badge-success">
+                                                            <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
                                                             Paid
                                                         </span>
                                                     {% else %}
-                                                        <span class="badge bg-danger">
-                                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                                        <span class="status-badge status-badge-error">
+                                                            <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
                                                             Unpaid
                                                         </span>
                                                     {% endif %}
@@ -229,11 +190,11 @@ Billing Management - Administrator Portal
                                             <td>
                                                 <div class="d-flex gap-2">
                                                     <a href="{{ url_for('modifyjob', job_id=customer.job_id) }}" class="btn btn-sm btn-outline-info">
-                                                        <i class="bi bi-eye"></i>
+                                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                                     </a>
                                                     {% if not customer.paid %}
                                                         <button type="button" class="btn btn-sm btn-outline-success" onclick="markAsPaid({{ customer.customer_id }})">
-                                                            <i class="bi bi-check-circle"></i>
+                                                            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
                                                         </button>
                                                     {% endif %}
                                                 </div>
@@ -245,25 +206,27 @@ Billing Management - Administrator Portal
                             </div>
                             
                             <!-- Bulk Actions -->
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <div class="text-muted">
-                                    <i class="bi bi-info-circle me-1"></i>
+                            <div class="d-flex justify-content-between align-items-center mt-3 p-3">
+                                <div class="text-muted d-flex align-items-center gap-1">
+                                    <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                                     Select a bill to mark as paid
                                 </div>
-                                <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('Are you sure you want to mark the selected bill as paid?')">
-                                    <i class="bi bi-check-circle me-2"></i>
+                                <button type="submit" class="btn btn-accent btn-lg" onclick="return confirm('Are you sure you want to mark the selected bill as paid?')">
+                                    <i data-lucide="check-circle" class="me-2" style="width: 18px; height: 18px;"></i>
                                     Mark as Paid
                                 </button>
                             </div>
                         </form>
                     {% else %}
                         <!-- Empty State -->
-                        <div class="text-center py-5">
-                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                            <h4 class="mt-3">All Bills Are Paid!</h4>
-                            <p class="text-muted">There are no unpaid bills at the moment.</p>
-                            <a href="{{ url_for('administrator_customer_list') }}" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-1"></i>
+                        <div class="empty-state py-5">
+                            <div class="empty-state-icon">
+                                <i data-lucide="check-circle" class="text-success"></i>
+                            </div>
+                            <div class="empty-state-title">All Bills Are Paid!</div>
+                            <div class="empty-state-description">There are no unpaid bills at the moment.</div>
+                            <a href="{{ url_for('administrator_customer_list') }}" class="btn btn-accent">
+                                <i data-lucide="plus-circle" class="me-1" style="width: 16px; height: 16px;"></i>
                                 Schedule New Job
                             </a>
                     </div>

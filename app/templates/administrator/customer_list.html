@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base/layout.html" %}
 {% block title %}
 Customer Management - Administrator Portal
 {% endblock %}
@@ -10,23 +10,23 @@ Customer Management - Administrator Portal
         <div class="col-12">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <h1 class="h3 mb-0">
-                        <i class="bi bi-people-fill text-primary me-2"></i>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="users" class="text-primary" style="width: 28px; height: 28px;"></i>
                         Customer Management
                     </h1>
                     <p class="text-muted mb-0">Manage customers, schedule jobs, and track work orders</p>
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
-                        <i class="bi bi-person-plus me-1"></i>
+                        <i data-lucide="user-plus" class="me-1" style="width: 16px; height: 16px;"></i>
                         Add Customer
                     </button>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
-                        <i class="bi bi-gear-fill me-1"></i>
+                    <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                        <i data-lucide="settings" class="me-1" style="width: 16px; height: 16px;"></i>
                         Add Service
                     </button>
                     <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addPartModal">
-                        <i class="bi bi-puzzle-fill me-1"></i>
+                        <i data-lucide="puzzle" class="me-1" style="width: 16px; height: 16px;"></i>
                         Add Part
                     </button>
                 </div>
@@ -35,80 +35,48 @@ Customer Management - Administrator Portal
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-people-fill text-primary fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Total Customers</div>
-                            <div class="h4 mb-0">{{ customers|length }}</div>
-                        </div>
-                    </div>
-                </div>
+    <div class="stats-grid mb-4">
+        <div class="stat-card stat-card--primary">
+            <div class="stat-card-icon text-primary">
+                <i data-lucide="users"></i>
             </div>
+            <div class="stat-card-value">{{ customers|length }}</div>
+            <div class="stat-card-label">Total Customers</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-briefcase-fill text-success fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Total Jobs</div>
-                            <div class="h4 mb-0">{{ jobs|length }}</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-card--success">
+            <div class="stat-card-icon text-success">
+                <i data-lucide="briefcase"></i>
             </div>
+            <div class="stat-card-value">{{ jobs|length }}</div>
+            <div class="stat-card-label">Total Jobs</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-gear-fill text-info fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Available Services</div>
-                            <div class="h4 mb-0">{{ services|length }}</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-card--accent">
+            <div class="stat-card-icon text-info">
+                <i data-lucide="settings"></i>
             </div>
+            <div class="stat-card-value">{{ services|length }}</div>
+            <div class="stat-card-label">Available Services</div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-puzzle-fill text-warning fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="small text-muted">Available Parts</div>
-                            <div class="h4 mb-0">{{ parts|length }}</div>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-card--warning">
+            <div class="stat-card-icon text-warning">
+                <i data-lucide="puzzle"></i>
             </div>
+            <div class="stat-card-value">{{ parts|length }}</div>
+            <div class="stat-card-label">Available Parts</div>
         </div>
     </div>
 
     <!-- Customer List and Schedule Job Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-people me-2"></i>
+            <div class="table-container card--status card--status-active">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
                         Customer List & Job Scheduling
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <!-- Search Form -->
                     <form method="post" action="/administrator_customer_list" class="mb-4">
                         <div class="row g-3">
@@ -126,7 +94,7 @@ Customer Management - Administrator Portal
                             </div>
                             <div class="col-md-3 d-flex align-items-end">
                                 <button class="btn btn-outline-primary w-100" type="submit">
-                                    <i class="bi bi-search me-1"></i>
+                                    <i data-lucide="search" class="me-1" style="width: 16px; height: 16px;"></i>
                                     Search
                                 </button>
                             </div>
@@ -158,21 +126,25 @@ Customer Management - Administrator Portal
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <i class="bi bi-person-circle text-primary me-2"></i>
+                                                <i data-lucide="user" class="text-primary me-2" style="width: 18px; height: 18px;"></i>
                                                 <strong>{{ customer.first_name }} {{ customer.family_name }}</strong>
                                             </div>
                                         </td>
                                         <td>
-                                            <i class="bi bi-envelope text-muted me-1"></i>
-                                            {{ customer.email }}
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i data-lucide="mail" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                                {{ customer.email }}
+                                            </span>
                                         </td>
                                         <td>
-                                            <i class="bi bi-phone text-muted me-1"></i>
-                                            {{ customer.phone }}
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i data-lucide="phone" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                                {{ customer.phone }}
+                                            </span>
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-outline-info">
-                                                <i class="bi bi-eye"></i>
+                                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                             </button>
                                         </td>
                                     </tr>
@@ -187,8 +159,8 @@ Customer Management - Administrator Portal
                                     <input type="date" class="form-control" name="job_date" min="{{ today }}" required>
                                 </div>
                                 <div class="col-md-6 d-flex align-items-end">
-                                    <button type="submit" class="btn btn-success w-100">
-                                        <i class="bi bi-calendar-plus me-1"></i>
+                                    <button type="submit" class="btn btn-accent w-100">
+                                        <i data-lucide="calendar-plus" class="me-1" style="width: 16px; height: 16px;"></i>
                                         Schedule Job
                                     </button>
                                 </div>
@@ -203,10 +175,10 @@ Customer Management - Administrator Portal
     <!-- Jobs Overview -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-briefcase me-2"></i>
+            <div class="table-container card--status card--status-accent">
+                <div class="table-header" style="background: var(--info); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="briefcase" style="width: 20px; height: 20px;"></i>
                         Jobs Overview
                     </h5>
                 </div>
@@ -232,7 +204,7 @@ Customer Management - Administrator Portal
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <i class="bi bi-person-circle text-primary me-2"></i>
+                                            <i data-lucide="user" class="text-primary me-2" style="width: 18px; height: 18px;"></i>
                                             <div>
                                                 <strong>{{ job.first_name }} {{ job.family_name }}</strong>
                                                 <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
@@ -240,41 +212,43 @@ Customer Management - Administrator Portal
                                         </div>
                                     </td>
                                     <td>
-                                        <i class="bi bi-calendar-event text-muted me-1"></i>
-                                        {{ job.job_date }}
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i data-lucide="calendar" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                            {{ job.job_date }}
+                                        </span>
                                     </td>
                                     <td>
                                         <span class="fw-bold text-success">${{ "%.2f"|format(job.total_cost|float) }}</span>
                                     </td>
                                     <td>
                                         {% if job.completed == 1 %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-check-circle me-1"></i>
+                                            <span class="status-badge status-badge-success">
+                                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
                                                 Completed
                                             </span>
                                         {% else %}
-                                            <span class="badge bg-warning">
-                                                <i class="bi bi-clock me-1"></i>
+                                            <span class="status-badge status-badge-warning">
+                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
                                                 In Progress
                                             </span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if job.paid == 1 %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-credit-card me-1"></i>
+                                            <span class="status-badge status-badge-success">
+                                                <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
                                                 Paid
                                             </span>
                                         {% else %}
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                            <span class="status-badge status-badge-error">
+                                                <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
                                                 Unpaid
                                             </span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         <a href="{{ url_for('modifyjob', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-pencil"></i>
+                                            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -291,10 +265,10 @@ Customer Management - Administrator Portal
 <!-- Add Customer Modal -->
 <div class="modal fade" id="addCustomerModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" style="border-top: 4px solid var(--success);">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-plus me-2"></i>
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i data-lucide="user-plus" style="width: 20px; height: 20px;"></i>
                     Add New Customer
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -323,7 +297,7 @@ Customer Management - Administrator Portal
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-plus-lg me-1"></i>
+                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
                         Add Customer
                     </button>
                 </div>
@@ -335,10 +309,10 @@ Customer Management - Administrator Portal
 <!-- Add Service Modal -->
 <div class="modal fade" id="addServiceModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" style="border-top: 4px solid var(--accent);">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-gear-fill me-2"></i>
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
                     Add New Service
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -358,7 +332,7 @@ Customer Management - Administrator Portal
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Current Services -->
                     <div class="mt-4">
                         <h6 class="text-muted">Current Services</h6>
@@ -384,8 +358,8 @@ Customer Management - Administrator Portal
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-lg me-1"></i>
+                    <button type="submit" class="btn btn-accent">
+                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
                         Add Service
                     </button>
                 </div>
@@ -397,10 +371,10 @@ Customer Management - Administrator Portal
 <!-- Add Part Modal -->
 <div class="modal fade" id="addPartModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" style="border-top: 4px solid var(--warning);">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-puzzle-fill me-2"></i>
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i data-lucide="puzzle" style="width: 20px; height: 20px;"></i>
                     Add New Part
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -420,7 +394,7 @@ Customer Management - Administrator Portal
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Current Parts -->
                     <div class="mt-4">
                         <h6 class="text-muted">Current Parts</h6>
@@ -447,7 +421,7 @@ Customer Management - Administrator Portal
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-plus-lg me-1"></i>
+                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
                         Add Part
                     </button>
                 </div>

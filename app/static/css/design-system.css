@@ -3,27 +3,33 @@
 
 /* CSS Custom Properties (Design Tokens) */
 :root {
-  /* Color System */
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #dbeafe;
+  /* Color System - "Steel & Signal" Palette */
+  --primary: #1e3a5f;
+  --primary-hover: #152a45;
+  --primary-light: #e8eef5;
   --secondary: #64748b;
   --secondary-hover: #475569;
   --secondary-light: #f1f5f9;
-  
-  --success: #10b981;
-  --success-hover: #059669;
-  --success-light: #d1fae5;
-  --warning: #f59e0b;
-  --warning-hover: #d97706;
-  --warning-light: #fef3c7;
-  --error: #ef4444;
-  --error-hover: #dc2626;
-  --error-light: #fee2e2;
-  --info: #06b6d4;
-  --info-hover: #0891b2;
-  --info-light: #cffafe;
-  
+
+  /* Accent Color - Automotive Orange */
+  --accent: #e85d04;
+  --accent-hover: #c44d03;
+  --accent-light: #fff1e6;
+
+  /* Status Colors - Industrial Tones */
+  --success: #2d6a4f;
+  --success-hover: #1b4332;
+  --success-light: #d8f3dc;
+  --warning: #e9c46a;
+  --warning-hover: #d4a84b;
+  --warning-light: #fef9e7;
+  --error: #c1121f;
+  --error-hover: #9b0d18;
+  --error-light: #fce4e4;
+  --info: #219ebc;
+  --info-hover: #1a7a94;
+  --info-light: #e3f5f9;
+
   /* Neutral Colors */
   --gray-50: #f8fafc;
   --gray-100: #f1f5f9;
@@ -35,17 +41,18 @@
   --gray-700: #334155;
   --gray-800: #1e293b;
   --gray-900: #0f172a;
-  
+
   /* Background Colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
   --bg-dark: #1e293b;
   --bg-overlay: rgba(0, 0, 0, 0.5);
-  
-  /* Typography */
-  --font-family-primary: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+
+  /* Typography - DM Sans, Source Sans 3, JetBrains Mono */
+  --font-family-heading: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-family-primary: 'Source Sans 3', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: 'JetBrains Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
   
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
@@ -82,25 +89,26 @@
   --spacing-20: 5rem;    /* 80px */
   --spacing-24: 6rem;    /* 96px */
   
-  /* Border Radius */
+  /* Border Radius - More substantial for industrial feel */
   --radius-none: 0;
-  --radius-sm: 0.125rem;
-  --radius-base: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
+  --radius-sm: 0.25rem;
+  --radius-base: 0.5rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
   --radius-3xl: 1.5rem;
   --radius-full: 9999px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* Shadows - Industrial-tinted with navy undertones */
+  --shadow-sm: 0 1px 2px 0 rgba(30, 58, 95, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(30, 58, 95, 0.1), 0 1px 2px -1px rgba(30, 58, 95, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(30, 58, 95, 0.1), 0 2px 4px -2px rgba(30, 58, 95, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(30, 58, 95, 0.1), 0 4px 6px -4px rgba(30, 58, 95, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(30, 58, 95, 0.1), 0 8px 10px -6px rgba(30, 58, 95, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(30, 58, 95, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(30, 58, 95, 0.05);
+  --shadow-accent: 0 4px 14px 0 rgba(232, 93, 4, 0.25);
   
   /* Transitions */
   --transition-all: all 0.2s ease-in-out;
@@ -148,6 +156,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
   margin-bottom: var(--spacing-4);
+  font-family: var(--font-family-heading);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   color: var(--gray-900);
@@ -270,6 +279,25 @@ a:focus {
   border-color: var(--error-hover);
 }
 
+/* Accent Button - Automotive Orange CTA */
+.btn-accent {
+  color: white;
+  background-color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 6px 20px 0 rgba(232, 93, 4, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-accent:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 /* Button Sizes */
 .btn-sm {
   padding: var(--spacing-1) var(--spacing-3);
@@ -337,7 +365,7 @@ a:focus {
 .form-control:focus {
   outline: 0;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
 }
 
 .form-control::placeholder {
@@ -392,6 +420,7 @@ a:focus {
 .text-warning { color: var(--warning); }
 .text-error { color: var(--error); }
 .text-info { color: var(--info); }
+.text-accent { color: var(--accent); }
 
 .bg-primary { background-color: var(--primary); }
 .bg-secondary { background-color: var(--secondary); }
@@ -399,6 +428,7 @@ a:focus {
 .bg-warning { background-color: var(--warning); }
 .bg-error { background-color: var(--error); }
 .bg-info { background-color: var(--info); }
+.bg-accent { background-color: var(--accent); }
 
 .d-none { display: none; }
 .d-block { display: block; }

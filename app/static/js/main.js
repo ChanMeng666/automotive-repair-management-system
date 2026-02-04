@@ -1,17 +1,38 @@
 // AutoRepair Pro - Main JavaScript
 // ================================
+// Precision Industrial Theme
+
+// Design System Colors
+const DesignColors = {
+    primary: '#1e3a5f',
+    primaryHover: '#152a45',
+    accent: '#e85d04',
+    success: '#2d6a4f',
+    warning: '#e9c46a',
+    error: '#c1121f',
+    info: '#219ebc',
+    gray500: '#64748b'
+};
 
 // Global application state
 const AutoRepairApp = {
     currentUser: null,
     notifications: [],
     settings: {},
-    
+
     init() {
+        this.initializeLucideIcons();
         this.setupEventListeners();
         this.loadUserPreferences();
         this.initializeComponents();
         this.setupNotifications();
+    },
+
+    // Initialize Lucide Icons
+    initializeLucideIcons() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     },
     
     setupEventListeners() {
@@ -237,11 +258,11 @@ const AutoRepairApp = {
     displaySearchResults(results) {
         const dropdown = document.querySelector('.search-dropdown');
         if (!dropdown) return;
-        
+
         if (results.length === 0) {
             dropdown.innerHTML = `
                 <div class="p-3 text-center text-muted">
-                    <i class="bi bi-search me-2"></i>
+                    <i data-lucide="search" style="width: 16px; height: 16px; vertical-align: text-bottom;"></i>
                     No results found
                 </div>
             `;
@@ -249,7 +270,7 @@ const AutoRepairApp = {
             dropdown.innerHTML = results.map(result => `
                 <div class="search-result-item p-3 border-bottom" data-type="${result.type}" data-id="${result.id}">
                     <div class="d-flex align-items-center">
-                        <i class="bi bi-${result.type === 'customer' ? 'person' : 'wrench'} me-3 text-primary"></i>
+                        <i data-lucide="${result.type === 'customer' ? 'user' : 'wrench'}" class="me-3 text-primary" style="width: 20px; height: 20px;"></i>
                         <div>
                             <div class="fw-semibold">${result.title}</div>
                             <small class="text-muted">${result.subtitle}</small>
@@ -296,21 +317,25 @@ const AutoRepairApp = {
                 <div class="p-3 text-center">
                     <div class="spinner-border spinner-border-sm me-2"></div>
                     Searching...
-            </div>
-        `;
+                </div>
+            `;
             dropdown.style.display = 'block';
         }
     },
-    
+
     showSearchError() {
         const dropdown = document.querySelector('.search-dropdown');
         if (dropdown) {
             dropdown.innerHTML = `
                 <div class="p-3 text-center text-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <i data-lucide="alert-triangle" style="width: 16px; height: 16px; vertical-align: text-bottom;"></i>
                     Search error occurred
                 </div>
             `;
+            // Re-initialize Lucide icons for the new content
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
     },
     
@@ -371,21 +396,29 @@ const AutoRepairApp = {
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: #10b981;
+                background: ${DesignColors.success};
                 color: white;
                 padding: 8px 16px;
-                border-radius: 4px;
+                border-radius: 8px;
                 font-size: 14px;
                 z-index: 1050;
                 opacity: 0;
                 transition: opacity 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             `;
             document.body.appendChild(indicator);
         }
-        
-        indicator.innerHTML = '<i class="bi bi-check me-2"></i>Auto-saved';
+
+        indicator.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px;"></i>Auto-saved';
         indicator.style.opacity = '1';
-        
+
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         setTimeout(() => {
             indicator.style.opacity = '0';
         }, 2000);
@@ -519,7 +552,7 @@ const AutoRepairApp = {
         });
     },
 
-    // Chart initialization
+    // Chart initialization with Precision Industrial colors
     initializeCharts() {
         const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
         if (monthlyRevenueCtx) {
@@ -530,9 +563,16 @@ const AutoRepairApp = {
                     datasets: [{
                         label: 'Monthly Revenue',
                         data: [12000, 19000, 30000, 50000, 20000, 30000, 45000, 35000, 40000, 55000, 60000, 70000],
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1,
-                        fill: false
+                        borderColor: DesignColors.primary,
+                        backgroundColor: 'rgba(30, 58, 95, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: DesignColors.accent,
+                        pointBorderColor: DesignColors.accent,
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: DesignColors.accent,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
@@ -544,7 +584,15 @@ const AutoRepairApp = {
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(30, 58, 95, 0.08)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
@@ -561,12 +609,13 @@ const AutoRepairApp = {
                         label: 'Job Status',
                         data: [300, 150, 50, 20],
                         backgroundColor: [
-                            'rgb(16, 185, 129)', // success
-                            'rgb(6, 182, 212)',  // info
-                            'rgb(245, 158, 11)',  // warning
-                            'rgb(239, 68, 68)'    // error
+                            DesignColors.success,   // Completed - Industrial green
+                            DesignColors.info,      // In Progress - Industrial blue
+                            DesignColors.warning,   // Pending - Caution yellow
+                            DesignColors.error      // Cancelled - Automotive red
                         ],
-                        hoverOffset: 4
+                        borderWidth: 0,
+                        hoverOffset: 8
                     }]
                 },
                 options: {
@@ -574,8 +623,14 @@ const AutoRepairApp = {
                     plugins: {
                         legend: {
                             position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
                         }
-                    }
+                    },
+                    cutout: '60%'
                 }
             });
         }
@@ -608,22 +663,34 @@ const AutoRepairApp = {
     
     showUpdateNotification() {
         const notification = document.createElement('div');
-        notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+        notification.className = 'alert alert-dismissible fade show position-fixed';
         notification.style.cssText = `
             top: 20px;
             right: 20px;
             z-index: 1050;
             max-width: 300px;
+            background: ${DesignColors.info};
+            color: white;
+            border: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         `;
-        
+
         notification.innerHTML = `
-            <i class="bi bi-info-circle me-2"></i>
+            <i data-lucide="info" style="width: 18px; height: 18px;"></i>
             New updates available
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         // Auto-remove after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {
@@ -684,13 +751,27 @@ const AutoRepairApp = {
     },
     
     showToast(message, type = 'info') {
+        const iconMap = {
+            success: 'check-circle',
+            error: 'alert-circle',
+            warning: 'alert-triangle',
+            info: 'info'
+        };
+        const colorMap = {
+            success: DesignColors.success,
+            error: DesignColors.error,
+            warning: DesignColors.warning,
+            info: DesignColors.info
+        };
+
         const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type} border-0`;
+        toast.className = 'toast align-items-center text-white border-0';
+        toast.style.backgroundColor = colorMap[type] || colorMap.info;
         toast.setAttribute('role', 'alert');
         toast.innerHTML = `
             <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i data-lucide="${iconMap[type] || 'info'}" style="width: 18px; height: 18px;"></i>
                     ${message}
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
@@ -708,13 +789,25 @@ const AutoRepairApp = {
         
         container.appendChild(toast);
         
+        // Re-initialize Lucide icons for the new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
-        
+
         // Remove toast element after it's hidden
         toast.addEventListener('hidden.bs.toast', () => {
             toast.remove();
         });
+    },
+
+    // Re-initialize Lucide icons (useful after dynamic content updates)
+    refreshIcons() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 };
 

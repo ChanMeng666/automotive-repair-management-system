@@ -13,18 +13,18 @@
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 fw-bold text-gray-900 mb-2">
-            <i class="bi bi-list-task text-primary me-2"></i>
+        <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
+            <i data-lucide="clipboard-list" class="text-primary" style="width: 28px; height: 28px;"></i>
             Current Work Orders
         </h1>
         <p class="text-muted mb-0">Manage ongoing repair jobs and track progress</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ url_for('technician.new_job') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>New Job
+        <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>New Job
         </a>
         <button type="button" class="btn btn-outline-secondary" onclick="refreshJobs()">
-            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            <i data-lucide="refresh-cw" class="me-2" style="width: 16px; height: 16px;"></i>Refresh
         </button>
     </div>
 </div>
@@ -32,36 +32,36 @@
 <!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card">
+        <div class="stat-card stat-card--warning">
             <div class="stat-card-icon text-warning">
-                <i class="bi bi-clock"></i>
+                <i data-lucide="clock"></i>
             </div>
             <div class="stat-card-value">{{ data|length }}</div>
             <div class="stat-card-label">Active Jobs</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card">
+        <div class="stat-card stat-card--accent">
             <div class="stat-card-icon text-info">
-                <i class="bi bi-calendar-week"></i>
+                <i data-lucide="calendar"></i>
             </div>
             <div class="stat-card-value">{{ data|selectattr('job_date')|list|length if data else 0 }}</div>
             <div class="stat-card-label">This Week</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card">
+        <div class="stat-card stat-card--success">
             <div class="stat-card-icon text-success">
-                <i class="bi bi-currency-dollar"></i>
+                <i data-lucide="dollar-sign"></i>
             </div>
             <div class="stat-card-value">${{ "%.0f"|format(data|sum(attribute='total_cost') or 0) }}</div>
             <div class="stat-card-label">Total Value</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card">
-            <div class="stat-card-icon text-danger">
-                <i class="bi bi-exclamation-triangle"></i>
+        <div class="stat-card stat-card--error">
+            <div class="stat-card-icon text-error">
+                <i data-lucide="alert-triangle"></i>
             </div>
             <div class="stat-card-value">{{ data|selectattr('paid')|list|length if data else 0 }}</div>
             <div class="stat-card-label">Unpaid</div>
@@ -75,7 +75,7 @@
         <label class="filter-label">Search:</label>
         <div class="search-container">
             <input type="text" class="form-control search-input" id="searchInput" placeholder="Search by customer name or job ID...">
-            <i class="bi bi-search search-icon"></i>
+            <i data-lucide="search" class="search-icon"></i>
         </div>
     </div>
     <div class="filter-group">
@@ -103,13 +103,16 @@
     <!-- Jobs Table -->
     <div class="table-container">
         <div class="table-header">
-            <h3 class="table-title">Work Orders</h3>
+            <h3 class="table-title">
+                <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+                Work Orders
+            </h3>
             <div class="table-actions">
                 <button type="submit" class="btn btn-success" id="modifyBtn" disabled>
-                    <i class="bi bi-pencil me-2"></i>Modify Selected
+                    <i data-lucide="pencil" class="me-2" style="width: 16px; height: 16px;"></i>Modify Selected
                 </button>
                 <button type="button" class="btn btn-outline-primary" onclick="toggleSelectAll()">
-                    <i class="bi bi-check-square me-2"></i>Select All
+                    <i data-lucide="check-square" class="me-2" style="width: 16px; height: 16px;"></i>Select All
                 </button>
             </div>
               </div>
@@ -143,8 +146,8 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                        <i class="bi bi-person text-primary"></i>
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
+                                        <i data-lucide="user" class="text-primary" style="width: 18px; height: 18px;"></i>
                                     </div>
                                     <div>
                                         <div class="fw-semibold">{{ record.first_name }} {{ record.family_name }}</div>
@@ -169,30 +172,30 @@
                             <td>
                                 {% if record.paid == 1 %}
                                     <span class="status-badge status-badge-success">
-                                        <i class="bi bi-check-circle"></i>
+                                        <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
                                         Paid
                                     </span>
                                 {% else %}
                                     <span class="status-badge status-badge-warning">
-                                        <i class="bi bi-clock"></i>
+                                        <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
                                         Unpaid
                                     </span>
                                 {% endif %}
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="{{ url_for('modifyjob', job_id=record.job_id) }}" 
+                                    <a href="{{ url_for('modifyjob', job_id=record.job_id) }}"
                                        class="btn btn-sm btn-outline-primary" title="View/Edit">
-                                        <i class="bi bi-pencil"></i>
+                                        <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                    <button type="button" class="btn btn-sm btn-outline-info"
                                             onclick="viewJobDetails({{ record.job_id }})" title="Quick View">
-                                        <i class="bi bi-eye"></i>
+                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                     </button>
                                     {% if session.user_type == 'administrator' and record.paid == 0 %}
-                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                        <button type="button" class="btn btn-sm btn-outline-success"
                                                 onclick="markAsPaid({{ record.job_id }})" title="Mark as Paid">
-                                            <i class="bi bi-credit-card"></i>
+                                            <i data-lucide="credit-card" style="width: 14px; height: 14px;"></i>
                                         </button>
                                     {% endif %}
                                 </div>
@@ -207,33 +210,33 @@
             <div class="pagination">
                 {% set prev_page = page - 1 if page > 1 else 1 %}
                 {% set next_page = page + 1 %}
-                
-                <a href="{{ url_for('currentjoblist', page=prev_page) }}" 
+
+                <a href="{{ url_for('currentjoblist', page=prev_page) }}"
                    class="pagination-item {% if page == 1 %}disabled{% endif %}">
-                    <i class="bi bi-chevron-left"></i> Previous
+                    <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i> Previous
                 </a>
-                
+
                 <span class="pagination-item active">
                     Page {{ page }}
                 </span>
-                
-                <a href="{{ url_for('currentjoblist', page=next_page) }}" 
+
+                <a href="{{ url_for('currentjoblist', page=next_page) }}"
                    class="pagination-item">
-                    Next <i class="bi bi-chevron-right"></i>
+                    Next <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
                 </a>
             </div>
         {% else %}
             <!-- Empty State -->
             <div class="empty-state">
                 <div class="empty-state-icon">
-                    <i class="bi bi-inbox"></i>
+                    <i data-lucide="inbox"></i>
                 </div>
                 <div class="empty-state-title">No Active Jobs</div>
                 <div class="empty-state-description">
                     There are no active work orders at the moment. Create a new job to get started.
                 </div>
-                <a href="{{ url_for('technician.new_job') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i>Create New Job
+                <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+                    <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Create New Job
                 </a>
             </div>
         {% endif %}
@@ -242,8 +245,8 @@
 
 <!-- Flash Message Display -->
                   {% if message %}
-    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
+    <div class="alert alert-warning alert-dismissible fade show mt-3 d-flex align-items-center gap-2" role="alert">
+        <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i>
                       {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
@@ -254,8 +257,8 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-info-circle me-2"></i>Job Details
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i data-lucide="info" style="width: 20px; height: 20px;"></i>Job Details
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

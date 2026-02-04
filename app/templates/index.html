@@ -15,21 +15,21 @@
                 <div class="row w-100 align-items-center">
                     <div class="col-lg-8">
                         <div class="d-flex align-items-center mb-3">
-                            <i class="bi bi-wrench-adjustable-circle-fill display-6 me-4 opacity-75"></i>
+                            <i data-lucide="settings-2" class="me-4 opacity-75" style="width: 48px; height: 48px;"></i>
                             <div>
                                 <h1 class="display-5 fw-bold mb-2 text-white">AutoRepair Pro</h1>
                                 <p class="lead mb-0 opacity-90">Professional Automotive Repair Management System</p>
                             </div>
                         </div>
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-calendar-event me-2"></i>
+                            <i data-lucide="calendar" class="me-2" style="width: 18px; height: 18px;"></i>
                             <span>Today is {{ current_date.strftime('%B %d, %Y') if current_date else 'Loading...' }}</span>
                         </div>
                     </div>
                     <div class="col-lg-4 text-end">
                         {% if not session.logged_in %}
-                            <a href="{{ url_for('main.login') }}" class="btn btn-light btn-lg">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg">
+                                <i data-lucide="log-in" class="me-2" style="width: 20px; height: 20px;"></i>Sign In
                             </a>
                         {% else %}
                             <div class="text-end">
@@ -50,17 +50,17 @@
 <div class="row mb-6">
     <div class="col-12 mb-4">
         <h2 class="fw-semibold d-flex align-items-center">
-            <i class="bi bi-graph-up text-primary me-3"></i>
+            <i data-lucide="bar-chart-3" class="text-primary me-3" style="width: 28px; height: 28px;"></i>
             System Overview
         </h2>
     </div>
-    
+
     <!-- Statistics Cards -->
     <div class="stats-grid">
         <!-- Total Jobs -->
-        <div class="stat-card">
+        <div class="stat-card stat-card--primary">
             <div class="stat-card-icon text-primary">
-                <i class="bi bi-list-task"></i>
+                <i data-lucide="clipboard-list"></i>
             </div>
             <div class="stat-card-value">{{ job_stats.get('total_jobs', 0) }}</div>
             <div class="stat-card-label">Total Work Orders</div>
@@ -68,11 +68,11 @@
                 <span class="text-warning">{{ job_stats.get('pending_jobs', 0) }} pending</span>
             </div>
         </div>
-        
+
         <!-- Revenue -->
-        <div class="stat-card">
+        <div class="stat-card stat-card--success">
             <div class="stat-card-icon text-success">
-                <i class="bi bi-currency-dollar"></i>
+                <i data-lucide="dollar-sign"></i>
             </div>
             <div class="stat-card-value">${{ "%.0f"|format(billing_stats.get('total_revenue', 0)) }}</div>
             <div class="stat-card-label">Total Revenue</div>
@@ -80,11 +80,11 @@
                 <span class="text-warning">${{ "%.0f"|format(billing_stats.get('unpaid_amount', 0)) }} unpaid</span>
             </div>
         </div>
-        
+
         <!-- Customers -->
-        <div class="stat-card">
+        <div class="stat-card stat-card--accent">
             <div class="stat-card-icon text-info">
-                <i class="bi bi-people"></i>
+                <i data-lucide="users"></i>
             </div>
             <div class="stat-card-value">{{ billing_stats.get('total_customers', 0) }}</div>
             <div class="stat-card-label">Active Customers</div>
@@ -92,11 +92,11 @@
                 <span class="text-success">+{{ billing_stats.get('new_customers_month', 0) }} this month</span>
             </div>
         </div>
-        
+
         <!-- Overdue Bills -->
-        <div class="stat-card">
+        <div class="stat-card stat-card--warning">
             <div class="stat-card-icon text-warning">
-                <i class="bi bi-exclamation-triangle"></i>
+                <i data-lucide="alert-triangle"></i>
             </div>
             <div class="stat-card-value">{{ (overdue_bills|length) if overdue_bills else 0 }}</div>
             <div class="stat-card-label">Overdue Bills</div>
@@ -111,17 +111,17 @@
 <div class="row mb-6">
     <div class="col-12 mb-4">
         <h2 class="fw-semibold d-flex align-items-center">
-            <i class="bi bi-lightning text-warning me-3"></i>
+            <i data-lucide="zap" class="text-accent me-3" style="width: 28px; height: 28px;"></i>
             Quick Actions
         </h2>
     </div>
-    
+
     <div class="action-grid">
         <!-- Customer Management -->
         <div class="action-card">
             <div class="action-card-header">
                 <div class="action-card-icon">
-                    <i class="bi bi-person-plus"></i>
+                    <i data-lucide="user-plus"></i>
                 </div>
                 <div class="action-card-title">Customer Management</div>
             </div>
@@ -130,19 +130,19 @@
             </div>
             <div class="action-card-buttons">
                 <a href="{{ url_for('main.customers') }}" class="btn btn-outline-primary">
-                    <i class="bi bi-people me-2"></i>View All
+                    <i data-lucide="users" class="me-2" style="width: 16px; height: 16px;"></i>View All
                 </a>
-                <a href="{{ url_for('main.new_customer') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2"></i>Add New
+                <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
+                    <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Add New
                 </a>
             </div>
         </div>
-        
+
         <!-- Work Order Management -->
         <div class="action-card">
             <div class="action-card-header">
                 <div class="action-card-icon">
-                    <i class="bi bi-wrench"></i>
+                    <i data-lucide="wrench"></i>
                 </div>
                 <div class="action-card-title">Work Orders</div>
             </div>
@@ -152,24 +152,24 @@
             <div class="action-card-buttons">
                 {% if session.user_type == 'technician' %}
                     <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
-                        <i class="bi bi-list-task me-2"></i>Current Jobs
+                        <i data-lucide="clipboard-list" class="me-2" style="width: 16px; height: 16px;"></i>Current Jobs
                     </a>
                     <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
-                        <i class="bi bi-plus-lg me-2"></i>New Job
+                        <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>New Job
                     </a>
                 {% else %}
                     <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
-                        <i class="bi bi-speedometer2 me-2"></i>View Dashboard
+                        <i data-lucide="layout-dashboard" class="me-2" style="width: 16px; height: 16px;"></i>View Dashboard
                     </a>
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Billing & Payments -->
         <div class="action-card">
             <div class="action-card-header">
                 <div class="action-card-icon">
-                    <i class="bi bi-credit-card"></i>
+                    <i data-lucide="credit-card"></i>
                 </div>
                 <div class="action-card-title">Billing & Payments</div>
             </div>
@@ -179,24 +179,24 @@
             <div class="action-card-buttons">
                 {% if session.user_type == 'administrator' %}
                     <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-info">
-                        <i class="bi bi-credit-card me-2"></i>Process Payments
+                        <i data-lucide="credit-card" class="me-2" style="width: 16px; height: 16px;"></i>Process Payments
                     </a>
                     <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>Overdue Bills
+                        <i data-lucide="alert-triangle" class="me-2" style="width: 16px; height: 16px;"></i>Overdue Bills
                     </a>
                 {% else %}
                     <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-info">
-                        <i class="bi bi-info-circle me-2"></i>View Info
+                        <i data-lucide="info" class="me-2" style="width: 16px; height: 16px;"></i>View Info
                     </a>
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Reports & Analytics -->
         <div class="action-card">
             <div class="action-card-header">
                 <div class="action-card-icon">
-                    <i class="bi bi-graph-up"></i>
+                    <i data-lucide="trending-up"></i>
                 </div>
                 <div class="action-card-title">Reports & Analytics</div>
             </div>
@@ -206,11 +206,11 @@
             <div class="action-card-buttons">
                 {% if session.user_type == 'administrator' %}
                     <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-file-text me-2"></i>View Reports
+                        <i data-lucide="file-text" class="me-2" style="width: 16px; height: 16px;"></i>View Reports
                     </a>
                 {% endif %}
                 <a href="#" class="btn btn-secondary">
-                    <i class="bi bi-download me-2"></i>Export Data
+                    <i data-lucide="download" class="me-2" style="width: 16px; height: 16px;"></i>Export Data
                 </a>
             </div>
         </div>
@@ -221,7 +221,7 @@
 <div class="row mb-6">
     <div class="col-12 mb-4">
         <h2 class="fw-semibold d-flex align-items-center">
-            <i class="bi bi-bar-chart-line text-success me-3"></i>
+            <i data-lucide="activity" class="text-success me-3" style="width: 28px; height: 28px;"></i>
             Performance Overview
         </h2>
     </div>
@@ -250,7 +250,7 @@
         <div class="table-container">
             <div class="table-header">
                 <h3 class="table-title">
-                    <i class="bi bi-clock-history me-2"></i>Recent Work Orders
+                    <i data-lucide="clock" style="width: 20px; height: 20px;"></i>Recent Work Orders
                 </h3>
                 <div class="table-actions">
                     <a href="{{ url_for('technician.current_jobs') if session.user_type == 'technician' else url_for('main.dashboard') }}" class="btn btn-sm btn-outline-primary">
@@ -258,7 +258,7 @@
                     </a>
                 </div>
             </div>
-            
+
             {% if recent_jobs %}
                 <div class="table-responsive">
                     <table class="table">
@@ -292,12 +292,12 @@
                                 <td>
                                     {% if job.get('completed') %}
                                         <span class="status-badge status-badge-success">
-                                            <i class="bi bi-check-circle"></i>
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
                                             Completed
                                         </span>
                                     {% else %}
                                         <span class="status-badge status-badge-warning">
-                                            <i class="bi bi-clock"></i>
+                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
                                             In Progress
                                         </span>
                                     {% endif %}
@@ -311,11 +311,11 @@
                                 <td>
                                     <div class="d-flex gap-1">
                                         <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="bi bi-eye"></i>
+                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                         </a>
                                         {% if not job.get('completed') %}
                                             <a href="{{ url_for('technician.modify_job', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success" title="Edit">
-                                                <i class="bi bi-pencil"></i>
+                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                             </a>
                                         {% endif %}
                                     </div>
@@ -328,28 +328,28 @@
             {% else %}
                 <div class="empty-state">
                     <div class="empty-state-icon">
-                        <i class="bi bi-inbox"></i>
+                        <i data-lucide="inbox"></i>
                     </div>
                     <div class="empty-state-title">No Recent Work Orders</div>
                     <div class="empty-state-description">
                         There are no recent work orders to display. Create a new work order to get started.
                     </div>
                     {% if session.user_type == 'technician' %}
-                        <a href="{{ url_for('technician.new_job') }}" class="btn btn-primary">
-                            <i class="bi bi-plus-lg me-2"></i>Create New Job
+                        <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+                            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Create New Job
                         </a>
                     {% endif %}
                 </div>
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Overdue Bills -->
     <div class="col-lg-4 mb-4">
-        <div class="table-container">
+        <div class="table-container card--status card--status-warning">
             <div class="table-header">
                 <h3 class="table-title">
-                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i>Overdue Bills
+                    <i data-lucide="alert-triangle" class="text-warning" style="width: 20px; height: 20px;"></i>Overdue Bills
                 </h3>
                 <div class="table-actions">
                     {% if session.user_type == 'administrator' %}
@@ -359,7 +359,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             {% if overdue_bills %}
                 <div class="p-3">
                     {% for bill in overdue_bills[:5] %}
@@ -368,8 +368,8 @@
                                 <div class="fw-semibold">{{ bill.get('first_name', '') }} {{ bill.get('family_name', '') }}</div>
                                 <small class="text-muted">Job #{{ bill.get('job_id', '') }}</small>
                                 <br>
-                                <small class="text-warning">
-                                    <i class="bi bi-clock me-1"></i>
+                                <small class="text-warning d-flex align-items-center gap-1">
+                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
                                     {{ bill.get('days_overdue', 0) }} days overdue
                                 </small>
                             </div>
@@ -387,7 +387,7 @@
             {% else %}
                 <div class="empty-state py-4">
                     <div class="empty-state-icon">
-                        <i class="bi bi-check-circle text-success"></i>
+                        <i data-lucide="check-circle" class="text-success"></i>
                     </div>
                     <div class="empty-state-title">All Bills Current</div>
                     <div class="empty-state-description">
@@ -406,16 +406,16 @@
         <div class="mb-5">
             <h2 class="display-6 fw-bold mb-4">Streamline Your Auto Repair Business</h2>
             <p class="lead mb-4">
-                AutoRepair Pro helps you manage customer relationships, track work orders, 
+                AutoRepair Pro helps you manage customer relationships, track work orders,
                 process payments, and grow your automotive repair business with professional tools.
             </p>
         </div>
-        
+
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="text-center">
                     <div class="bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                        <i class="bi bi-people display-6 text-primary"></i>
+                        <i data-lucide="users" class="text-primary" style="width: 40px; height: 40px;"></i>
                     </div>
                     <h4>Customer Management</h4>
                     <p class="text-muted">Organize customer information, track service history, and build lasting relationships.</p>
@@ -424,7 +424,7 @@
             <div class="col-md-4">
                 <div class="text-center">
                     <div class="bg-success bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                        <i class="bi bi-wrench display-6 text-success"></i>
+                        <i data-lucide="wrench" class="text-success" style="width: 40px; height: 40px;"></i>
                     </div>
                     <h4>Work Order Tracking</h4>
                     <p class="text-muted">Efficiently manage repair jobs from start to finish with detailed tracking.</p>
@@ -433,20 +433,20 @@
             <div class="col-md-4">
                 <div class="text-center">
                     <div class="bg-info bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                        <i class="bi bi-graph-up display-6 text-info"></i>
+                        <i data-lucide="trending-up" class="text-info" style="width: 40px; height: 40px;"></i>
                     </div>
                     <h4>Business Analytics</h4>
                     <p class="text-muted">Track revenue, monitor performance, and make data-driven business decisions.</p>
                 </div>
             </div>
         </div>
-        
+
         <div class="d-flex gap-3 justify-content-center">
-            <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Get Started
+            <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg">
+                <i data-lucide="log-in" class="me-2" style="width: 20px; height: 20px;"></i>Get Started
             </a>
             <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary btn-lg">
-                <i class="bi bi-info-circle me-2"></i>Learn More
+                <i data-lucide="info" class="me-2" style="width: 20px; height: 20px;"></i>Learn More
             </a>
         </div>
     </div>
