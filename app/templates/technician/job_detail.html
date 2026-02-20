@@ -24,7 +24,10 @@
     </div>
     <div class="d-flex gap-2">
         {% if not data.completed %}
-        <form action="{{ url_for('mark_job_as_completed', job_id=data.job_id) }}" method="POST" class="d-inline">
+        <a href="{{ url_for('technician.modify_job', job_id=data.job_id) }}" class="btn btn-accent">
+            <i data-lucide="pencil" class="me-2" style="width: 16px; height: 16px;"></i>Edit Job
+        </a>
+        <form action="{{ url_for('technician.complete_job', job_id=data.job_id) }}" method="POST" class="d-inline">
             <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to mark this job as completed? This action cannot be undone.')">
                 <i data-lucide="check-circle" class="me-2" style="width: 16px; height: 16px;"></i>Mark Complete
             </button>

@@ -156,7 +156,7 @@
                                 </div>
                             </td>
                             <td>
-                                <a href="{{ url_for('modifyjob', job_id=record.job_id) }}" class="text-decoration-none fw-semibold">
+                                <a href="{{ url_for('technician.modify_job', job_id=record.job_id) }}" class="text-decoration-none fw-semibold">
                                     #{{ record.job_id }}
                                 </a>
                             </td>
@@ -184,7 +184,7 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="{{ url_for('modifyjob', job_id=record.job_id) }}"
+                                    <a href="{{ url_for('technician.modify_job', job_id=record.job_id) }}"
                                        class="btn btn-sm btn-outline-primary" title="View/Edit">
                                         <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                     </a>
@@ -211,7 +211,7 @@
                 {% set prev_page = page - 1 if page > 1 else 1 %}
                 {% set next_page = page + 1 %}
 
-                <a href="{{ url_for('currentjoblist', page=prev_page) }}"
+                <a href="{{ url_for('technician.current_jobs', page=prev_page) }}"
                    class="pagination-item {% if page == 1 %}disabled{% endif %}">
                     <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i> Previous
                 </a>
@@ -220,7 +220,7 @@
                     Page {{ page }}
                 </span>
 
-                <a href="{{ url_for('currentjoblist', page=next_page) }}"
+                <a href="{{ url_for('technician.current_jobs', page=next_page) }}"
                    class="pagination-item">
                     Next <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
                 </a>

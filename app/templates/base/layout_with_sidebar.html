@@ -1,0 +1,28 @@
+{% extends "base/layout.html" %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'components/admin_sidebar.html' %}
+    <div class="admin-main-content">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+
+<!-- Mobile sidebar toggle button -->
+<button class="sidebar-toggle d-lg-none" onclick="toggleAdminSidebar()" aria-label="Open sidebar menu">
+    <i data-lucide="panel-left" style="width: 20px; height: 20px;"></i>
+</button>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script>
+function toggleAdminSidebar() {
+    const sidebar = document.getElementById('adminSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+}
+</script>
+{% block admin_extra_js %}{% endblock %}
+{% endblock %}

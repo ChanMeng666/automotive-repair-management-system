@@ -109,66 +109,18 @@
                                         <span>Services</span>
                                     </a>
                                 </li>
-                            {% elif session.user_type == 'administrator' %}
-                                <!-- Administrator Menu -->
                                 <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'customer' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.customer_list') }}">
-                                        <i data-lucide="users" class="nav-icon"></i>
-                                        <span>Customers</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'billing' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.pay_bills') }}">
-                                        <i data-lucide="credit-card" class="nav-icon"></i>
-                                        <span>Billing</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'overdue' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.overdue_bills') }}">
-                                        <i data-lucide="alert-triangle" class="nav-icon"></i>
-                                        <span>Overdue Bills</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.reports') }}">
-                                        <i data-lucide="bar-chart-3" class="nav-icon"></i>
-                                        <span>Reports</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'team_members' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.team_members') }}">
-                                        <i data-lucide="users-cog" class="nav-icon"></i>
-                                        <span>Team Members</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'service_catalog' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.service_catalog') }}">
-                                        <i data-lucide="list-checks" class="nav-icon"></i>
-                                        <span>Service Catalog</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'parts_catalog' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.parts_catalog') }}">
+                                    <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'parts' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.parts') }}">
                                         <i data-lucide="package" class="nav-icon"></i>
-                                        <span>Parts Catalog</span>
+                                        <span>Parts</span>
                                     </a>
                                 </li>
+                            {% elif session.user_type == 'administrator' %}
+                                <!-- Administrator Menu (sidebar handles full nav) -->
                                 <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'inventory' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.inventory') }}">
-                                        <i data-lucide="warehouse" class="nav-icon"></i>
-                                        <span>Inventory</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'org_settings' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.org_settings') }}">
-                                        <i data-lucide="building-2" class="nav-icon"></i>
-                                        <span>Organization Settings</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'subscription' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.subscription_management') }}">
-                                        <i data-lucide="credit-card" class="nav-icon"></i>
-                                        <span>Subscription</span>
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.dashboard') }}">
+                                        <i data-lucide="shield" class="nav-icon"></i>
+                                        <span>Admin Panel</span>
                                     </a>
                                 </li>
                             {% endif %}
@@ -188,9 +140,10 @@
                         {% if session.logged_in %}
                             <!-- Search -->
                             <li class="nav-item dropdown me-3">
-                                <div class="search-container">
-                                    <input type="text" class="form-control form-control-sm search-input bg-white" placeholder="Search customers..." id="globalSearch">
+                                <div class="search-container" style="position: relative;">
+                                    <input type="text" class="form-control form-control-sm search-input bg-white" placeholder="Search customers..." id="globalSearch" autocomplete="off">
                                     <i data-lucide="search" class="search-icon"></i>
+                                    <div class="search-results-dropdown" id="searchResultsDropdown"></div>
                                 </div>
                             </li>
 
@@ -198,32 +151,41 @@
                             <li class="nav-item dropdown me-3">
                                 <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
                                     <i data-lucide="bell" class="nav-icon"></i>
+                                    {% if notification_count|default(0) > 0 %}
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                        3
+                                        {{ notification_count }}
                                     </span>
+                                    {% endif %}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><h6 class="dropdown-header">Notifications</h6></li>
-                                    <li><a class="dropdown-item" href="#">
+                                    {% if overdue_bills_count|default(0) > 0 %}
+                                    <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.overdue_bills') }}{% else %}#{% endif %}">
                                         <div class="d-flex">
                                             <i data-lucide="alert-triangle" class="text-warning me-2" style="width: 18px; height: 18px;"></i>
                                             <div>
-                                                <div class="fw-semibold">Overdue Payment</div>
-                                                <small class="text-muted">Customer #1234 payment overdue</small>
+                                                <div class="fw-semibold">Overdue Payments</div>
+                                                <small class="text-muted">{{ overdue_bills_count }} bill{{ 's' if overdue_bills_count != 1 }} overdue</small>
                                             </div>
                                         </div>
                                     </a></li>
-                                    <li><a class="dropdown-item" href="#">
+                                    {% endif %}
+                                    {% if unpaid_bills_count|default(0) > 0 %}
+                                    <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.pay_bills') }}{% else %}#{% endif %}">
                                         <div class="d-flex">
-                                            <i data-lucide="check-circle" class="text-success me-2" style="width: 18px; height: 18px;"></i>
+                                            <i data-lucide="credit-card" class="text-info me-2" style="width: 18px; height: 18px;"></i>
                                             <div>
-                                                <div class="fw-semibold">Job Completed</div>
-                                                <small class="text-muted">Job #5678 marked as complete</small>
+                                                <div class="fw-semibold">Unpaid Bills</div>
+                                                <small class="text-muted">{{ unpaid_bills_count }} bill{{ 's' if unpaid_bills_count != 1 }} awaiting payment</small>
                                             </div>
                                         </div>
                                     </a></li>
+                                    {% endif %}
+                                    {% if notification_count|default(0) == 0 %}
+                                    <li><span class="dropdown-item text-muted">No new notifications</span></li>
+                                    {% endif %}
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-center" href="#">View all notifications</a></li>
+                                    <li><a class="dropdown-item text-center" href="{{ url_for('main.dashboard') }}">View dashboard</a></li>
                                 </ul>
                             </li>
 
@@ -244,10 +206,10 @@
                                     <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
                                         <i data-lucide="layout-dashboard" class="dropdown-icon me-2"></i>Dashboard
                                     </a></li>
-                                    <li><a class="dropdown-item" href="#">
+                                    <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
                                         <i data-lucide="user" class="dropdown-icon me-2"></i>Profile
                                     </a></li>
-                                    <li><a class="dropdown-item" href="#">
+                                    <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.org_settings') }}{% else %}{{ url_for('main.dashboard') }}{% endif %}">
                                         <i data-lucide="settings" class="dropdown-icon me-2"></i>Settings
                                     </a></li>
                                     {% if user_tenants and user_tenants|length > 1 %}
@@ -373,19 +335,66 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('globalSearch');
-            if (searchInput) {
-                let searchTimeout;
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    const query = this.value.trim();
+            const dropdown = document.getElementById('searchResultsDropdown');
+            if (!searchInput || !dropdown) return;
 
-                    if (query.length >= 2) {
-                        searchTimeout = setTimeout(() => {
-                            // Implement global search functionality
-                            console.log('Searching for:', query);
-                        }, 300);
-                    }
-                });
+            let searchTimeout;
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+
+                if (query.length < 2) {
+                    dropdown.classList.remove('show');
+                    dropdown.innerHTML = '';
+                    return;
+                }
+
+                searchTimeout = setTimeout(() => {
+                    fetch('/api/search/customers?q=' + encodeURIComponent(query))
+                        .then(r => r.json())
+                        .then(results => {
+                            if (results.length === 0) {
+                                dropdown.innerHTML = '<div class="search-no-results">No customers found</div>';
+                            } else {
+                                dropdown.innerHTML = results.slice(0, 8).map(c =>
+                                    '<a href="/customers/' + c.customer_id + '" class="search-result-item">' +
+                                        '<i data-lucide="user" style="width:16px;height:16px;flex-shrink:0;color:var(--gray-400);"></i>' +
+                                        '<div>' +
+                                            '<div class="search-result-name">' + escapeHtml(c.full_name) + '</div>' +
+                                            '<div class="search-result-detail">' + escapeHtml(c.email || '') + (c.phone ? ' &middot; ' + escapeHtml(c.phone) : '') + '</div>' +
+                                        '</div>' +
+                                    '</a>'
+                                ).join('');
+                                if (typeof lucide !== 'undefined') lucide.createIcons();
+                            }
+                            dropdown.classList.add('show');
+                        })
+                        .catch(() => {
+                            dropdown.innerHTML = '<div class="search-no-results">Search unavailable</div>';
+                            dropdown.classList.add('show');
+                        });
+                }, 300);
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Reopen on focus if has content
+            searchInput.addEventListener('focus', function() {
+                if (dropdown.innerHTML && this.value.trim().length >= 2) {
+                    dropdown.classList.add('show');
+                }
+            });
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
         });
     </script>

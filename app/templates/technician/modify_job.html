@@ -306,7 +306,7 @@ Modify Job #{{ data.job_id }} - RepairOS
                             </p>
                         </div>
                         <div class="col-md-4 text-md-end">
-                            <form action="{{ url_for('mark_job_as_completed', job_id=data['job_id']) }}" method="POST" class="d-inline">
+                            <form action="{{ url_for('technician.complete_job', job_id=data['job_id']) }}" method="POST" class="d-inline">
                                 <button type="submit" class="btn btn-warning btn-lg" onclick="return confirm('Are you sure you want to mark this job as completed? This action cannot be undone.')">
                                     <i class="bi bi-check-circle me-2"></i>
                                     Mark as Completed

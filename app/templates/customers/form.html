@@ -1,0 +1,84 @@
+{% extends "base/layout.html" %}
+
+{% block title %}{% if action == 'edit' %}Edit Customer{% else %}New Customer{% endif %} - RepairOS{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.customers') }}">Customers</a>
+    </li>
+    <li class="breadcrumb-item active">{% if action == 'edit' %}Edit Customer{% else %}New Customer{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
+            <i data-lucide="{% if action == 'edit' %}pencil{% else %}user-plus{% endif %}" class="text-primary" style="width: 28px; height: 28px;"></i>
+            {% if action == 'edit' %}Edit Customer{% else %}New Customer{% endif %}
+        </h1>
+        <p class="text-muted mb-0">
+            {% if action == 'edit' %}Update customer information{% else %}Add a new customer to your shop{% endif %}
+        </p>
+    </div>
+    <a href="{{ url_for('main.customers') }}" class="btn btn-outline-secondary">
+        <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Back to Customers
+    </a>
+</div>
+
+<!-- Customer Form -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+                    Customer Information
+                </h3>
+            </div>
+            <div class="p-4">
+                <form method="POST"
+                      action="{% if action == 'edit' %}{{ url_for('main.update_customer', customer_id=customer.customer_id) }}{% else %}{{ url_for('main.create_customer') }}{% endif %}">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">First Name</label>
+                            <input type="text" class="form-control" name="first_name"
+                                   placeholder="Enter first name"
+                                   value="{{ customer.first_name if customer else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Family Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="family_name" required
+                                   placeholder="Enter family name"
+                                   value="{{ customer.family_name if customer else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" name="email" required
+                                   placeholder="Enter email address"
+                                   value="{{ customer.email if customer else '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" name="phone" required
+                                   placeholder="Enter phone number"
+                                   value="{{ customer.phone if customer else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{{ url_for('main.customers') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-accent">
+                            <i data-lucide="{% if action == 'edit' %}save{% else %}plus{% endif %}" class="me-2" style="width: 16px; height: 16px;"></i>
+                            {% if action == 'edit' %}Save Changes{% else %}Add Customer{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

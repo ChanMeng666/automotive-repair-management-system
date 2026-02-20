@@ -1,11 +1,11 @@
-{% extends "base/layout.html" %}
+{% extends "base/layout_with_sidebar.html" %}
 {% block title %}Admin Dashboard - RepairOS{% endblock %}
 
 {% block breadcrumb_items %}
 <li class="breadcrumb-item active">Dashboard</li>
 {% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="container-fluid py-4">
     <!-- Page Header -->
     <div class="row mb-4">
@@ -176,7 +176,7 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
+{% block admin_extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Monthly Revenue Bar Chart

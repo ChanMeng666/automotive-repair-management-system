@@ -1,0 +1,159 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Customers - RepairOS{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Customers</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
+            <i data-lucide="users" class="text-primary" style="width: 28px; height: 28px;"></i>
+            Customers
+        </h1>
+        <p class="text-muted mb-0">View and manage all customers</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
+            <i data-lucide="user-plus" class="me-2" style="width: 16px; height: 16px;"></i>Add Customer
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="filter-bar mb-4">
+    <form method="GET" action="{{ url_for('main.customers') }}" class="d-flex gap-3 align-items-end w-100">
+        <div class="filter-group" style="flex-grow: 1;">
+            <label class="filter-label">Search:</label>
+            <div class="search-container" style="max-width: 100%;">
+                <input type="text" class="form-control search-input" name="search"
+                       placeholder="Search by name, email, or phone..."
+                       value="{{ search_query }}">
+                <i data-lucide="search" class="search-icon"></i>
+            </div>
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Search by:</label>
+            <select class="form-select filter-select" name="search_type">
+                <option value="both" {% if search_type == 'both' %}selected{% endif %}>Name & Email</option>
+                <option value="name" {% if search_type == 'name' %}selected{% endif %}>Name Only</option>
+                <option value="email" {% if search_type == 'email' %}selected{% endif %}>Email Only</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <i data-lucide="search" class="me-1" style="width: 16px; height: 16px;"></i>Search
+        </button>
+        {% if search_query %}
+        <a href="{{ url_for('main.customers') }}" class="btn btn-outline-secondary">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Stats -->
+<div class="row mb-4">
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-card--primary">
+            <div class="stat-card-icon text-primary">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="stat-card-value">{{ customers|length }}</div>
+            <div class="stat-card-label">{% if search_query %}Results Found{% else %}Total Customers{% endif %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Table -->
+<div class="table-container">
+    <div class="table-header">
+        <h3 class="table-title">
+            <i data-lucide="contact" style="width: 20px; height: 20px;"></i>
+            {% if search_query %}Search Results{% else %}All Customers{% endif %}
+        </h3>
+    </div>
+
+    {% if customers %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
+                                <i data-lucide="user" class="text-primary" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('main.customer_detail', customer_id=customer.customer_id) }}" class="fw-semibold text-decoration-none">
+                                    {{ customer.first_name }} {{ customer.family_name }}
+                                </a>
+                                <small class="text-muted d-block">ID: #{{ customer.customer_id }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="d-flex align-items-center gap-1">
+                            <i data-lucide="mail" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            {{ customer.email or '—' }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="d-flex align-items-center gap-1">
+                            <i data-lucide="phone" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            {{ customer.phone or '—' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ url_for('main.customer_detail', customer_id=customer.customer_id) }}"
+                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                            </a>
+                            <a href="{{ url_for('main.edit_customer', customer_id=customer.customer_id) }}"
+                               class="btn btn-sm btn-outline-secondary" title="Edit">
+                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="users"></i>
+        </div>
+        <div class="empty-state-title">
+            {% if search_query %}No Customers Found{% else %}No Customers Yet{% endif %}
+        </div>
+        <div class="empty-state-description">
+            {% if search_query %}
+                No customers match your search criteria. Try a different search term.
+            {% else %}
+                Get started by adding your first customer.
+            {% endif %}
+        </div>
+        {% if not search_query %}
+        <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
+            <i data-lucide="user-plus" class="me-2" style="width: 16px; height: 16px;"></i>Add Customer
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

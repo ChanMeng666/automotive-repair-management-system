@@ -1,0 +1,80 @@
+<!-- Admin Sidebar Navigation -->
+<aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-brand">Admin</span>
+        <button class="sidebar-close d-lg-none" onclick="toggleAdminSidebar()" aria-label="Close sidebar">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <!-- Dashboard -->
+        <a href="{{ url_for('administrator.dashboard') }}"
+           class="sidebar-link {% if request.endpoint and 'dashboard' in request.endpoint and 'administrator' in request.endpoint %}active{% endif %}">
+            <i data-lucide="layout-dashboard" class="sidebar-icon"></i>
+            <span class="sidebar-label">Dashboard</span>
+        </a>
+
+        <!-- Operations -->
+        <div class="sidebar-section-title">Operations</div>
+        <a href="{{ url_for('administrator.customer_list') }}"
+           class="sidebar-link {% if request.endpoint and 'customer' in request.endpoint and 'administrator' in request.endpoint %}active{% endif %}">
+            <i data-lucide="users" class="sidebar-icon"></i>
+            <span class="sidebar-label">Customers</span>
+        </a>
+        <a href="{{ url_for('administrator.pay_bills') }}"
+           class="sidebar-link {% if request.endpoint and 'pay_bills' in request.endpoint %}active{% endif %}">
+            <i data-lucide="credit-card" class="sidebar-icon"></i>
+            <span class="sidebar-label">Billing</span>
+        </a>
+        <a href="{{ url_for('administrator.overdue_bills') }}"
+           class="sidebar-link {% if request.endpoint and 'overdue' in request.endpoint %}active{% endif %}">
+            <i data-lucide="alert-triangle" class="sidebar-icon"></i>
+            <span class="sidebar-label">Overdue Bills</span>
+        </a>
+        <a href="{{ url_for('administrator.reports') }}"
+           class="sidebar-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}">
+            <i data-lucide="bar-chart-3" class="sidebar-icon"></i>
+            <span class="sidebar-label">Reports</span>
+        </a>
+
+        <!-- Catalog -->
+        <div class="sidebar-section-title">Catalog</div>
+        <a href="{{ url_for('administrator.service_catalog') }}"
+           class="sidebar-link {% if request.endpoint and 'service_catalog' in request.endpoint %}active{% endif %}">
+            <i data-lucide="list-checks" class="sidebar-icon"></i>
+            <span class="sidebar-label">Service Catalog</span>
+        </a>
+        <a href="{{ url_for('administrator.parts_catalog') }}"
+           class="sidebar-link {% if request.endpoint and 'parts_catalog' in request.endpoint %}active{% endif %}">
+            <i data-lucide="package" class="sidebar-icon"></i>
+            <span class="sidebar-label">Parts Catalog</span>
+        </a>
+        <a href="{{ url_for('administrator.inventory') }}"
+           class="sidebar-link {% if request.endpoint and 'inventory' in request.endpoint %}active{% endif %}">
+            <i data-lucide="warehouse" class="sidebar-icon"></i>
+            <span class="sidebar-label">Inventory</span>
+        </a>
+
+        <!-- Organization -->
+        <div class="sidebar-section-title">Organization</div>
+        <a href="{{ url_for('administrator.team_members') }}"
+           class="sidebar-link {% if request.endpoint and 'team_members' in request.endpoint %}active{% endif %}">
+            <i data-lucide="users-round" class="sidebar-icon"></i>
+            <span class="sidebar-label">Team Members</span>
+        </a>
+        <a href="{{ url_for('administrator.org_settings') }}"
+           class="sidebar-link {% if request.endpoint and 'org_settings' in request.endpoint %}active{% endif %}">
+            <i data-lucide="building-2" class="sidebar-icon"></i>
+            <span class="sidebar-label">Org Settings</span>
+        </a>
+        <a href="{{ url_for('administrator.subscription_management') }}"
+           class="sidebar-link {% if request.endpoint and 'subscription' in request.endpoint %}active{% endif %}">
+            <i data-lucide="credit-card" class="sidebar-icon"></i>
+            <span class="sidebar-label">Subscription</span>
+        </a>
+    </nav>
+</aside>
+
+<!-- Sidebar overlay for mobile -->
+<div class="sidebar-overlay d-lg-none" id="sidebarOverlay" onclick="toggleAdminSidebar()"></div>

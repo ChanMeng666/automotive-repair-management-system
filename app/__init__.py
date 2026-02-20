@@ -174,3 +174,28 @@ def register_security_middleware(app):
     @app.context_processor
     def inject_csrf_token():
         return {'csrf_token': CSRFProtection.generate_token}
+
+    @app.context_processor
+    def inject_notifications():
+        """Inject notification counts for the navbar"""
+        from flask import session
+        notification_data = {
+            'notification_count': 0,
+            'overdue_bills_count': 0,
+            'unpaid_bills_count': 0,
+        }
+        if not session.get('logged_in'):
+            return notification_data
+        try:
+            from app.services.billing_service import BillingService
+            billing_service = BillingService()
+            overdue = billing_service.get_overdue_bills()
+            unpaid = billing_service.get_unpaid_bills()
+            overdue_count = len(overdue) if overdue else 0
+            unpaid_count = len(unpaid) if unpaid else 0
+            notification_data['overdue_bills_count'] = overdue_count
+            notification_data['unpaid_bills_count'] = unpaid_count
+            notification_data['notification_count'] = overdue_count + unpaid_count
+        except Exception:
+            pass
+        return notification_data

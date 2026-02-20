@@ -1,9 +1,9 @@
-{% extends "base/layout.html" %}
+{% extends "base/layout_with_sidebar.html" %}
 {% block title %}
 Customer Management - Administrator Portal
 {% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="container-fluid py-4">
     <!-- Page Header -->
     <div class="row mb-4">
@@ -247,7 +247,7 @@ Customer Management - Administrator Portal
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{{ url_for('modifyjob', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ url_for('technician.modify_job', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary">
                                             <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
                                         </a>
                                     </td>
