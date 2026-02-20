@@ -268,20 +268,40 @@
     <!-- Footer -->
     <footer class="footer footer-transparent d-print-none">
         <div class="container-xl">
-            <div class="row align-items-center">
-                <div class="col-auto d-flex align-items-center">
+            <!-- Main footer row -->
+            <div class="row align-items-center py-2">
+                <div class="col-lg-auto d-flex align-items-center mb-2 mb-lg-0">
                     <img src="{{ url_for('static', filename='images/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 20px; width: auto; margin-right: 6px;">
-                    RepairOS &copy; {{ moment().year if moment else '2024' }}. All rights reserved.
+                    <span>RepairOS &copy; <script>document.write(new Date().getFullYear())</script>. All rights reserved.</span>
                 </div>
-                <div class="col-auto ms-auto">
-                    <a href="{{ url_for('main.help_page') }}" class="link-secondary me-3">
+                <div class="col-lg-auto ms-lg-auto d-flex align-items-center gap-3 mb-2 mb-lg-0">
+                    <a href="{{ url_for('main.help_page') }}" class="link-secondary">
                         <i class="ti ti-help me-1"></i>Help
                     </a>
-                    <a href="{{ url_for('main.about') }}" class="link-secondary me-3">
+                    <a href="{{ url_for('main.about') }}" class="link-secondary">
                         <i class="ti ti-info-circle me-1"></i>About
                     </a>
-                    <a href="#" class="link-secondary">
-                        <i class="ti ti-shield-check me-1"></i>Privacy
+                    <a href="https://github.com/ChanMeng666/automotive-repair-management-system" class="link-secondary" target="_blank" rel="noopener">
+                        <i class="ti ti-brand-github me-1"></i>Source
+                    </a>
+                </div>
+            </div>
+            <!-- Developer credit -->
+            <div class="row border-top pt-2 mt-1">
+                <div class="col-12 d-flex flex-wrap align-items-center justify-content-between gap-2" style="font-size: 0.8125rem;">
+                    <div class="d-flex align-items-center gap-2 text-secondary">
+                        <img src="{{ url_for('static', filename='images/chan_logo.svg') }}" alt="Chan Meng" style="height: 18px; width: auto; opacity: 0.7;">
+                        <span>Built by <strong class="text-body">Chan Meng</strong></span>
+                        <span class="text-secondary mx-1">&middot;</span>
+                        <a href="mailto:chanmeng.dev@gmail.com" class="link-secondary" title="Contact for custom development">
+                            <i class="ti ti-mail" style="font-size: 0.875rem;"></i>
+                        </a>
+                        <a href="https://github.com/ChanMeng666" class="link-secondary" target="_blank" rel="noopener" title="View portfolio on GitHub">
+                            <i class="ti ti-brand-github" style="font-size: 0.875rem;"></i>
+                        </a>
+                    </div>
+                    <a href="mailto:chanmeng.dev@gmail.com" class="link-secondary text-decoration-none" style="font-size: 0.75rem;">
+                        Need a custom web app? <span class="text-primary fw-semibold">Let's talk &rarr;</span>
                     </a>
                 </div>
             </div>

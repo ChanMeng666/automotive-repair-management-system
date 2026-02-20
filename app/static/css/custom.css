@@ -171,11 +171,6 @@
     padding: 0 1rem;
 }
 
-/* Hero section background (dashboard welcome) */
-.hero-section-bg {
-    background: linear-gradient(135deg, var(--tblr-primary) 0%, #152a45 100%);
-}
-
 /* Admin sidebar layout */
 .admin-layout {
     display: flex;

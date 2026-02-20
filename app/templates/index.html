@@ -1,61 +1,108 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Dashboard - RepairOS{% endblock %}
+{% block title %}{% if session.logged_in %}Dashboard{% else %}Automotive Repair Management{% endif %} - RepairOS{% endblock %}
 
 {% block breadcrumb_items %}
+    {% if session.logged_in %}
     <li class="breadcrumb-item active">Dashboard</li>
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+{% if not session.logged_in %}
+<style>
+.hero-landing {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f1f33 100%);
+    position: relative;
+    overflow: hidden;
+}
+.hero-landing::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(232,93,4,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.hero-landing::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+}
+.feature-icon-box {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+.metric-number {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--repaisos-accent), #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+</style>
+{% endif %}
 {% endblock %}
 
 {% block content %}
-<!-- Welcome Hero Section -->
+{% if session.logged_in %}
+{# ==================== LOGGED-IN DASHBOARD ==================== #}
+
+<!-- Welcome Bar -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card border-0 hero-section-bg">
-            <div class="card-body d-flex align-items-center text-white p-5">
-                <div class="row w-100 align-items-center">
-                    <div class="col-lg-8">
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="{{ url_for('static', filename='images/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 48px; width: auto; margin-right: 1rem; opacity: 0.9;">
-                            <div>
-                                <h1 class="display-5 fw-bold mb-2 text-white">RepairOS</h1>
-                                <p class="lead mb-0 opacity-90">Professional Automotive Repair Management System</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="ti ti-calendar me-2"></i>
-                            <span>Today is {{ current_date.strftime('%B %d, %Y') if current_date else 'Loading...' }}</span>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 text-end">
-                        {% if not session.logged_in %}
-                            <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg">
-                                <i class="ti ti-login me-2"></i>Sign In
-                            </a>
-                        {% else %}
-                            <div class="text-end">
-                                <div class="fs-5 fw-semibold">Welcome back,</div>
-                                <div class="fs-4 fw-bold">{{ session.user_id }}</div>
-                                <small class="opacity-75">{{ session.user_type|title }}</small>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h1 class="h2 fw-bold mb-1">Welcome back, {{ session.user_id }}</h1>
+                <p class="text-secondary mb-0">
+                    <i class="ti ti-calendar me-1"></i>
+                    {{ current_date.strftime('%A, %B %d, %Y') if current_date else '' }}
+                    <span class="mx-2">&middot;</span>
+                    <span class="badge bg-primary-lt">{{ session.user_type|title }}</span>
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                {% if session.user_type == 'technician' %}
+                <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+                    <i class="ti ti-plus me-1"></i>New Job
+                </a>
+                {% endif %}
+                <a href="{{ url_for('main.new_customer') }}" class="btn btn-outline-primary">
+                    <i class="ti ti-user-plus me-1"></i>Add Customer
+                </a>
             </div>
         </div>
     </div>
 </div>
 
-{% if session.logged_in %}
-<!-- Statistics Dashboard -->
+<!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-12 mb-3">
-        <h2 class="fw-semibold d-flex align-items-center">
-            <i class="ti ti-chart-bar text-primary me-3"></i>
-            System Overview
-        </h2>
-    </div>
-
-    <!-- Statistics Cards -->
     <div class="col-sm-6 col-lg-3 mb-3">
         <div class="card">
             <div class="card-body">
@@ -108,20 +155,13 @@
 
 <!-- Quick Actions -->
 <div class="row mb-4">
-    <div class="col-12 mb-3">
-        <h2 class="fw-semibold d-flex align-items-center">
-            <i class="ti ti-bolt text-warning me-3"></i>
-            Quick Actions
-        </h2>
-    </div>
-
     <div class="col-sm-6 col-lg-3 mb-3">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title"><i class="ti ti-user-plus me-2"></i>Customer Management</h3>
             </div>
             <div class="card-body">
-                <p class="text-secondary">View customer database, add new customers, or search existing customer information and history.</p>
+                <p class="text-secondary">View customer database, add new customers, or search existing records.</p>
             </div>
             <div class="card-footer d-flex gap-2">
                 <a href="{{ url_for('main.customers') }}" class="btn btn-outline-primary">
@@ -133,70 +173,67 @@
             </div>
         </div>
     </div>
-
     <div class="col-sm-6 col-lg-3 mb-3">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title"><i class="ti ti-tool me-2"></i>Work Orders</h3>
             </div>
             <div class="card-body">
-                <p class="text-secondary">Manage repair work orders, track progress, and create new service requests for customers.</p>
+                <p class="text-secondary">Manage repair work orders, track progress, and create new service requests.</p>
             </div>
             <div class="card-footer d-flex gap-2">
                 {% if session.user_type == 'technician' %}
-                    <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
-                        <i class="ti ti-clipboard-list me-1"></i>Current Jobs
-                    </a>
-                    <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
-                        <i class="ti ti-plus me-1"></i>New Job
-                    </a>
+                <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
+                    <i class="ti ti-clipboard-list me-1"></i>Current Jobs
+                </a>
+                <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
+                    <i class="ti ti-plus me-1"></i>New Job
+                </a>
                 {% else %}
-                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
-                        <i class="ti ti-layout-dashboard me-1"></i>View Dashboard
-                    </a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
+                    <i class="ti ti-layout-dashboard me-1"></i>View Dashboard
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
-
     <div class="col-sm-6 col-lg-3 mb-3">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title"><i class="ti ti-credit-card me-2"></i>Billing & Payments</h3>
             </div>
             <div class="card-body">
-                <p class="text-secondary">Process payments, manage billing records, and track outstanding balances and overdue accounts.</p>
+                <p class="text-secondary">Process payments, manage billing records, and track outstanding balances.</p>
             </div>
             <div class="card-footer d-flex gap-2">
                 {% if session.user_type == 'administrator' %}
-                    <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-info">
-                        <i class="ti ti-credit-card me-1"></i>Payments
-                    </a>
-                    <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning">
-                        <i class="ti ti-alert-triangle me-1"></i>Overdue
-                    </a>
+                <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-info">
+                    <i class="ti ti-credit-card me-1"></i>Payments
+                </a>
+                <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning">
+                    <i class="ti ti-alert-triangle me-1"></i>Overdue
+                </a>
                 {% else %}
-                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-info">
-                        <i class="ti ti-info-circle me-1"></i>View Info
-                    </a>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-info">
+                    <i class="ti ti-info-circle me-1"></i>View Info
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
-
     <div class="col-sm-6 col-lg-3 mb-3">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title"><i class="ti ti-trending-up me-2"></i>Reports & Analytics</h3>
             </div>
             <div class="card-body">
-                <p class="text-secondary">Generate detailed reports, view business analytics, and track performance metrics and trends.</p>
+                <p class="text-secondary">Generate detailed reports, view business analytics, and performance metrics.</p>
             </div>
             <div class="card-footer d-flex gap-2">
                 {% if session.user_type == 'administrator' %}
-                    <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-secondary">
-                        <i class="ti ti-file-text me-1"></i>View Reports
-                    </a>
+                <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-secondary">
+                    <i class="ti ti-file-text me-1"></i>View Reports
+                </a>
                 {% endif %}
                 <a href="#" class="btn btn-secondary">
                     <i class="ti ti-download me-1"></i>Export Data
@@ -206,33 +243,31 @@
     </div>
 </div>
 
-<!-- Performance Overview Section -->
+<!-- Performance Overview -->
 <div class="row mb-4">
-    <div class="col-12 mb-3">
-        <h2 class="fw-semibold d-flex align-items-center">
-            <i class="ti ti-activity text-success me-3"></i>
-            Performance Overview
-        </h2>
-    </div>
     <div class="col-lg-6 mb-4">
         <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-chart-line me-2"></i>Monthly Revenue</h3>
+            </div>
             <div class="card-body">
-                <h5 class="card-title fw-semibold">Monthly Revenue</h5>
                 <canvas id="monthlyRevenueChart"></canvas>
             </div>
         </div>
     </div>
     <div class="col-lg-6 mb-4">
         <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-chart-pie me-2"></i>Job Status Distribution</h3>
+            </div>
             <div class="card-body">
-                <h5 class="card-title fw-semibold">Job Status Distribution</h5>
                 <canvas id="jobStatusChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Recent Activity Section -->
+<!-- Recent Activity -->
 <div class="row">
     <!-- Recent Work Orders -->
     <div class="col-lg-8 mb-4">
@@ -245,86 +280,69 @@
                     </a>
                 </div>
             </div>
-
             {% if recent_jobs %}
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table">
-                        <thead>
-                            <tr>
-                                <th>Job ID</th>
-                                <th>Customer</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Amount</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for job in recent_jobs[:5] %}
-                            <tr>
-                                <td>
-                                    <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="text-decoration-none fw-semibold">
-                                        #{{ job.get('job_id', 'N/A') }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <div>
-                                        <div class="fw-medium">{{ job.get('first_name', '') }} {{ job.get('family_name', '') }}</div>
-                                        <small class="text-secondary">#{{ job.get('customer_id', '') }}</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="text-secondary">{{ job.get('job_date', 'N/A') }}</span>
-                                </td>
-                                <td>
-                                    {% if job.get('completed') %}
-                                        <span class="badge bg-success">
-                                            <i class="ti ti-circle-check me-1"></i>Completed
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-warning">
-                                            <i class="ti ti-clock me-1"></i>In Progress
-                                        </span>
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in recent_jobs[:5] %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="text-decoration-none fw-semibold">
+                                    #{{ job.get('job_id', 'N/A') }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="fw-medium">{{ job.get('first_name', '') }} {{ job.get('family_name', '') }}</div>
+                                <small class="text-secondary">#{{ job.get('customer_id', '') }}</small>
+                            </td>
+                            <td><span class="text-secondary">{{ job.get('job_date', 'N/A') }}</span></td>
+                            <td>
+                                {% if job.get('completed') %}
+                                <span class="badge bg-success"><i class="ti ti-circle-check me-1"></i>Completed</span>
+                                {% else %}
+                                <span class="badge bg-warning"><i class="ti ti-clock me-1"></i>In Progress</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="fw-semibold">${{ "%.2f"|format(job.get('total_cost', 0)) }}</span>
+                                {% if not job.get('paid') %}
+                                <br><small class="text-warning">Unpaid</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="ti ti-eye"></i></a>
+                                    {% if not job.get('completed') %}
+                                    <a href="{{ url_for('technician.modify_job', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success" title="Edit"><i class="ti ti-pencil"></i></a>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    <span class="fw-semibold">${{ "%.2f"|format(job.get('total_cost', 0)) }}</span>
-                                    {% if not job.get('paid') %}
-                                        <br><small class="text-warning">Unpaid</small>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i class="ti ti-eye"></i>
-                                        </a>
-                                        {% if not job.get('completed') %}
-                                            <a href="{{ url_for('technician.modify_job', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success" title="Edit">
-                                                <i class="ti ti-pencil"></i>
-                                            </a>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-                <div class="empty">
-                    <div class="empty-icon"><i class="ti ti-inbox"></i></div>
-                    <p class="empty-title">No Recent Work Orders</p>
-                    <p class="empty-subtitle text-secondary">
-                        There are no recent work orders to display. Create a new work order to get started.
-                    </p>
-                    {% if session.user_type == 'technician' %}
-                    <div class="empty-action">
-                        <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
-                            <i class="ti ti-plus me-2"></i>Create New Job
-                        </a>
-                    </div>
-                    {% endif %}
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-inbox"></i></div>
+                <p class="empty-title">No Recent Work Orders</p>
+                <p class="empty-subtitle text-secondary">Create a new work order to get started.</p>
+                {% if session.user_type == 'technician' %}
+                <div class="empty-action">
+                    <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent"><i class="ti ti-plus me-2"></i>Create New Job</a>
                 </div>
+                {% endif %}
+            </div>
             {% endif %}
         </div>
     </div>
@@ -336,101 +354,188 @@
                 <h3 class="card-title"><i class="ti ti-alert-triangle text-warning me-2"></i>Overdue Bills</h3>
                 <div class="card-actions">
                     {% if session.user_type == 'administrator' %}
-                        <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-sm btn-outline-warning">
-                            View All
-                        </a>
+                    <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-sm btn-outline-warning">View All</a>
                     {% endif %}
                 </div>
             </div>
-
             {% if overdue_bills %}
-                <div class="card-body p-3">
-                    {% for bill in overdue_bills[:5] %}
-                        <div class="d-flex justify-content-between align-items-center py-3 {% if not loop.last %}border-bottom{% endif %}">
-                            <div>
-                                <div class="fw-semibold">{{ bill.get('first_name', '') }} {{ bill.get('family_name', '') }}</div>
-                                <small class="text-secondary">Job #{{ bill.get('job_id', '') }}</small>
-                                <br>
-                                <small class="text-warning d-flex align-items-center gap-1">
-                                    <i class="ti ti-clock"></i>
-                                    {{ bill.get('days_overdue', 0) }} days overdue
-                                </small>
-                            </div>
-                            <div class="text-end">
-                                <div class="fw-bold text-danger">${{ "%.2f"|format(bill.get('total_cost', 0)) }}</div>
-                                {% if session.user_type == 'administrator' %}
-                                    <a href="{{ url_for('administrator.pay_single_bill', job_id=bill.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success mt-1">
-                                        Pay
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
+            <div class="card-body p-3">
+                {% for bill in overdue_bills[:5] %}
+                <div class="d-flex justify-content-between align-items-center py-3 {% if not loop.last %}border-bottom{% endif %}">
+                    <div>
+                        <div class="fw-semibold">{{ bill.get('first_name', '') }} {{ bill.get('family_name', '') }}</div>
+                        <small class="text-secondary">Job #{{ bill.get('job_id', '') }}</small>
+                        <br>
+                        <small class="text-warning d-flex align-items-center gap-1">
+                            <i class="ti ti-clock"></i>{{ bill.get('days_overdue', 0) }} days overdue
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-danger">${{ "%.2f"|format(bill.get('total_cost', 0)) }}</div>
+                        {% if session.user_type == 'administrator' %}
+                        <a href="{{ url_for('administrator.pay_single_bill', job_id=bill.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success mt-1">Pay</a>
+                        {% endif %}
+                    </div>
                 </div>
+                {% endfor %}
+            </div>
             {% else %}
-                <div class="empty py-4">
-                    <div class="empty-icon"><i class="ti ti-circle-check text-success"></i></div>
-                    <p class="empty-title">All Bills Current</p>
-                    <p class="empty-subtitle text-secondary">
-                        Great! No overdue bills at this time.
-                    </p>
-                </div>
+            <div class="empty py-4">
+                <div class="empty-icon"><i class="ti ti-circle-check text-success"></i></div>
+                <p class="empty-title">All Bills Current</p>
+                <p class="empty-subtitle text-secondary">No overdue bills at this time.</p>
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
 
 {% else %}
-<!-- Not Logged In - Welcome Section -->
-<div class="row">
-    <div class="col-lg-8 mx-auto text-center">
-        <div class="mb-5">
-            <h2 class="display-6 fw-bold mb-4">Streamline Your Repair Business</h2>
-            <p class="lead mb-4">
-                RepairOS helps you manage customer relationships, track work orders,
-                process payments, and grow your automotive repair business with professional tools.
+{# ==================== PUBLIC LANDING PAGE ==================== #}
+
+<!-- Hero Section -->
+<div class="hero-landing rounded-3 px-4 py-5 mb-5" style="position: relative; z-index: 1;">
+    <div class="row align-items-center" style="position: relative; z-index: 2;">
+        <div class="col-lg-7 text-white mb-4 mb-lg-0">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="trust-badge"><i class="ti ti-shield-check"></i> Enterprise-grade</span>
+                <span class="trust-badge"><i class="ti ti-cloud"></i> Cloud-based</span>
+            </div>
+            <h1 class="display-5 fw-bold mb-3 text-white" style="line-height: 1.15;">
+                Run your repair shop<br>
+                <span style="color: var(--repaisos-accent);">with confidence.</span>
+            </h1>
+            <p class="fs-5 mb-4" style="color: rgba(255,255,255,0.75); max-width: 520px;">
+                From work orders to invoicing, RepairOS gives your team the tools to deliver faster service, get paid on time, and grow your business.
             </p>
-        </div>
-
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="text-center">
-                    <div class="bg-primary-lt rounded-circle p-4 d-inline-flex mb-3">
-                        <i class="ti ti-users text-primary" style="font-size: 2.5rem;"></i>
-                    </div>
-                    <h4>Customer Management</h4>
-                    <p class="text-secondary">Organize customer information, track service history, and build lasting relationships.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-center">
-                    <div class="bg-success-lt rounded-circle p-4 d-inline-flex mb-3">
-                        <i class="ti ti-tool text-success" style="font-size: 2.5rem;"></i>
-                    </div>
-                    <h4>Work Order Tracking</h4>
-                    <p class="text-secondary">Efficiently manage repair jobs from start to finish with detailed tracking.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-center">
-                    <div class="bg-info-lt rounded-circle p-4 d-inline-flex mb-3">
-                        <i class="ti ti-trending-up text-info" style="font-size: 2.5rem;"></i>
-                    </div>
-                    <h4>Business Analytics</h4>
-                    <p class="text-secondary">Track revenue, monitor performance, and make data-driven business decisions.</p>
-                </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg px-4">
+                    <i class="ti ti-rocket me-2"></i>Get Started Free
+                </a>
+                <a href="{{ url_for('main.about') }}" class="btn btn-outline-light btn-lg px-4">
+                    Learn More
+                </a>
             </div>
         </div>
-
-        <div class="d-flex gap-3 justify-content-center">
-            <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg">
-                <i class="ti ti-login me-2"></i>Get Started
-            </a>
-            <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary btn-lg">
-                <i class="ti ti-info-circle me-2"></i>Learn More
-            </a>
+        <div class="col-lg-5 text-center">
+            <img src="{{ url_for('static', filename='images/RepairOS-logo.svg') }}" alt="RepairOS" style="width: 280px; max-width: 80%; height: auto; opacity: 0.9; filter: drop-shadow(0 8px 32px rgba(0,0,0,0.3));">
         </div>
     </div>
 </div>
+
+<!-- Social Proof Numbers -->
+<div class="row text-center mb-5">
+    <div class="col-6 col-md-3 mb-3">
+        <div class="metric-number">100%</div>
+        <div class="text-secondary mt-1">Cloud Uptime</div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="metric-number">5min</div>
+        <div class="text-secondary mt-1">Setup Time</div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="metric-number">24/7</div>
+        <div class="text-secondary mt-1">Access Anywhere</div>
+    </div>
+    <div class="col-6 col-md-3 mb-3">
+        <div class="metric-number">$0</div>
+        <div class="text-secondary mt-1">To Get Started</div>
+    </div>
+</div>
+
+<!-- Core Features -->
+<div class="row mb-5">
+    <div class="col-12 mb-4">
+        <h2 class="h3 fw-bold text-center">Everything your shop needs</h2>
+        <p class="text-secondary text-center mb-0">One platform to manage customers, jobs, parts, billing, and your team.</p>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="feature-icon-box bg-primary-lt mb-3">
+                    <i class="ti ti-clipboard-list text-primary" style="font-size: 1.5rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Work Order Tracking</h4>
+                <p class="text-secondary mb-0">Create, assign, and track repair jobs from check-in to completion. Real-time status updates keep everyone in sync.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="feature-icon-box bg-success-lt mb-3">
+                    <i class="ti ti-users text-success" style="font-size: 1.5rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Customer Management</h4>
+                <p class="text-secondary mb-0">Build a complete customer database with vehicle history, contact details, and service records all in one place.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="feature-icon-box bg-warning-lt mb-3">
+                    <i class="ti ti-credit-card text-warning" style="font-size: 1.5rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Billing & Invoicing</h4>
+                <p class="text-secondary mb-0">Generate invoices, track payments, flag overdue accounts, and keep cash flow healthy automatically.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="feature-icon-box bg-info-lt mb-3">
+                    <i class="ti ti-package text-info" style="font-size: 1.5rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Parts & Inventory</h4>
+                <p class="text-secondary mb-0">Track stock levels, manage your parts catalog, and log every transaction for full inventory visibility.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="feature-icon-box bg-danger-lt mb-3">
+                    <i class="ti ti-chart-bar text-danger" style="font-size: 1.5rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Reports & Analytics</h4>
+                <p class="text-secondary mb-0">Revenue trends, job metrics, and technician performance reports to make smarter business decisions.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="feature-icon-box bg-purple-lt mb-3">
+                    <i class="ti ti-building text-purple" style="font-size: 1.5rem;"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Multi-Location Support</h4>
+                <p class="text-secondary mb-0">Run multiple shops from a single account with isolated data, team roles, and per-location settings.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="row mb-4">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f1f33 100%);">
+            <div class="card-body p-5 text-center text-white">
+                <h3 class="fw-bold text-white mb-2">Ready to modernize your shop?</h3>
+                <p class="mb-4" style="color: rgba(255,255,255,0.7);">Start free, no credit card required. Upgrade when you're ready.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg px-4">
+                        <i class="ti ti-rocket me-2"></i>Start Free Trial
+                    </a>
+                    <a href="{{ url_for('billing.plans') }}" class="btn btn-outline-light btn-lg px-4">
+                        View Pricing
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endif %}
 {% endblock %}
