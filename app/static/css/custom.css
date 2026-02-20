@@ -38,6 +38,12 @@
     border-bottom: 3px solid var(--repaisos-accent);
 }
 
+/* Keep nav links readable on dark navbar */
+.navbar-dark .nav-link:hover,
+.navbar-dark .nav-link:focus {
+    color: rgba(255, 255, 255, 0.75);
+}
+
 /* Search dropdown positioning */
 .search-results-dropdown {
     position: absolute;
@@ -146,10 +152,12 @@
     padding: 0.75rem 1.5rem;
     border: 1px solid var(--tblr-border-color);
     background: #fff;
+    color: #1f2937;
 }
 
 .btn-oauth:hover {
     background: var(--tblr-bg-surface-secondary);
+    color: #1f2937;
 }
 
 /* Divider for login page */
