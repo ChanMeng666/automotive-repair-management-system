@@ -15,6 +15,7 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/RepairOS-logo.svg') }}">
 
     <!-- Tabler CSS -->
     <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" rel="stylesheet">
@@ -35,8 +36,8 @@
     <header class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--tblr-primary);">
         <div class="container-xl">
             <!-- Brand Logo -->
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 32px; width: auto; margin-right: 8px;">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='images/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 30px; width: auto; margin-right: 8px;">
                 <span>RepairOS{% if current_tenant %} &middot; {{ current_tenant.name }}{% endif %}</span>
             </a>
 
@@ -268,8 +269,8 @@
     <footer class="footer footer-transparent d-print-none">
         <div class="container-xl">
             <div class="row align-items-center">
-                <div class="col-auto">
-                    <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 20px; width: auto; margin-right: 6px;">
+                <div class="col-auto d-flex align-items-center">
+                    <img src="{{ url_for('static', filename='images/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 20px; width: auto; margin-right: 6px;">
                     RepairOS &copy; {{ moment().year if moment else '2024' }}. All rights reserved.
                 </div>
                 <div class="col-auto ms-auto">
