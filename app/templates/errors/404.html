@@ -1,53 +1,46 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Page Not Found - Automotive Repair Management System{% endblock %}
+{% block title %}Page Not Found - RepairOS{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 text-center">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <!-- 404 Icon -->
-                <div class="text-primary mb-4">
-                    <i class="bi bi-search" style="font-size: 6rem;"></i>
-                </div>
-                
-                <!-- Error Message -->
-                <h1 class="display-4 text-primary mb-3">404</h1>
-                <h3 class="mb-3">Page Not Found</h3>
-                <p class="text-muted mb-4">
-                    Sorry, the page you are looking for does not exist or has been moved.
-                    <br>
-                    Please check if the URL is correct, or use the links below to return to the system.
-                </p>
-                
-                <!-- Action Buttons -->
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-                        <i class="bi bi-house me-2"></i>Back to Home
-                    </a>
-                    
-                    {% if session.logged_in %}
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                        </a>
-                        
-                        {% if session.user_type == 'technician' %}
-                            <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-list-task me-2"></i>Current Jobs
+                <div class="empty">
+                    <div class="empty-icon"><i class="ti ti-search text-primary" style="font-size: 4rem;"></i></div>
+                    <p class="empty-title">404 - Page Not Found</p>
+                    <p class="empty-subtitle text-secondary">
+                        Sorry, the page you are looking for does not exist or has been moved.
+                        Please check if the URL is correct, or use the links below to return to the system.
+                    </p>
+                    <div class="empty-action">
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                                <i class="ti ti-home me-2"></i>Back to Home
                             </a>
-                        {% elif session.user_type == 'administrator' %}
-                            <a href="{{ url_for('administrator.customer_list') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-people me-2"></i>Customer Management
-                            </a>
-                        {% endif %}
-                    {% else %}
-                        <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to System
-                        </a>
-                    {% endif %}
+                            {% if session.logged_in %}
+                                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
+                                    <i class="ti ti-layout-dashboard me-2"></i>Dashboard
+                                </a>
+                                {% if session.user_type == 'technician' %}
+                                    <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
+                                        <i class="ti ti-list me-2"></i>Current Jobs
+                                    </a>
+                                {% elif session.user_type == 'administrator' %}
+                                    <a href="{{ url_for('administrator.customer_list') }}" class="btn btn-outline-secondary">
+                                        <i class="ti ti-users me-2"></i>Customer Management
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary">
+                                    <i class="ti ti-login me-2"></i>Login to System
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                
+
                 <!-- Common Links -->
                 <div class="mt-4 pt-4 border-top">
                     <small class="text-muted">Common Functions:</small>
@@ -69,4 +62,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

@@ -14,13 +14,13 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0 d-flex align-items-center gap-2">
-                        <i data-lucide="puzzle" class="text-warning" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-puzzle text-warning"></i>
                         Parts Catalog
                     </h1>
                     <p class="text-muted mb-0">Manage your parts inventory catalog</p>
                 </div>
                 <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPartModal">
-                    <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                    <i class="ti ti-plus me-1"></i>
                     Add Part
                 </button>
             </div>
@@ -30,16 +30,16 @@
     <!-- Parts Table -->
     <div class="row">
         <div class="col-12">
-            <div class="table-container card--status card--status-active">
-                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-package"></i>
                         Parts
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-vcenter card-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Name</th>
@@ -56,7 +56,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <i data-lucide="puzzle" class="text-warning me-2" style="width: 18px; height: 18px;"></i>
+                                            <i class="ti ti-puzzle text-warning me-2"></i>
                                             <strong>{{ part.part_name|default(part.name) }}</strong>
                                         </div>
                                     </td>
@@ -72,13 +72,13 @@
                                     <td>{{ part.supplier|default('N/A') }}</td>
                                     <td>
                                         {% if part.active|default(true) %}
-                                        <span class="status-badge status-badge-success">
-                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                        <span class="badge bg-success">
+                                            <i class="ti ti-circle-check me-1"></i>
                                             Active
                                         </span>
                                         {% else %}
-                                        <span class="status-badge status-badge-error">
-                                            <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                        <span class="badge bg-danger">
+                                            <i class="ti ti-circle-x me-1"></i>
                                             Inactive
                                         </span>
                                         {% endif %}
@@ -86,13 +86,13 @@
                                     <td>
                                         <div class="d-flex gap-1">
                                             <button type="button" class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                                <i class="ti ti-pencil"></i>
                                             </button>
                                             <form method="post" action="#" class="d-inline">
                                                 <input type="hidden" name="part_id" value="{{ part.id|default(part.part_id|default('')) }}">
                                                 <input type="hidden" name="action" value="toggle">
                                                 <button type="submit" class="btn btn-sm btn-outline-{% if part.active|default(true) %}warning{% else %}success{% endif %}" title="{% if part.active|default(true) %}Deactivate{% else %}Activate{% endif %}">
-                                                    <i data-lucide="{% if part.active|default(true) %}pause{% else %}play{% endif %}" style="width: 14px; height: 14px;"></i>
+                                                    <i class="ti ti-{% if part.active|default(true) %}player-pause{% else %}player-play{% endif %}"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -101,7 +101,7 @@
                                 {% else %}
                                 <tr>
                                     <td colspan="7" class="text-center text-muted py-4">
-                                        <i data-lucide="puzzle" style="width: 48px; height: 48px;" class="mb-2 d-block mx-auto"></i>
+                                        <i class="ti ti-puzzle mb-2 d-block mx-auto" style="font-size: 48px;"></i>
                                         No parts configured. Add your first part above.
                                     </td>
                                 </tr>
@@ -121,7 +121,7 @@
         <div class="modal-content" style="border-top: 4px solid var(--warning);">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2">
-                    <i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i>
+                    <i class="ti ti-circle-plus"></i>
                     Add New Part
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -165,7 +165,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning">
-                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-plus me-1"></i>
                         Add Part
                     </button>
                 </div>

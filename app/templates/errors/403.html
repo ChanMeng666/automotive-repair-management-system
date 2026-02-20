@@ -1,47 +1,40 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Access Denied - Automotive Repair Management System{% endblock %}
+{% block title %}Access Denied - RepairOS{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 text-center">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <!-- 403 Icon -->
-                <div class="text-warning mb-4">
-                    <i class="bi bi-shield-exclamation" style="font-size: 6rem;"></i>
+                <div class="empty">
+                    <div class="empty-icon"><i class="ti ti-shield text-warning" style="font-size: 4rem;"></i></div>
+                    <p class="empty-title">403 - Access Denied</p>
+                    <p class="empty-subtitle text-secondary">
+                        Sorry, you don't have permission to access this page.
+                        Please ensure you are logged in correctly and have the appropriate access permissions.
+                    </p>
+                    <div class="empty-action">
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            {% if session.logged_in %}
+                                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                                    <i class="ti ti-layout-dashboard me-2"></i>Back to Dashboard
+                                </a>
+                                <a href="{{ url_for('main.logout') }}" class="btn btn-outline-warning">
+                                    <i class="ti ti-logout me-2"></i>Switch Account
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('main.login') }}" class="btn btn-primary">
+                                    <i class="ti ti-login me-2"></i>Login to System
+                                </a>
+                            {% endif %}
+                            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                                <i class="ti ti-home me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Error Message -->
-                <h1 class="display-4 text-warning mb-3">403</h1>
-                <h3 class="mb-3">Access Denied</h3>
-                <p class="text-muted mb-4">
-                    Sorry, you don't have permission to access this page.
-                    <br>
-                    Please ensure you are logged in correctly and have the appropriate access permissions.
-                </p>
-                
-                <!-- Action Buttons -->
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    {% if session.logged_in %}
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
-                            <i class="bi bi-speedometer2 me-2"></i>Back to Dashboard
-                        </a>
-                        
-                        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-warning">
-                            <i class="bi bi-box-arrow-right me-2"></i>Switch Account
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('main.login') }}" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to System
-                        </a>
-                    {% endif %}
-                    
-                    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-house me-2"></i>Back to Home
-                    </a>
-                </div>
-                
+
                 <!-- Permission Description -->
                 <div class="mt-4 pt-4 border-top text-start">
                     <h6 class="text-muted mb-3">Permission Overview:</h6>
@@ -49,28 +42,28 @@
                         <div class="col-md-6">
                             <h6 class="text-success">Technician Permissions</h6>
                             <ul class="list-unstyled">
-                                <li><i class="bi bi-check text-success me-1"></i> View work orders</li>
-                                <li><i class="bi bi-check text-success me-1"></i> Create work orders</li>
-                                <li><i class="bi bi-check text-success me-1"></i> Manage services and parts</li>
-                                <li><i class="bi bi-check text-success me-1"></i> View customer information</li>
+                                <li><i class="ti ti-circle-check text-success me-1"></i> View work orders</li>
+                                <li><i class="ti ti-circle-check text-success me-1"></i> Create work orders</li>
+                                <li><i class="ti ti-circle-check text-success me-1"></i> Manage services and parts</li>
+                                <li><i class="ti ti-circle-check text-success me-1"></i> View customer information</li>
                             </ul>
                         </div>
                         <div class="col-md-6">
                             <h6 class="text-primary">Administrator Permissions</h6>
                             <ul class="list-unstyled">
-                                <li><i class="bi bi-check text-primary me-1"></i> All technician functions</li>
-                                <li><i class="bi bi-check text-primary me-1"></i> Customer management</li>
-                                <li><i class="bi bi-check text-primary me-1"></i> Billing management</li>
-                                <li><i class="bi bi-check text-primary me-1"></i> System reports</li>
+                                <li><i class="ti ti-circle-check text-primary me-1"></i> All technician functions</li>
+                                <li><i class="ti ti-circle-check text-primary me-1"></i> Customer management</li>
+                                <li><i class="ti ti-circle-check text-primary me-1"></i> Billing management</li>
+                                <li><i class="ti ti-circle-check text-primary me-1"></i> System reports</li>
                             </ul>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Contact Information -->
                 <div class="mt-3 pt-3 border-top">
                     <small class="text-muted">
-                        <i class="bi bi-person-gear me-1"></i>
+                        <i class="ti ti-settings me-1"></i>
                         For permission upgrades, please contact the system administrator
                     </small>
                 </div>
@@ -78,4 +71,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

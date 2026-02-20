@@ -18,18 +18,18 @@ Billing History & Overdue Bills - Administrator Portal
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0">
-                        <i class="bi bi-clock-history text-primary me-2"></i>
+                        <i class="ti ti-clock text-primary me-2"></i>
                         Billing History & Overdue Bills
                     </h1>
                     <p class="text-muted mb-0">View billing history and manage overdue payments</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ url_for('administrator.customer_list') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-people me-1"></i>
+                        <i class="ti ti-users me-1"></i>
                         Customer Management
                     </a>
                     <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-success">
-                        <i class="bi bi-credit-card me-1"></i>
+                        <i class="ti ti-credit-card me-1"></i>
                         Process Payments
                     </a>
                 </div>
@@ -44,7 +44,7 @@ Billing History & Overdue Bills - Administrator Portal
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <i class="bi bi-exclamation-triangle-fill text-warning fs-1"></i>
+                            <i class="ti ti-alert-triangle text-warning" style="font-size: 2.5rem;"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="small text-muted">Overdue Bills</div>
@@ -61,7 +61,7 @@ Billing History & Overdue Bills - Administrator Portal
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <i class="bi bi-file-text-fill text-info fs-1"></i>
+                            <i class="ti ti-file-text text-info" style="font-size: 2.5rem;"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="small text-muted">Total Bills</div>
@@ -76,7 +76,7 @@ Billing History & Overdue Bills - Administrator Portal
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                            <i class="ti ti-circle-check text-success" style="font-size: 2.5rem;"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="small text-muted">Paid Bills</div>
@@ -93,7 +93,7 @@ Billing History & Overdue Bills - Administrator Portal
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <i class="bi bi-currency-dollar text-success fs-1"></i>
+                            <i class="ti ti-currency-dollar text-success" style="font-size: 2.5rem;"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <div class="small text-muted">Total Revenue</div>
@@ -117,7 +117,7 @@ Billing History & Overdue Bills - Administrator Portal
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-funnel me-2"></i>
+                        <i class="ti ti-filter me-2"></i>
                         Filter Bills by Customer
                     </h5>
                 </div>
@@ -137,7 +137,7 @@ Billing History & Overdue Bills - Administrator Portal
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <button class="btn btn-primary w-100" type="submit">
-                                <i class="bi bi-search me-1"></i>
+                                <i class="ti ti-search me-1"></i>
                                 Apply Filter
                             </button>
                         </div>
@@ -154,7 +154,7 @@ Billing History & Overdue Bills - Administrator Portal
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-info text-white">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-person-badge me-2"></i>
+                        <i class="ti ti-user-circle me-2"></i>
                         Customer Details
                     </h5>
                 </div>
@@ -164,14 +164,14 @@ Billing History & Overdue Bills - Administrator Portal
                             <div class="info-item">
                                 <label class="info-label">Customer Name</label>
                                 <div class="info-value">
-                                    <i class="bi bi-person me-2 text-primary"></i>
+                                    <i class="ti ti-user me-2 text-primary"></i>
                                     {{ selected_customer.first_name }} {{ selected_customer.family_name }}
                                 </div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Customer ID</label>
                                 <div class="info-value">
-                                    <i class="bi bi-hash me-2 text-secondary"></i>
+                                    <i class="ti ti-hash me-2 text-secondary"></i>
                                     {{ selected_customer.customer_id }}
                                 </div>
                             </div>
@@ -180,14 +180,14 @@ Billing History & Overdue Bills - Administrator Portal
                             <div class="info-item">
                                 <label class="info-label">Email</label>
                                 <div class="info-value">
-                                    <i class="bi bi-envelope me-2 text-primary"></i>
+                                    <i class="ti ti-mail me-2 text-primary"></i>
                                     {{ selected_customer.email }}
                                 </div>
                             </div>
                             <div class="info-item">
                                 <label class="info-label">Phone</label>
                                 <div class="info-value">
-                                    <i class="bi bi-phone me-2 text-primary"></i>
+                                    <i class="ti ti-phone me-2 text-primary"></i>
                                     {{ selected_customer.phone }}
                                 </div>
                             </div>
@@ -205,7 +205,7 @@ Billing History & Overdue Bills - Administrator Portal
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h5 class="card-title mb-0">
-                        <i class="bi bi-receipt me-2"></i>
+                        <i class="ti ti-file-text me-2"></i>
                         {% if selected_customer %}
                             Bills for {{ selected_customer.first_name }} {{ selected_customer.family_name }}
                         {% else %}
@@ -216,7 +216,7 @@ Billing History & Overdue Bills - Administrator Portal
                 <div class="card-body">
                     {% if jobs %}
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-vcenter card-table">
                                 <thead class="table-light">
                                 <tr>
                                     <th>Job ID</th>
@@ -238,7 +238,7 @@ Billing History & Overdue Bills - Administrator Portal
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                                        <i class="ti ti-user-circle text-primary me-2"></i>
                                                         <div>
                                                             <strong>{{ job.first_name }} {{ job.family_name }}</strong>
                                                             <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
@@ -246,7 +246,7 @@ Billing History & Overdue Bills - Administrator Portal
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <i class="bi bi-calendar-event text-muted me-1"></i>
+                                                    <i class="ti ti-calendar-event text-muted me-1"></i>
                                                     {{ job.job_date }}
                                                 </td>
                                                 <td>
@@ -255,12 +255,12 @@ Billing History & Overdue Bills - Administrator Portal
                                                 <td>
                                                     {% if job.completed %}
                                                         <span class="badge bg-success">
-                                                            <i class="bi bi-check-circle me-1"></i>
+                                                            <i class="ti ti-circle-check me-1"></i>
                                                             Completed
                                                         </span>
                                                     {% else %}
                                                         <span class="badge bg-warning">
-                                                            <i class="bi bi-clock me-1"></i>
+                                                            <i class="ti ti-clock me-1"></i>
                                                             In Progress
                                                         </span>
                                                     {% endif %}
@@ -268,18 +268,18 @@ Billing History & Overdue Bills - Administrator Portal
                                                 <td>
                                                     {% if job.paid %}
                                                         <span class="badge bg-success">
-                                                            <i class="bi bi-credit-card me-1"></i>
+                                                            <i class="ti ti-credit-card me-1"></i>
                                                             Paid
                                                         </span>
                                                     {% else %}
                                                         {% if job.overdue %}
                                                             <span class="badge bg-danger">
-                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                <i class="ti ti-alert-triangle me-1"></i>
                                                                 Overdue
                                                             </span>
                                                         {% else %}
                                                             <span class="badge bg-warning">
-                                                                <i class="bi bi-clock me-1"></i>
+                                                                <i class="ti ti-clock me-1"></i>
                                                                 Pending
                                                             </span>
                                                         {% endif %}
@@ -288,11 +288,11 @@ Billing History & Overdue Bills - Administrator Portal
                                                 <td>
                                                     <div class="d-flex gap-2">
                                                         <a href="{{ url_for('technician.modify_job', job_id=job.job_id) }}" class="btn btn-sm btn-outline-info">
-                                                            <i class="bi bi-eye"></i>
+                                                            <i class="ti ti-eye"></i>
                                                         </a>
                                                         {% if not job.paid %}
                                                             <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-sm btn-outline-success">
-                                                                <i class="bi bi-credit-card"></i>
+                                                                <i class="ti ti-credit-card"></i>
                                                             </a>
                                                         {% endif %}
                                                     </div>
@@ -307,7 +307,7 @@ Billing History & Overdue Bills - Administrator Portal
                                                 </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                                        <i class="ti ti-user-circle text-primary me-2"></i>
                                                         <div>
                                                             <strong>{{ job.first_name }} {{ job.family_name }}</strong>
                                                             <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
@@ -315,7 +315,7 @@ Billing History & Overdue Bills - Administrator Portal
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <i class="bi bi-calendar-event text-muted me-1"></i>
+                                                    <i class="ti ti-calendar-event text-muted me-1"></i>
                                                     {{ job.job_date }}
                                                 </td>
                                                 <td>
@@ -324,12 +324,12 @@ Billing History & Overdue Bills - Administrator Portal
                                                 <td>
                                                     {% if job.completed %}
                                                         <span class="badge bg-success">
-                                                            <i class="bi bi-check-circle me-1"></i>
+                                                            <i class="ti ti-circle-check me-1"></i>
                                                             Completed
                                                         </span>
                                                     {% else %}
                                                         <span class="badge bg-warning">
-                                                            <i class="bi bi-clock me-1"></i>
+                                                            <i class="ti ti-clock me-1"></i>
                                                             In Progress
                                                         </span>
                                                     {% endif %}
@@ -337,18 +337,18 @@ Billing History & Overdue Bills - Administrator Portal
                                                 <td>
                                                     {% if job.paid %}
                                                         <span class="badge bg-success">
-                                                            <i class="bi bi-credit-card me-1"></i>
+                                                            <i class="ti ti-credit-card me-1"></i>
                                                             Paid
                                                         </span>
                                                     {% else %}
                                                         {% if job.overdue %}
                                                             <span class="badge bg-danger">
-                                                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                                                <i class="ti ti-alert-triangle me-1"></i>
                                                                 Overdue
                                                             </span>
                                                         {% else %}
                                                             <span class="badge bg-warning">
-                                                                <i class="bi bi-clock me-1"></i>
+                                                                <i class="ti ti-clock me-1"></i>
                                                                 Pending
                                                             </span>
                                                         {% endif %}
@@ -357,11 +357,11 @@ Billing History & Overdue Bills - Administrator Portal
                                                 <td>
                                                     <div class="d-flex gap-2">
                                                         <a href="{{ url_for('technician.modify_job', job_id=job.job_id) }}" class="btn btn-sm btn-outline-info">
-                                                            <i class="bi bi-eye"></i>
+                                                            <i class="ti ti-eye"></i>
                                                         </a>
                                                         {% if not job.paid %}
                                                             <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-sm btn-outline-success">
-                                                                <i class="bi bi-credit-card"></i>
+                                                                <i class="ti ti-credit-card"></i>
                                                             </a>
                                                         {% endif %}
                                                     </div>
@@ -393,18 +393,20 @@ Billing History & Overdue Bills - Administrator Portal
                         </div>
                     {% else %}
                         <!-- Empty State -->
-                        <div class="text-center py-5">
-                            <i class="bi bi-receipt text-muted" style="font-size: 4rem;"></i>
-                            <h4 class="mt-3">No Bills Found</h4>
-                            <p class="text-muted">
+                        <div class="empty py-5">
+                            <div class="empty-icon">
+                                <i class="ti ti-file-text text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <div class="empty-title">No Bills Found</div>
+                            <div class="empty-subtitle text-secondary">
                                 {% if selected_customer %}
                                     This customer has no bills on record.
                                 {% else %}
                                     There are no bills in the system yet.
                                 {% endif %}
-                            </p>
+                            </div>
                             <a href="{{ url_for('administrator.customer_list') }}" class="btn btn-primary">
-                                <i class="bi bi-plus-circle me-1"></i>
+                                <i class="ti ti-circle-plus me-1"></i>
                                 Schedule New Job
                             </a>
                     </div>

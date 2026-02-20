@@ -1,335 +1,307 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="RepairOS - Professional automotive repair shop management platform">
     <meta name="author" content="RepairOS">
-    
+
     <!-- Neon Auth Configuration -->
     {% if config and config.get('NEON_AUTH_URL') %}
     <meta name="neon-auth-url" content="{{ config.get('NEON_AUTH_URL') }}">
     {% endif %}
-    
+
     <title>{% block title %}RepairOS{% endblock %}</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
-    
-    <!-- Google Fonts - DM Sans, Source Sans 3, JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tabler CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" rel="stylesheet">
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <!-- Tabler Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.37.1/dist/tabler-icons.min.css" rel="stylesheet">
+
     <!-- Custom Styles -->
-    <link href="{{ url_for('static', filename='css/design-system.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
-    
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="d-flex flex-column min-vh-100">
     <!-- Skip to main content (accessibility) -->
-    <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
-    
-    <!-- Navigation Bar -->
-    <header>
-        <nav class="navbar navbar-expand-lg">
-            <div class="container-fluid">
-                <!-- Brand Logo -->
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                    <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" class="brand-logo" style="height: 32px; width: auto; margin-right: 8px;">
-                    <span>RepairOS{% if current_tenant %} &middot; {{ current_tenant.name }}{% endif %}</span>
-                </a>
+    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
 
-                {% if user_tenants and user_tenants|length > 1 %}
-                <!-- Organization Switcher -->
-                <div class="dropdown me-3">
-                    <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i data-lucide="building-2" style="width: 16px; height: 16px;" class="me-1"></i>
-                        <span class="d-none d-md-inline">{{ current_tenant.name if current_tenant else 'Select Org' }}</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><h6 class="dropdown-header">Organizations</h6></li>
-                        {% for tenant in user_tenants %}
-                        <li>
-                            <a class="dropdown-item d-flex align-items-center" href="/org/{{ tenant.slug }}/dashboard">
-                                {% if current_tenant and tenant.id == current_tenant.id %}
-                                <i data-lucide="check" style="width: 14px; height: 14px;" class="me-2 text-success"></i>
-                                {% else %}
-                                <span style="width: 14px; display: inline-block;" class="me-2"></span>
-                                {% endif %}
-                                {{ tenant.name }}
+    <!-- Navigation Bar -->
+    <header class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--tblr-primary);">
+        <div class="container-xl">
+            <!-- Brand Logo -->
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 32px; width: auto; margin-right: 8px;">
+                <span>RepairOS{% if current_tenant %} &middot; {{ current_tenant.name }}{% endif %}</span>
+            </a>
+
+            {% if user_tenants and user_tenants|length > 1 %}
+            <!-- Organization Switcher -->
+            <div class="dropdown me-3">
+                <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="ti ti-building me-1"></i>
+                    <span class="d-none d-md-inline">{{ current_tenant.name if current_tenant else 'Select Org' }}</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><h6 class="dropdown-header">Organizations</h6></li>
+                    {% for tenant in user_tenants %}
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center" href="/org/{{ tenant.slug }}/dashboard">
+                            {% if current_tenant and tenant.id == current_tenant.id %}
+                            <i class="ti ti-check me-2 text-success"></i>
+                            {% else %}
+                            <span style="width: 14px; display: inline-block;" class="me-2"></span>
+                            {% endif %}
+                            {{ tenant.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Mobile Toggle Button -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Menu -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if session.logged_in %}
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                                <i class="ti ti-layout-dashboard me-1"></i>
+                                <span>Dashboard</span>
                             </a>
                         </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
 
-                <!-- Mobile Toggle Button -->
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <i data-lucide="menu" class="text-white" style="width: 24px; height: 24px;"></i>
-                </button>
-                
-                <!-- Navigation Menu -->
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        {% if session.logged_in %}
-                            <!-- Dashboard -->
+                        {% if session.user_type == 'technician' %}
+                            <!-- Technician Menu -->
                             <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
-                                    <i data-lucide="layout-dashboard" class="nav-icon"></i>
-                                    <span>Dashboard</span>
+                                <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'current' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.current_jobs') }}">
+                                    <i class="ti ti-clipboard-list me-1"></i>
+                                    <span>Current Jobs</span>
                                 </a>
                             </li>
-
-                            {% if session.user_type == 'technician' %}
-                                <!-- Technician Menu -->
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'current' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.current_jobs') }}">
-                                        <i data-lucide="clipboard-list" class="nav-icon"></i>
-                                        <span>Current Jobs</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'new' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.new_job') }}">
-                                        <i data-lucide="plus-circle" class="nav-icon"></i>
-                                        <span>New Job</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'services' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.services') }}">
-                                        <i data-lucide="wrench" class="nav-icon"></i>
-                                        <span>Services</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'parts' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.parts') }}">
-                                        <i data-lucide="package" class="nav-icon"></i>
-                                        <span>Parts</span>
-                                    </a>
-                                </li>
-                            {% elif session.user_type == 'administrator' %}
-                                <!-- Administrator Menu (sidebar handles full nav) -->
-                                <li class="nav-item">
-                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.dashboard') }}">
-                                        <i data-lucide="shield" class="nav-icon"></i>
-                                        <span>Admin Panel</span>
-                                    </a>
-                                </li>
-                            {% endif %}
-
-                            <!-- Common Menu Items -->
                             <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'main.customers' %}active{% endif %}" href="{{ url_for('main.customers') }}">
-                                    <i data-lucide="contact" class="nav-icon"></i>
-                                    <span>All Customers</span>
+                                <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'new' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.new_job') }}">
+                                    <i class="ti ti-circle-plus me-1"></i>
+                                    <span>New Job</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'services' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.services') }}">
+                                    <i class="ti ti-tool me-1"></i>
+                                    <span>Services</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'parts' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.parts') }}">
+                                    <i class="ti ti-package me-1"></i>
+                                    <span>Parts</span>
+                                </a>
+                            </li>
+                        {% elif session.user_type == 'administrator' %}
+                            <!-- Administrator Menu (sidebar handles full nav) -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.dashboard') }}">
+                                    <i class="ti ti-shield me-1"></i>
+                                    <span>Admin Panel</span>
                                 </a>
                             </li>
                         {% endif %}
-                    </ul>
-                    
-                    <!-- Right Side Menu -->
-                    <ul class="navbar-nav">
-                        {% if session.logged_in %}
-                            <!-- Search -->
-                            <li class="nav-item dropdown me-3">
-                                <div class="search-container" style="position: relative;">
-                                    <input type="text" class="form-control form-control-sm search-input bg-white" placeholder="Search customers..." id="globalSearch" autocomplete="off">
-                                    <i data-lucide="search" class="search-icon"></i>
-                                    <div class="search-results-dropdown" id="searchResultsDropdown"></div>
-                                </div>
-                            </li>
 
-                            <!-- Notifications -->
-                            <li class="nav-item dropdown me-3">
-                                <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i data-lucide="bell" class="nav-icon"></i>
-                                    {% if notification_count|default(0) > 0 %}
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                        {{ notification_count }}
-                                    </span>
-                                    {% endif %}
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><h6 class="dropdown-header">Notifications</h6></li>
-                                    {% if overdue_bills_count|default(0) > 0 %}
-                                    <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.overdue_bills') }}{% else %}#{% endif %}">
-                                        <div class="d-flex">
-                                            <i data-lucide="alert-triangle" class="text-warning me-2" style="width: 18px; height: 18px;"></i>
-                                            <div>
-                                                <div class="fw-semibold">Overdue Payments</div>
-                                                <small class="text-muted">{{ overdue_bills_count }} bill{{ 's' if overdue_bills_count != 1 }} overdue</small>
-                                            </div>
-                                        </div>
-                                    </a></li>
-                                    {% endif %}
-                                    {% if unpaid_bills_count|default(0) > 0 %}
-                                    <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.pay_bills') }}{% else %}#{% endif %}">
-                                        <div class="d-flex">
-                                            <i data-lucide="credit-card" class="text-info me-2" style="width: 18px; height: 18px;"></i>
-                                            <div>
-                                                <div class="fw-semibold">Unpaid Bills</div>
-                                                <small class="text-muted">{{ unpaid_bills_count }} bill{{ 's' if unpaid_bills_count != 1 }} awaiting payment</small>
-                                            </div>
-                                        </div>
-                                    </a></li>
-                                    {% endif %}
-                                    {% if notification_count|default(0) == 0 %}
-                                    <li><span class="dropdown-item text-muted">No new notifications</span></li>
-                                    {% endif %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-center" href="{{ url_for('main.dashboard') }}">View dashboard</a></li>
-                                </ul>
-                            </li>
+                        <!-- Common Menu Items -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.customers' %}active{% endif %}" href="{{ url_for('main.customers') }}">
+                                <i class="ti ti-address-book me-1"></i>
+                                <span>All Customers</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
 
-                            <!-- User Menu -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle bg-white bg-opacity-20 p-2 me-2">
-                                            <i data-lucide="user" class="nav-icon"></i>
-                                        </div>
-                                        <div class="d-none d-md-block">
-                                            <div class="fw-semibold">{{ session.user_id }}</div>
-                                            <small class="opacity-75">{{ session.user_type|title }}</small>
+                <!-- Right Side Menu -->
+                <ul class="navbar-nav">
+                    {% if session.logged_in %}
+                        <!-- Search -->
+                        <li class="nav-item me-3">
+                            <div style="position: relative;">
+                                <input type="text" class="form-control form-control-sm" placeholder="Search customers..." id="globalSearch" autocomplete="off" style="min-width: 180px;">
+                                <div class="search-results-dropdown" id="searchResultsDropdown"></div>
+                            </div>
+                        </li>
+
+                        <!-- Notifications -->
+                        <li class="nav-item dropdown me-3">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="ti ti-bell"></i>
+                                {% if notification_count|default(0) > 0 %}
+                                <span class="badge bg-danger badge-notification">{{ notification_count }}</span>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">Notifications</h6></li>
+                                {% if overdue_bills_count|default(0) > 0 %}
+                                <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.overdue_bills') }}{% else %}#{% endif %}">
+                                    <div class="d-flex">
+                                        <i class="ti ti-alert-triangle text-warning me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Overdue Payments</div>
+                                            <small class="text-secondary">{{ overdue_bills_count }} bill{{ 's' if overdue_bills_count != 1 }} overdue</small>
                                         </div>
                                     </div>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
-                                        <i data-lucide="layout-dashboard" class="dropdown-icon me-2"></i>Dashboard
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
-                                        <i data-lucide="user" class="dropdown-icon me-2"></i>Profile
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.org_settings') }}{% else %}{{ url_for('main.dashboard') }}{% endif %}">
-                                        <i data-lucide="settings" class="dropdown-icon me-2"></i>Settings
-                                    </a></li>
-                                    {% if user_tenants and user_tenants|length > 1 %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" data-bs-toggle="dropdown" onclick="document.querySelector('.org-switcher-btn')?.click(); return false;">
-                                            <i data-lucide="repeat" class="dropdown-icon me-2"></i>Switch Organization
-                                        </a>
-                                    </li>
-                                    {% endif %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('main.help_page') }}">
-                                        <i data-lucide="help-circle" class="dropdown-icon me-2"></i>Help
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('main.about') }}">
-                                        <i data-lucide="info" class="dropdown-icon me-2"></i>About
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="{{ url_for('main.logout') }}">
-                                        <i data-lucide="log-out" class="dropdown-icon me-2"></i>Sign Out
-                                    </a></li>
-                                </ul>
-                            </li>
-                        {% else %}
-                            <!-- Login Button -->
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('main.login') }}">
-                                    <i data-lucide="log-in" class="nav-icon"></i>
-                                    <span>Sign In</span>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
+                                </a></li>
+                                {% endif %}
+                                {% if unpaid_bills_count|default(0) > 0 %}
+                                <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.pay_bills') }}{% else %}#{% endif %}">
+                                    <div class="d-flex">
+                                        <i class="ti ti-credit-card text-info me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">Unpaid Bills</div>
+                                            <small class="text-secondary">{{ unpaid_bills_count }} bill{{ 's' if unpaid_bills_count != 1 }} awaiting payment</small>
+                                        </div>
+                                    </div>
+                                </a></li>
+                                {% endif %}
+                                {% if notification_count|default(0) == 0 %}
+                                <li><span class="dropdown-item text-secondary">No new notifications</span></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-center" href="{{ url_for('main.dashboard') }}">View dashboard</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- User Menu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <span class="avatar avatar-sm bg-white-lt me-2"><i class="ti ti-user"></i></span>
+                                <div class="d-none d-md-block lh-sm">
+                                    <div class="fw-semibold">{{ session.user_id }}</div>
+                                    <small class="text-white-50">{{ session.user_type|title }}</small>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
+                                    <i class="ti ti-layout-dashboard me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
+                                    <i class="ti ti-user me-2"></i>Profile
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.org_settings') }}{% else %}{{ url_for('main.dashboard') }}{% endif %}">
+                                    <i class="ti ti-settings me-2"></i>Settings
+                                </a></li>
+                                {% if user_tenants and user_tenants|length > 1 %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="document.querySelector('.org-switcher-btn')?.click(); return false;">
+                                        <i class="ti ti-switch-horizontal me-2"></i>Switch Organization
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.help_page') }}">
+                                    <i class="ti ti-help me-2"></i>Help
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('main.about') }}">
+                                    <i class="ti ti-info-circle me-2"></i>About
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{{ url_for('main.logout') }}">
+                                    <i class="ti ti-logout me-2"></i>Sign Out
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Login Button -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.login') }}">
+                                <i class="ti ti-login me-1"></i>
+                                <span>Sign In</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-        </nav>
+        </div>
     </header>
-    
+
     <!-- Main Content Area -->
-    <main class="flex-fill" id="main-content">
+    <div class="page-wrapper flex-fill">
         <!-- Breadcrumb Navigation -->
         {% block breadcrumb %}
         {% if session.logged_in %}
-        <nav aria-label="breadcrumb" class="breadcrumb">
-            <div class="container-fluid">
-                <ol class="breadcrumb mb-0 py-3">
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <ol class="breadcrumb mb-0 py-2">
                     <li class="breadcrumb-item">
                         <a href="{{ url_for('main.index') }}">
-                            <i data-lucide="home" style="width: 14px; height: 14px; vertical-align: text-top;"></i> Home
+                            <i class="ti ti-home"></i> Home
                         </a>
                     </li>
                     {% block breadcrumb_items %}{% endblock %}
                 </ol>
             </div>
-        </nav>
+        </div>
         {% endif %}
         {% endblock %}
-        
+
         <!-- Toast Notifications -->
         {% include 'components/toast_notifications.html' %}
-        
+
         <!-- Page Content -->
-        <div class="container-fluid py-4">
-            {% block content %}{% endblock %}
+        <div class="page-body" id="main-content">
+            <div class="container-xl py-4">
+                {% block content %}{% endblock %}
+            </div>
         </div>
-    </main>
-    
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="loading-overlay d-none">
-        <div class="loading-spinner"></div>
     </div>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container-fluid">
-            <div class="footer-content">
-                <div class="footer-text">
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row align-items-center">
+                <div class="col-auto">
                     <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 20px; width: auto; margin-right: 6px;">
                     RepairOS &copy; {{ moment().year if moment else '2024' }}. All rights reserved.
                 </div>
-                <div class="footer-links">
-                    <a href="{{ url_for('main.help_page') }}" class="footer-link">
-                        <i data-lucide="help-circle" class="footer-link-icon me-1"></i>Help
+                <div class="col-auto ms-auto">
+                    <a href="{{ url_for('main.help_page') }}" class="link-secondary me-3">
+                        <i class="ti ti-help me-1"></i>Help
                     </a>
-                    <a href="{{ url_for('main.about') }}" class="footer-link">
-                        <i data-lucide="info" class="footer-link-icon me-1"></i>About
+                    <a href="{{ url_for('main.about') }}" class="link-secondary me-3">
+                        <i class="ti ti-info-circle me-1"></i>About
                     </a>
-                    <a href="#" class="footer-link">
-                        <i data-lucide="shield-check" class="footer-link-icon me-1"></i>Privacy
+                    <a href="#" class="link-secondary">
+                        <i class="ti ti-shield-check me-1"></i>Privacy
                     </a>
                 </div>
             </div>
         </div>
     </footer>
-    
+
     <!-- JavaScript Libraries -->
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <!-- Tabler JS (includes Bootstrap) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+
     <!-- Moment.js for date handling -->
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-    
+
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
-    
+
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    
+
     <!-- Page-specific JavaScript -->
     {% block extra_js %}{% endblock %}
-    
-    <!-- Lucide Icons Initialization -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Lucide icons
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-    </script>
 
     <!-- Global Search Functionality -->
     <script>
@@ -359,14 +331,13 @@
                             } else {
                                 dropdown.innerHTML = results.slice(0, 8).map(c =>
                                     '<a href="/customers/' + c.customer_id + '" class="search-result-item">' +
-                                        '<i data-lucide="user" style="width:16px;height:16px;flex-shrink:0;color:var(--gray-400);"></i>' +
+                                        '<i class="ti ti-user" style="color:var(--tblr-secondary);"></i>' +
                                         '<div>' +
                                             '<div class="search-result-name">' + escapeHtml(c.full_name) + '</div>' +
                                             '<div class="search-result-detail">' + escapeHtml(c.email || '') + (c.phone ? ' &middot; ' + escapeHtml(c.phone) : '') + '</div>' +
                                         '</div>' +
                                     '</a>'
                                 ).join('');
-                                if (typeof lucide !== 'undefined') lucide.createIcons();
                             }
                             dropdown.classList.add('show');
                         })
@@ -377,14 +348,12 @@
                 }, 300);
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', function(e) {
                 if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
                     dropdown.classList.remove('show');
                 }
             });
 
-            // Reopen on focus if has content
             searchInput.addEventListener('focus', function() {
                 if (dropdown.innerHTML && this.value.trim().length >= 2) {
                     dropdown.classList.add('show');
@@ -399,4 +368,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

@@ -14,7 +14,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
-            <i data-lucide="wrench" class="text-primary" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-tool text-primary"></i>
             Services Catalog
         </h1>
         <p class="text-muted mb-0">Browse available repair and maintenance services</p>
@@ -22,20 +22,20 @@
 </div>
 
 <!-- Services Table -->
-<div class="table-container">
-    <div class="table-header">
-        <h3 class="table-title">
-            <i data-lucide="list" style="width: 20px; height: 20px;"></i>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-list me-2"></i>
             All Services
         </h3>
-        <div class="table-actions">
+        <div class="card-actions">
             <span class="text-muted">{{ services|length if services else 0 }} service{{ 's' if not services or services|length != 1 }}</span>
         </div>
     </div>
 
     {% if services %}
     <div class="table-responsive">
-        <table class="table" id="servicesTable">
+        <table class="table table-vcenter card-table" id="servicesTable">
             <thead>
                 <tr>
                     <th>Service Name</th>
@@ -51,7 +51,7 @@
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
-                                <i data-lucide="wrench" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                <i class="ti ti-tool text-primary"></i>
                             </div>
                             <div>
                                 <div class="fw-semibold">{{ service.service_name }}</div>
@@ -74,7 +74,7 @@
                     <td>
                         {% if service.est_duration %}
                         <div class="d-flex align-items-center gap-1">
-                            <i data-lucide="clock" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            <i class="ti ti-clock text-muted"></i>
                             <span>{{ service.est_duration }}</span>
                         </div>
                         {% else %}
@@ -83,13 +83,13 @@
                     </td>
                     <td>
                         {% if service.active is defined and not service.active %}
-                            <span class="status-badge status-badge-error">
-                                <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                            <span class="badge bg-danger">
+                                <i class="ti ti-circle-x me-1"></i>
                                 Inactive
                             </span>
                         {% else %}
-                            <span class="status-badge status-badge-success">
-                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                            <span class="badge bg-success">
+                                <i class="ti ti-circle-check me-1"></i>
                                 Active
                             </span>
                         {% endif %}
@@ -101,14 +101,12 @@
     </div>
     {% else %}
     <!-- Empty State -->
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <i data-lucide="wrench"></i>
-        </div>
-        <div class="empty-state-title">No Services Available</div>
-        <div class="empty-state-description">
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-tool"></i></div>
+        <p class="empty-title">No Services Available</p>
+        <p class="empty-subtitle text-secondary">
             There are no services in the catalog at this time. Contact an administrator to add services.
-        </div>
+        </p>
     </div>
     {% endif %}
 </div>

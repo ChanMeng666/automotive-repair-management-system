@@ -13,14 +13,14 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0 d-flex align-items-center gap-2">
-                        <i data-lucide="layout-dashboard" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-layout-dashboard text-primary"></i>
                         Admin Dashboard
                     </h1>
                     <p class="text-muted mb-0">Overview of shop performance and key metrics</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-primary">
-                        <i data-lucide="bar-chart-3" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-chart-bar me-1"></i>
                         View Reports
                     </a>
                 </div>
@@ -29,44 +29,60 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid mb-4">
-        <div class="stat-card stat-card--primary">
-            <div class="stat-card-icon text-primary">
-                <i data-lucide="briefcase"></i>
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary-lt me-2"><i class="ti ti-briefcase"></i></span>
+                        <div class="subheader">Total Jobs</div>
+                    </div>
+                    <div class="h1 mb-0">{{ job_stats.total|default(0) }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ job_stats.total|default(0) }}</div>
-            <div class="stat-card-label">Total Jobs</div>
         </div>
-        <div class="stat-card stat-card--success">
-            <div class="stat-card-icon text-success">
-                <i data-lucide="dollar-sign"></i>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success-lt me-2"><i class="ti ti-currency-dollar"></i></span>
+                        <div class="subheader">Revenue</div>
+                    </div>
+                    <div class="h1 mb-0">${{ "%.2f"|format(billing_stats.total_revenue|default(0)|float) }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">${{ "%.2f"|format(billing_stats.total_revenue|default(0)|float) }}</div>
-            <div class="stat-card-label">Revenue</div>
         </div>
-        <div class="stat-card stat-card--accent">
-            <div class="stat-card-icon text-info">
-                <i data-lucide="users"></i>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-info-lt me-2"><i class="ti ti-users"></i></span>
+                        <div class="subheader">Customers</div>
+                    </div>
+                    <div class="h1 mb-0">{{ total_customers|default(0) }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ total_customers|default(0) }}</div>
-            <div class="stat-card-label">Customers</div>
         </div>
-        <div class="stat-card stat-card--warning">
-            <div class="stat-card-icon text-warning">
-                <i data-lucide="alert-triangle"></i>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning-lt me-2"><i class="ti ti-alert-triangle"></i></span>
+                        <div class="subheader">Overdue Bills</div>
+                    </div>
+                    <div class="h1 mb-0">{{ overdue_bills|length if overdue_bills else 0 }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ overdue_bills|length if overdue_bills else 0 }}</div>
-            <div class="stat-card-label">Overdue Bills</div>
         </div>
     </div>
 
     <!-- Charts Row -->
     <div class="row mb-4">
         <div class="col-lg-8">
-            <div class="table-container">
-                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-chart-bar"></i>
                         Monthly Revenue
                     </h5>
                 </div>
@@ -76,10 +92,10 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="table-container">
-                <div class="table-header" style="background: var(--info); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="pie-chart" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: var(--info); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-chart-pie"></i>
                         Job Status
                     </h5>
                 </div>
@@ -93,10 +109,10 @@
     <!-- Recent Activity & Overdue Alerts -->
     <div class="row">
         <div class="col-lg-7">
-            <div class="table-container card--status card--status-active">
-                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-activity"></i>
                         Recent Activity
                     </h5>
                 </div>
@@ -106,7 +122,7 @@
                         {% for job in recent_jobs[:5] %}
                         <div class="list-group-item d-flex align-items-center px-0">
                             <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                <i data-lucide="wrench" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                <i class="ti ti-tool text-primary"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <div class="fw-semibold">Job #{{ job.job_id }}</div>
@@ -114,13 +130,13 @@
                             </div>
                             <div>
                                 {% if job.completed == 1 %}
-                                <span class="status-badge status-badge-success">
-                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                <span class="badge bg-success">
+                                    <i class="ti ti-circle-check me-1"></i>
                                     Completed
                                 </span>
                                 {% else %}
-                                <span class="status-badge status-badge-warning">
-                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                <span class="badge bg-warning">
+                                    <i class="ti ti-clock me-1"></i>
                                     In Progress
                                 </span>
                                 {% endif %}
@@ -130,7 +146,7 @@
                     </div>
                     {% else %}
                     <div class="text-center text-muted py-4">
-                        <i data-lucide="inbox" style="width: 48px; height: 48px;" class="mb-2"></i>
+                        <i class="ti ti-inbox mb-2" style="font-size: 48px;"></i>
                         <p class="mb-0">No recent activity</p>
                     </div>
                     {% endif %}
@@ -138,10 +154,10 @@
             </div>
         </div>
         <div class="col-lg-5">
-            <div class="table-container card--status card--status-error">
-                <div class="table-header" style="background: var(--danger); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: var(--danger); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-alert-triangle"></i>
                         Overdue Alerts
                     </h5>
                 </div>
@@ -152,7 +168,7 @@
                         <div class="list-group-item d-flex align-items-center justify-content-between px-0">
                             <div class="d-flex align-items-center">
                                 <div class="rounded-circle bg-danger bg-opacity-10 p-2 me-3">
-                                    <i data-lucide="alert-circle" class="text-danger" style="width: 18px; height: 18px;"></i>
+                                    <i class="ti ti-alert-circle text-danger"></i>
                                 </div>
                                 <div>
                                     <div class="fw-semibold">{{ bill.first_name }} {{ bill.family_name }}</div>
@@ -165,7 +181,7 @@
                     </div>
                     {% else %}
                     <div class="text-center text-muted py-4">
-                        <i data-lucide="check-circle" style="width: 48px; height: 48px;" class="text-success mb-2"></i>
+                        <i class="ti ti-circle-check text-success mb-2" style="font-size: 48px;"></i>
                         <p class="mb-0">No overdue bills</p>
                     </div>
                     {% endif %}

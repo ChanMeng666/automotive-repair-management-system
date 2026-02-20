@@ -162,3 +162,4 @@ connect.py
 *.db
 .claude/settings.local.json
 test_output.txt
+.claude/settings.local.json

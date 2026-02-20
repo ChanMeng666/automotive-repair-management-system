@@ -1,0 +1,318 @@
+/* RepairOS - Custom Styles (Tabler Overrides)
+ * Minimal app-specific styles on top of Tabler UI framework
+ * ========================================================= */
+
+/* Brand Color Overrides */
+:root {
+    --tblr-primary: #1e3a5f;
+    --tblr-primary-rgb: 30, 58, 95;
+    --repaisos-accent: #e85d04;
+    --repaisos-accent-hover: #cc5003;
+}
+
+/* Accent button (orange signal color) */
+.btn-accent {
+    --tblr-btn-bg: var(--repaisos-accent);
+    --tblr-btn-border-color: var(--repaisos-accent);
+    --tblr-btn-color: #fff;
+    --tblr-btn-hover-bg: var(--repaisos-accent-hover);
+    --tblr-btn-hover-border-color: var(--repaisos-accent-hover);
+    --tblr-btn-hover-color: #fff;
+    --tblr-btn-active-bg: var(--repaisos-accent-hover);
+    --tblr-btn-active-border-color: var(--repaisos-accent-hover);
+    --tblr-btn-active-color: #fff;
+    background-color: var(--repaisos-accent);
+    border-color: var(--repaisos-accent);
+    color: #fff;
+}
+
+.btn-accent:hover,
+.btn-accent:focus {
+    background-color: var(--repaisos-accent-hover);
+    border-color: var(--repaisos-accent-hover);
+    color: #fff;
+}
+
+/* Navbar accent border */
+.navbar.navbar-dark {
+    border-bottom: 3px solid var(--repaisos-accent);
+}
+
+/* Search dropdown positioning */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    box-shadow: var(--tblr-box-shadow-dropdown);
+    z-index: 1050;
+    max-height: 320px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-results-dropdown.show {
+    display: block;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: var(--tblr-bg-surface-secondary);
+}
+
+.search-result-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.search-result-detail {
+    font-size: 0.75rem;
+    color: var(--tblr-secondary);
+}
+
+.search-no-results {
+    padding: 1rem;
+    text-align: center;
+    color: var(--tblr-secondary);
+}
+
+/* Login page background */
+.login-bg {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    min-height: 100vh;
+}
+
+/* Tenant selection background */
+.tenant-bg {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    min-height: 80vh;
+}
+
+/* Auth tabs on login page */
+.auth-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--tblr-border-color);
+    margin-bottom: 1.5rem;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--tblr-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.auth-tab.active {
+    color: var(--tblr-primary);
+    border-bottom-color: var(--tblr-primary);
+}
+
+.auth-content {
+    display: none;
+}
+
+.auth-content.active {
+    display: block;
+}
+
+/* OAuth button */
+.btn-oauth {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--tblr-border-color);
+    background: #fff;
+}
+
+.btn-oauth:hover {
+    background: var(--tblr-bg-surface-secondary);
+}
+
+/* Divider for login page */
+.divider {
+    display: flex;
+    align-items: center;
+    color: var(--tblr-secondary);
+    font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.divider span {
+    padding: 0 1rem;
+}
+
+/* Hero section background (dashboard welcome) */
+.hero-section-bg {
+    background: linear-gradient(135deg, var(--tblr-primary) 0%, #152a45 100%);
+}
+
+/* Admin sidebar layout */
+.admin-layout {
+    display: flex;
+    gap: 0;
+    min-height: calc(100vh - 200px);
+}
+
+.admin-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: var(--tblr-bg-surface);
+    border-right: 1px solid var(--tblr-border-color);
+    padding: 1rem 0;
+}
+
+.admin-main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem 1rem;
+    border-bottom: 1px solid var(--tblr-border-color);
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-brand {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--tblr-body-color);
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    color: var(--tblr-secondary);
+    cursor: pointer;
+}
+
+.sidebar-section-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tblr-secondary);
+    padding: 1rem 1rem 0.25rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--tblr-body-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+    background: var(--tblr-bg-surface-secondary);
+    color: var(--tblr-primary);
+}
+
+.sidebar-link.active {
+    background: rgba(var(--tblr-primary-rgb), 0.06);
+    color: var(--tblr-primary);
+    border-left-color: var(--tblr-primary);
+    font-weight: 600;
+}
+
+.sidebar-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 1.25rem;
+}
+
+.sidebar-label {
+    white-space: nowrap;
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1030;
+}
+
+.sidebar-overlay.open {
+    display: block;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 1020;
+    background: var(--tblr-primary);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--tblr-box-shadow);
+}
+
+/* Mobile sidebar */
+@media (max-width: 991.98px) {
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        height: 100vh;
+        z-index: 1040;
+        transition: left 0.3s ease;
+        box-shadow: var(--tblr-box-shadow);
+    }
+
+    .admin-sidebar.open {
+        left: 0;
+    }
+}
+
+/* Form actions alignment */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--tblr-border-color);
+}

@@ -14,7 +14,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0 d-flex align-items-center gap-2">
-                        <i data-lucide="warehouse" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-building-warehouse text-primary"></i>
                         Inventory Management
                     </h1>
                     <p class="text-muted mb-0">Track stock levels and inventory transactions</p>
@@ -26,16 +26,16 @@
     <!-- Stock Levels Table -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="table-container card--status card--status-active">
-                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-package"></i>
                         Stock Levels
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-vcenter card-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Part Name</th>
@@ -51,7 +51,7 @@
                                 <tr class="{% if needs_reorder %}table-warning{% endif %}">
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <i data-lucide="puzzle" class="text-{% if needs_reorder %}warning{% else %}primary{% endif %} me-2" style="width: 18px; height: 18px;"></i>
+                                            <i class="ti ti-puzzle text-{% if needs_reorder %}warning{% else %}primary{% endif %} me-2"></i>
                                             <strong>{{ item.part_name|default(item.name) }}</strong>
                                         </div>
                                     </td>
@@ -64,13 +64,13 @@
                                     <td>{{ item.location|default('N/A') }}</td>
                                     <td>
                                         {% if needs_reorder %}
-                                        <span class="status-badge status-badge-error">
-                                            <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
+                                        <span class="badge bg-danger">
+                                            <i class="ti ti-alert-triangle me-1"></i>
                                             Reorder Needed
                                         </span>
                                         {% else %}
-                                        <span class="status-badge status-badge-success">
-                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                        <span class="badge bg-success">
+                                            <i class="ti ti-circle-check me-1"></i>
                                             In Stock
                                         </span>
                                         {% endif %}
@@ -79,7 +79,7 @@
                                 {% else %}
                                 <tr>
                                     <td colspan="5" class="text-center text-muted py-4">
-                                        <i data-lucide="package" style="width: 48px; height: 48px;" class="mb-2 d-block mx-auto"></i>
+                                        <i class="ti ti-package mb-2 d-block mx-auto" style="font-size: 48px;"></i>
                                         No inventory data available
                                     </td>
                                 </tr>
@@ -95,16 +95,16 @@
     <!-- Transaction History -->
     <div class="row">
         <div class="col-12">
-            <div class="table-container card--status card--status-accent">
-                <div class="table-header" style="background: var(--info); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="history" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: var(--info); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-history"></i>
                         Transaction History
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-vcenter card-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Date</th>
@@ -120,24 +120,24 @@
                                 <tr>
                                     <td>
                                         <span class="d-flex align-items-center gap-1">
-                                            <i data-lucide="calendar" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                            <i class="ti ti-calendar text-muted"></i>
                                             {{ txn.date }}
                                         </span>
                                     </td>
                                     <td>
                                         {% if txn.type == 'in' or txn.type == 'received' %}
                                         <span class="badge bg-success">
-                                            <i data-lucide="arrow-down" style="width: 12px; height: 12px;"></i>
+                                            <i class="ti ti-arrow-down"></i>
                                             Received
                                         </span>
                                         {% elif txn.type == 'out' or txn.type == 'used' %}
                                         <span class="badge bg-warning text-dark">
-                                            <i data-lucide="arrow-up" style="width: 12px; height: 12px;"></i>
+                                            <i class="ti ti-arrow-up"></i>
                                             Used
                                         </span>
                                         {% elif txn.type == 'adjustment' %}
                                         <span class="badge bg-info">
-                                            <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                            <i class="ti ti-edit"></i>
                                             Adjustment
                                         </span>
                                         {% else %}
@@ -156,7 +156,7 @@
                                 {% else %}
                                 <tr>
                                     <td colspan="6" class="text-center text-muted py-4">
-                                        <i data-lucide="history" style="width: 48px; height: 48px;" class="mb-2 d-block mx-auto"></i>
+                                        <i class="ti ti-history mb-2 d-block mx-auto" style="font-size: 48px;"></i>
                                         No transactions recorded
                                     </td>
                                 </tr>

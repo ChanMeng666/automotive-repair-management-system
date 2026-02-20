@@ -14,17 +14,17 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
-            <i data-lucide="clipboard-list" class="text-primary" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-clipboard-list text-primary"></i>
             Current Work Orders
         </h1>
         <p class="text-muted mb-0">Manage ongoing repair jobs and track progress</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
-            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>New Job
+            <i class="ti ti-plus me-2"></i>New Job
         </a>
         <button type="button" class="btn btn-outline-secondary" onclick="refreshJobs()">
-            <i data-lucide="refresh-cw" class="me-2" style="width: 16px; height: 16px;"></i>Refresh
+            <i class="ti ti-refresh me-2"></i>Refresh
         </button>
     </div>
 </div>
@@ -32,94 +32,103 @@
 <!-- Stats Cards -->
 <div class="row mb-4">
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--warning">
-            <div class="stat-card-icon text-warning">
-                <i data-lucide="clock"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-warning-lt me-2"><i class="ti ti-clock"></i></span>
+                    <div class="subheader">Active Jobs</div>
+                </div>
+                <div class="h1 mb-0">{{ data|length }}</div>
             </div>
-            <div class="stat-card-value">{{ data|length }}</div>
-            <div class="stat-card-label">Active Jobs</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--accent">
-            <div class="stat-card-icon text-info">
-                <i data-lucide="calendar"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-info-lt me-2"><i class="ti ti-calendar"></i></span>
+                    <div class="subheader">This Week</div>
+                </div>
+                <div class="h1 mb-0">{{ data|selectattr('job_date')|list|length if data else 0 }}</div>
             </div>
-            <div class="stat-card-value">{{ data|selectattr('job_date')|list|length if data else 0 }}</div>
-            <div class="stat-card-label">This Week</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--success">
-            <div class="stat-card-icon text-success">
-                <i data-lucide="dollar-sign"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success-lt me-2"><i class="ti ti-currency-dollar"></i></span>
+                    <div class="subheader">Total Value</div>
+                </div>
+                <div class="h1 mb-0">${{ "%.0f"|format(data|sum(attribute='total_cost') or 0) }}</div>
             </div>
-            <div class="stat-card-value">${{ "%.0f"|format(data|sum(attribute='total_cost') or 0) }}</div>
-            <div class="stat-card-label">Total Value</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--error">
-            <div class="stat-card-icon text-error">
-                <i data-lucide="alert-triangle"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-danger-lt me-2"><i class="ti ti-alert-triangle"></i></span>
+                    <div class="subheader">Unpaid</div>
+                </div>
+                <div class="h1 mb-0">{{ data|selectattr('paid')|list|length if data else 0 }}</div>
             </div>
-            <div class="stat-card-value">{{ data|selectattr('paid')|list|length if data else 0 }}</div>
-            <div class="stat-card-label">Unpaid</div>
         </div>
     </div>
 </div>
 
 <!-- Filters and Search -->
-<div class="filter-bar mb-4">
-    <div class="filter-group">
-        <label class="filter-label">Search:</label>
-        <div class="search-container">
-            <input type="text" class="form-control search-input" id="searchInput" placeholder="Search by customer name or job ID...">
-            <i data-lucide="search" class="search-icon"></i>
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-auto">
+                <label class="form-label">Search:</label>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search by customer name or job ID...">
+            </div>
+            <div class="col-auto">
+                <label class="form-label">Status:</label>
+                <select class="form-select" id="statusFilter">
+                    <option value="">All Jobs</option>
+                    <option value="unpaid">Unpaid Only</option>
+                    <option value="recent">Recent Jobs</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label">Sort by:</label>
+                <select class="form-select" id="sortFilter">
+                    <option value="date_desc">Date (Newest)</option>
+                    <option value="date_asc">Date (Oldest)</option>
+                    <option value="customer">Customer Name</option>
+                    <option value="amount_desc">Amount (High to Low)</option>
+                    <option value="amount_asc">Amount (Low to High)</option>
+                </select>
+            </div>
         </div>
-    </div>
-    <div class="filter-group">
-        <label class="filter-label">Status:</label>
-        <select class="form-select filter-select" id="statusFilter">
-            <option value="">All Jobs</option>
-            <option value="unpaid">Unpaid Only</option>
-            <option value="recent">Recent Jobs</option>
-        </select>
-    </div>
-    <div class="filter-group">
-        <label class="filter-label">Sort by:</label>
-        <select class="form-select filter-select" id="sortFilter">
-            <option value="date_desc">Date (Newest)</option>
-            <option value="date_asc">Date (Oldest)</option>
-            <option value="customer">Customer Name</option>
-            <option value="amount_desc">Amount (High to Low)</option>
-            <option value="amount_asc">Amount (Low to High)</option>
-        </select>
     </div>
 </div>
 
 <!-- Job Selection Form -->
 <form method="POST" action="{{ url_for('technician.current_jobs') }}" id="jobSelectionForm">
     <!-- Jobs Table -->
-    <div class="table-container">
-        <div class="table-header">
-            <h3 class="table-title">
-                <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="ti ti-file-text me-2"></i>
                 Work Orders
             </h3>
-            <div class="table-actions">
+            <div class="card-actions">
                 <button type="submit" class="btn btn-success" id="modifyBtn" disabled>
-                    <i data-lucide="pencil" class="me-2" style="width: 16px; height: 16px;"></i>Modify Selected
+                    <i class="ti ti-pencil me-2"></i>Modify Selected
                 </button>
                 <button type="button" class="btn btn-outline-primary" onclick="toggleSelectAll()">
-                    <i data-lucide="check-square" class="me-2" style="width: 16px; height: 16px;"></i>Select All
+                    <i class="ti ti-square-check me-2"></i>Select All
                 </button>
             </div>
-              </div>
-        
+        </div>
+
         {% if data %}
                 <div class="table-responsive">
-                <table class="table" id="jobsTable">
+                <table class="table table-vcenter card-table" id="jobsTable">
                       <thead>
                         <tr>
                             <th width="50">
@@ -140,14 +149,14 @@
                         <tr class="job-row" data-job-id="{{ record.job_id }}">
                             <td>
                                 <div class="form-check">
-                                    <input type="radio" class="form-check-input job-select" name="job_select" 
+                                    <input type="radio" class="form-check-input job-select" name="job_select"
                                            value="{{ record.job_id }}" id="job_{{ record.job_id }}">
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
-                                        <i data-lucide="user" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                        <i class="ti ti-user text-primary"></i>
                                     </div>
                                     <div>
                                         <div class="fw-semibold">{{ record.first_name }} {{ record.family_name }}</div>
@@ -171,13 +180,13 @@
                             </td>
                             <td>
                                 {% if record.paid == 1 %}
-                                    <span class="status-badge status-badge-success">
-                                        <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                    <span class="badge bg-success">
+                                        <i class="ti ti-circle-check me-1"></i>
                                         Paid
                                     </span>
                                 {% else %}
-                                    <span class="status-badge status-badge-warning">
-                                        <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                    <span class="badge bg-warning">
+                                        <i class="ti ti-clock me-1"></i>
                                         Unpaid
                                     </span>
                                 {% endif %}
@@ -186,16 +195,16 @@
                                 <div class="d-flex gap-1">
                                     <a href="{{ url_for('technician.modify_job', job_id=record.job_id) }}"
                                        class="btn btn-sm btn-outline-primary" title="View/Edit">
-                                        <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                        <i class="ti ti-pencil"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-info"
                                             onclick="viewJobDetails({{ record.job_id }})" title="Quick View">
-                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                        <i class="ti ti-eye"></i>
                                     </button>
                                     {% if session.user_type == 'administrator' and record.paid == 0 %}
                                         <button type="button" class="btn btn-sm btn-outline-success"
                                                 onclick="markAsPaid({{ record.job_id }})" title="Mark as Paid">
-                                            <i data-lucide="credit-card" style="width: 14px; height: 14px;"></i>
+                                            <i class="ti ti-credit-card"></i>
                                         </button>
                                     {% endif %}
                                 </div>
@@ -205,52 +214,56 @@
                       </tbody>
                     </table>
             </div>
-            
+
             <!-- Pagination -->
-            <div class="pagination">
-                {% set prev_page = page - 1 if page > 1 else 1 %}
-                {% set next_page = page + 1 %}
+            <div class="card-footer d-flex align-items-center">
+                <ul class="pagination m-0 ms-auto">
+                    {% set prev_page = page - 1 if page > 1 else 1 %}
+                    {% set next_page = page + 1 %}
 
-                <a href="{{ url_for('technician.current_jobs', page=prev_page) }}"
-                   class="pagination-item {% if page == 1 %}disabled{% endif %}">
-                    <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i> Previous
-                </a>
+                    <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('technician.current_jobs', page=prev_page) }}">
+                            <i class="ti ti-chevron-left"></i> Previous
+                        </a>
+                    </li>
 
-                <span class="pagination-item active">
-                    Page {{ page }}
-                </span>
+                    <li class="page-item active">
+                        <span class="page-link">Page {{ page }}</span>
+                    </li>
 
-                <a href="{{ url_for('technician.current_jobs', page=next_page) }}"
-                   class="pagination-item">
-                    Next <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
-                </a>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('technician.current_jobs', page=next_page) }}">
+                            Next <i class="ti ti-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
         {% else %}
             <!-- Empty State -->
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="inbox"></i>
-                </div>
-                <div class="empty-state-title">No Active Jobs</div>
-                <div class="empty-state-description">
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-inbox"></i></div>
+                <p class="empty-title">No Active Jobs</p>
+                <p class="empty-subtitle text-secondary">
                     There are no active work orders at the moment. Create a new job to get started.
+                </p>
+                <div class="empty-action">
+                    <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+                        <i class="ti ti-plus me-2"></i>Create New Job
+                    </a>
                 </div>
-                <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
-                    <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Create New Job
-                </a>
             </div>
         {% endif %}
     </div>
-                  </form>
+</form>
 
 <!-- Flash Message Display -->
-                  {% if message %}
+{% if message %}
     <div class="alert alert-warning alert-dismissible fade show mt-3 d-flex align-items-center gap-2" role="alert">
-        <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i>
-                      {{ message }}
+        <i class="ti ti-alert-triangle"></i>
+        {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                  {% endif %}
+    </div>
+{% endif %}
 
 <!-- Job Details Modal -->
 <div class="modal fade" id="jobDetailsModal" tabindex="-1">
@@ -258,23 +271,23 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2">
-                    <i data-lucide="info" style="width: 20px; height: 20px;"></i>Job Details
+                    <i class="ti ti-info-circle"></i>Job Details
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="jobDetailsContent">
                 <div class="text-center">
-                    <div class="loading-spinner"></div>
+                    <div class="spinner-border"></div>
                     <p class="mt-2">Loading job details...</p>
-              </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <a href="#" class="btn btn-primary" id="editJobBtn">Edit Job</a>
-          </div>
+            </div>
         </div>
-      </div>
     </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -287,22 +300,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
     const sortFilter = document.getElementById('sortFilter');
-    
+
     // Enable/disable modify button based on selection
     function updateModifyButton() {
         const selectedJob = document.querySelector('.job-select:checked');
         modifyBtn.disabled = !selectedJob;
     }
-    
+
     // Add event listeners to job selection radios
     jobSelects.forEach(radio => {
         radio.addEventListener('change', updateModifyButton);
     });
-    
+
     // Select all functionality
     window.toggleSelectAll = function() {
         const allSelected = Array.from(jobSelects).every(radio => radio.checked);
-        
+
         if (allSelected) {
             // Unselect all
             jobSelects.forEach(radio => radio.checked = false);
@@ -315,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         updateModifyButton();
     };
-    
+
     // Search functionality
     let searchTimeout;
     searchInput.addEventListener('input', function() {
@@ -324,29 +337,29 @@ document.addEventListener('DOMContentLoaded', function() {
             filterJobs();
         }, 300);
     });
-    
+
     // Filter functionality
     statusFilter.addEventListener('change', filterJobs);
     sortFilter.addEventListener('change', sortJobs);
-    
+
     function filterJobs() {
         const searchTerm = searchInput.value.toLowerCase();
         const statusValue = statusFilter.value;
         const rows = document.querySelectorAll('.job-row');
-        
+
         rows.forEach(row => {
             const customerName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
             const jobId = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-            const paymentStatus = row.querySelector('.status-badge').textContent.toLowerCase();
-            
+            const paymentStatus = row.querySelector('.badge').textContent.toLowerCase();
+
             let matchesSearch = true;
             let matchesStatus = true;
-            
+
             // Search filter
             if (searchTerm) {
                 matchesSearch = customerName.includes(searchTerm) || jobId.includes(searchTerm);
             }
-            
+
             // Status filter
             if (statusValue === 'unpaid') {
                 matchesStatus = paymentStatus.includes('unpaid');
@@ -354,41 +367,41 @@ document.addEventListener('DOMContentLoaded', function() {
                 // You can implement recent logic here
                 matchesStatus = true;
             }
-            
+
             row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
         });
     }
-    
+
     function sortJobs() {
         const sortValue = sortFilter.value;
         const tbody = document.querySelector('#jobsTable tbody');
         const rows = Array.from(tbody.querySelectorAll('.job-row'));
-        
+
         rows.sort((a, b) => {
             switch (sortValue) {
                 case 'date_asc':
-                    return new Date(a.querySelector('td:nth-child(4)').textContent) - 
+                    return new Date(a.querySelector('td:nth-child(4)').textContent) -
                            new Date(b.querySelector('td:nth-child(4)').textContent);
                 case 'date_desc':
-                    return new Date(b.querySelector('td:nth-child(4)').textContent) - 
+                    return new Date(b.querySelector('td:nth-child(4)').textContent) -
                            new Date(a.querySelector('td:nth-child(4)').textContent);
                 case 'customer':
                     return a.querySelector('td:nth-child(2)').textContent.localeCompare(
                            b.querySelector('td:nth-child(2)').textContent);
                 case 'amount_desc':
-                    return parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('$', '')) - 
+                    return parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('$', '')) -
                            parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('$', ''));
                 case 'amount_asc':
-                    return parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('$', '')) - 
+                    return parseFloat(a.querySelector('td:nth-child(5)').textContent.replace('$', '')) -
                            parseFloat(b.querySelector('td:nth-child(5)').textContent.replace('$', ''));
                 default:
                     return 0;
             }
         });
-        
+
         rows.forEach(row => tbody.appendChild(row));
     }
-    
+
     // Form submission handling
     form.addEventListener('submit', function(e) {
         const selectedJob = document.querySelector('.job-select:checked');
@@ -397,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please select a job before proceeding.');
         }
     });
-    
+
     // Initialize
     updateModifyButton();
 });
@@ -411,21 +424,21 @@ function viewJobDetails(jobId) {
     const modal = new bootstrap.Modal(document.getElementById('jobDetailsModal'));
     const content = document.getElementById('jobDetailsContent');
     const editBtn = document.getElementById('editJobBtn');
-    
+
     // Show loading state
     content.innerHTML = `
         <div class="text-center">
-            <div class="loading-spinner"></div>
+            <div class="spinner-border"></div>
             <p class="mt-2">Loading job details...</p>
         </div>
     `;
-    
+
     // Set edit button link
     editBtn.href = `/job/${jobId}`;
-    
+
     // Show modal
     modal.show();
-    
+
     // Simulate loading job details (replace with actual API call)
     setTimeout(() => {
         content.innerHTML = `
@@ -433,7 +446,7 @@ function viewJobDetails(jobId) {
                 <div class="col-md-6">
                     <h6>Job Information</h6>
                     <p><strong>Job ID:</strong> #${jobId}</p>
-                    <p><strong>Status:</strong> <span class="status-badge status-badge-warning">In Progress</span></p>
+                    <p><strong>Status:</strong> <span class="badge bg-warning">In Progress</span></p>
                     <p><strong>Created:</strong> Today</p>
                 </div>
                 <div class="col-md-6">

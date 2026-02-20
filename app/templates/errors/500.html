@@ -1,68 +1,60 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Server Error - Automotive Repair Management System{% endblock %}
+{% block title %}Server Error - RepairOS{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 text-center">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <!-- 500 Icon -->
-                <div class="text-danger mb-4">
-                    <i class="bi bi-exclamation-triangle" style="font-size: 6rem;"></i>
+                <div class="empty">
+                    <div class="empty-icon"><i class="ti ti-alert-triangle text-danger" style="font-size: 4rem;"></i></div>
+                    <p class="empty-title">500 - Internal Server Error</p>
+                    <p class="empty-subtitle text-secondary">
+                        Sorry, the server encountered an issue.
+                        Our technical team has been notified and is working to fix this problem.
+                        Please try again later or contact the system administrator.
+                    </p>
+                    <div class="empty-action">
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                                <i class="ti ti-home me-2"></i>Back to Home
+                            </a>
+                            <button onclick="window.location.reload()" class="btn btn-outline-primary">
+                                <i class="ti ti-switch-horizontal me-2"></i>Reload Page
+                            </button>
+                            {% if session.logged_in %}
+                                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                                    <i class="ti ti-layout-dashboard me-2"></i>Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Error Message -->
-                <h1 class="display-4 text-danger mb-3">500</h1>
-                <h3 class="mb-3">Internal Server Error</h3>
-                <p class="text-muted mb-4">
-                    Sorry, the server encountered an issue.
-                    <br>
-                    Our technical team has been notified and is working to fix this problem.
-                    <br>
-                    Please try again later or contact the system administrator.
-                </p>
-                
-                <!-- Action Buttons -->
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-                        <i class="bi bi-house me-2"></i>Back to Home
-                    </a>
-                    
-                    <button onclick="window.location.reload()" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-clockwise me-2"></i>Reload Page
-                    </button>
-                    
-                    {% if session.logged_in %}
-                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                        </a>
-                    {% endif %}
-                </div>
-                
+
                 <!-- Troubleshooting Suggestions -->
                 <div class="mt-4 pt-4 border-top text-start">
                     <h6 class="text-muted mb-3">Troubleshooting Suggestions:</h6>
                     <ul class="list-unstyled text-muted small">
                         <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <i class="ti ti-circle-check text-success me-2"></i>
                             Check if your network connection is working properly
                         </li>
                         <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <i class="ti ti-circle-check text-success me-2"></i>
                             Clear your browser cache and reload the page
                         </li>
                         <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <i class="ti ti-circle-check text-success me-2"></i>
                             If the problem persists, please contact the system administrator
                         </li>
                     </ul>
                 </div>
-                
+
                 <!-- Contact Information -->
                 <div class="mt-3 pt-3 border-top">
                     <small class="text-muted">
-                        <i class="bi bi-envelope me-1"></i>
+                        <i class="ti ti-mail me-1"></i>
                         For technical support, please contact: support@example.com
                     </small>
                 </div>
@@ -70,4 +62,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

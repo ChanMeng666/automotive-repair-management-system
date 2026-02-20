@@ -14,72 +14,80 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
-            <i data-lucide="users" class="text-primary" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-users text-primary"></i>
             Customers
         </h1>
         <p class="text-muted mb-0">View and manage all customers</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
-            <i data-lucide="user-plus" class="me-2" style="width: 16px; height: 16px;"></i>Add Customer
+            <i class="ti ti-user-plus me-2"></i>Add Customer
         </a>
     </div>
 </div>
 
 <!-- Search & Filter Bar -->
-<div class="filter-bar mb-4">
-    <form method="GET" action="{{ url_for('main.customers') }}" class="d-flex gap-3 align-items-end w-100">
-        <div class="filter-group" style="flex-grow: 1;">
-            <label class="filter-label">Search:</label>
-            <div class="search-container" style="max-width: 100%;">
-                <input type="text" class="form-control search-input" name="search"
-                       placeholder="Search by name, email, or phone..."
-                       value="{{ search_query }}">
-                <i data-lucide="search" class="search-icon"></i>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('main.customers') }}" class="row g-3 align-items-end">
+            <div class="col">
+                <label class="form-label">Search:</label>
+                <div class="input-icon">
+                    <span class="input-icon-addon"><i class="ti ti-search"></i></span>
+                    <input type="text" class="form-control" name="search"
+                           placeholder="Search by name, email, or phone..."
+                           value="{{ search_query }}">
+                </div>
             </div>
-        </div>
-        <div class="filter-group">
-            <label class="filter-label">Search by:</label>
-            <select class="form-select filter-select" name="search_type">
-                <option value="both" {% if search_type == 'both' %}selected{% endif %}>Name & Email</option>
-                <option value="name" {% if search_type == 'name' %}selected{% endif %}>Name Only</option>
-                <option value="email" {% if search_type == 'email' %}selected{% endif %}>Email Only</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">
-            <i data-lucide="search" class="me-1" style="width: 16px; height: 16px;"></i>Search
-        </button>
-        {% if search_query %}
-        <a href="{{ url_for('main.customers') }}" class="btn btn-outline-secondary">Clear</a>
-        {% endif %}
-    </form>
+            <div class="col-auto">
+                <label class="form-label">Search by:</label>
+                <select class="form-select" name="search_type">
+                    <option value="both" {% if search_type == 'both' %}selected{% endif %}>Name & Email</option>
+                    <option value="name" {% if search_type == 'name' %}selected{% endif %}>Name Only</option>
+                    <option value="email" {% if search_type == 'email' %}selected{% endif %}>Email Only</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-search me-1"></i>Search
+                </button>
+            </div>
+            {% if search_query %}
+            <div class="col-auto">
+                <a href="{{ url_for('main.customers') }}" class="btn btn-outline-secondary">Clear</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
 </div>
 
 <!-- Stats -->
 <div class="row mb-4">
     <div class="col-md-4 col-sm-6 mb-3">
-        <div class="stat-card stat-card--primary">
-            <div class="stat-card-icon text-primary">
-                <i data-lucide="users"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary-lt me-2"><i class="ti ti-users"></i></span>
+                    <div class="subheader">{% if search_query %}Results Found{% else %}Total Customers{% endif %}</div>
+                </div>
+                <div class="h1 mb-0">{{ customers|length }}</div>
             </div>
-            <div class="stat-card-value">{{ customers|length }}</div>
-            <div class="stat-card-label">{% if search_query %}Results Found{% else %}Total Customers{% endif %}</div>
         </div>
     </div>
 </div>
 
 <!-- Customer Table -->
-<div class="table-container">
-    <div class="table-header">
-        <h3 class="table-title">
-            <i data-lucide="contact" style="width: 20px; height: 20px;"></i>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="ti ti-address-book me-1"></i>
             {% if search_query %}Search Results{% else %}All Customers{% endif %}
         </h3>
     </div>
 
     {% if customers %}
     <div class="table-responsive">
-        <table class="table">
+        <table class="table table-vcenter card-table">
             <thead>
                 <tr>
                     <th>Customer</th>
@@ -94,7 +102,7 @@
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
-                                <i data-lucide="user" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                <i class="ti ti-user text-primary"></i>
                             </div>
                             <div>
                                 <a href="{{ url_for('main.customer_detail', customer_id=customer.customer_id) }}" class="fw-semibold text-decoration-none">
@@ -106,13 +114,13 @@
                     </td>
                     <td>
                         <span class="d-flex align-items-center gap-1">
-                            <i data-lucide="mail" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            <i class="ti ti-mail text-muted"></i>
                             {{ customer.email or '—' }}
                         </span>
                     </td>
                     <td>
                         <span class="d-flex align-items-center gap-1">
-                            <i data-lucide="phone" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            <i class="ti ti-phone text-muted"></i>
                             {{ customer.phone or '—' }}
                         </span>
                     </td>
@@ -120,11 +128,11 @@
                         <div class="d-flex gap-1">
                             <a href="{{ url_for('main.customer_detail', customer_id=customer.customer_id) }}"
                                class="btn btn-sm btn-outline-primary" title="View Details">
-                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                <i class="ti ti-eye"></i>
                             </a>
                             <a href="{{ url_for('main.edit_customer', customer_id=customer.customer_id) }}"
                                class="btn btn-sm btn-outline-secondary" title="Edit">
-                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                <i class="ti ti-pencil"></i>
                             </a>
                         </div>
                     </td>
@@ -134,24 +142,24 @@
         </table>
     </div>
     {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <i data-lucide="users"></i>
-        </div>
-        <div class="empty-state-title">
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-users"></i></div>
+        <p class="empty-title">
             {% if search_query %}No Customers Found{% else %}No Customers Yet{% endif %}
-        </div>
-        <div class="empty-state-description">
+        </p>
+        <p class="empty-subtitle text-secondary">
             {% if search_query %}
                 No customers match your search criteria. Try a different search term.
             {% else %}
                 Get started by adding your first customer.
             {% endif %}
-        </div>
+        </p>
         {% if not search_query %}
-        <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
-            <i data-lucide="user-plus" class="me-2" style="width: 16px; height: 16px;"></i>Add Customer
-        </a>
+        <div class="empty-action">
+            <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
+                <i class="ti ti-user-plus me-2"></i>Add Customer
+            </a>
+        </div>
         {% endif %}
     </div>
     {% endif %}

@@ -11,22 +11,22 @@ Customer Management - Administrator Portal
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0 d-flex align-items-center gap-2">
-                        <i data-lucide="users" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-users text-primary"></i>
                         Customer Management
                     </h1>
                     <p class="text-muted mb-0">Manage customers, schedule jobs, and track work orders</p>
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
-                        <i data-lucide="user-plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-user-plus me-1"></i>
                         Add Customer
                     </button>
                     <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#addServiceModal">
-                        <i data-lucide="settings" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-settings me-1"></i>
                         Add Service
                     </button>
                     <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addPartModal">
-                        <i data-lucide="puzzle" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-puzzle me-1"></i>
                         Add Part
                     </button>
                 </div>
@@ -35,44 +35,60 @@ Customer Management - Administrator Portal
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid mb-4">
-        <div class="stat-card stat-card--primary">
-            <div class="stat-card-icon text-primary">
-                <i data-lucide="users"></i>
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary-lt me-2"><i class="ti ti-users"></i></span>
+                        <div class="subheader">Total Customers</div>
+                    </div>
+                    <div class="h1 mb-0">{{ customers|length }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ customers|length }}</div>
-            <div class="stat-card-label">Total Customers</div>
         </div>
-        <div class="stat-card stat-card--success">
-            <div class="stat-card-icon text-success">
-                <i data-lucide="briefcase"></i>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success-lt me-2"><i class="ti ti-briefcase"></i></span>
+                        <div class="subheader">Total Jobs</div>
+                    </div>
+                    <div class="h1 mb-0">{{ jobs|length }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ jobs|length }}</div>
-            <div class="stat-card-label">Total Jobs</div>
         </div>
-        <div class="stat-card stat-card--accent">
-            <div class="stat-card-icon text-info">
-                <i data-lucide="settings"></i>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-info-lt me-2"><i class="ti ti-settings"></i></span>
+                        <div class="subheader">Available Services</div>
+                    </div>
+                    <div class="h1 mb-0">{{ services|length }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ services|length }}</div>
-            <div class="stat-card-label">Available Services</div>
         </div>
-        <div class="stat-card stat-card--warning">
-            <div class="stat-card-icon text-warning">
-                <i data-lucide="puzzle"></i>
+        <div class="col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning-lt me-2"><i class="ti ti-puzzle"></i></span>
+                        <div class="subheader">Available Parts</div>
+                    </div>
+                    <div class="h1 mb-0">{{ parts|length }}</div>
+                </div>
             </div>
-            <div class="stat-card-value">{{ parts|length }}</div>
-            <div class="stat-card-label">Available Parts</div>
         </div>
     </div>
 
     <!-- Customer List and Schedule Job Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="table-container card--status card--status-active">
-                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-users"></i>
                         Customer List & Job Scheduling
                     </h5>
                 </div>
@@ -94,7 +110,7 @@ Customer Management - Administrator Portal
                             </div>
                             <div class="col-md-3 d-flex align-items-end">
                                 <button class="btn btn-outline-primary w-100" type="submit">
-                                    <i data-lucide="search" class="me-1" style="width: 16px; height: 16px;"></i>
+                                    <i class="ti ti-search me-1"></i>
                                     Search
                                 </button>
                             </div>
@@ -104,7 +120,7 @@ Customer Management - Administrator Portal
                     <!-- Customer List -->
                     <div class="table-responsive">
                         <form method="post" action="/schedule_job">
-                            <table class="table table-hover">
+                            <table class="table table-vcenter card-table">
                                 <thead class="table-light">
                                     <tr>
                                         <th width="50">Select</th>
@@ -126,32 +142,32 @@ Customer Management - Administrator Portal
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center">
-                                                <i data-lucide="user" class="text-primary me-2" style="width: 18px; height: 18px;"></i>
+                                                <i class="ti ti-user text-primary me-2"></i>
                                                 <strong>{{ customer.first_name }} {{ customer.family_name }}</strong>
                                             </div>
                                         </td>
                                         <td>
                                             <span class="d-flex align-items-center gap-1">
-                                                <i data-lucide="mail" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                                <i class="ti ti-mail text-muted"></i>
                                                 {{ customer.email }}
                                             </span>
                                         </td>
                                         <td>
                                             <span class="d-flex align-items-center gap-1">
-                                                <i data-lucide="phone" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                                <i class="ti ti-phone text-muted"></i>
                                                 {{ customer.phone }}
                                             </span>
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-outline-info">
-                                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                                <i class="ti ti-eye"></i>
                                             </button>
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                            
+
                             <!-- Schedule Job Form -->
                             <div class="row mt-3">
                                 <div class="col-md-6">
@@ -160,7 +176,7 @@ Customer Management - Administrator Portal
                                 </div>
                                 <div class="col-md-6 d-flex align-items-end">
                                     <button type="submit" class="btn btn-accent w-100">
-                                        <i data-lucide="calendar-plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                                        <i class="ti ti-calendar-plus me-1"></i>
                                         Schedule Job
                                     </button>
                                 </div>
@@ -175,16 +191,16 @@ Customer Management - Administrator Portal
     <!-- Jobs Overview -->
     <div class="row">
         <div class="col-12">
-            <div class="table-container card--status card--status-accent">
-                <div class="table-header" style="background: var(--info); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="briefcase" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: var(--info); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-briefcase"></i>
                         Jobs Overview
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-vcenter card-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Job ID</th>
@@ -204,7 +220,7 @@ Customer Management - Administrator Portal
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <i data-lucide="user" class="text-primary me-2" style="width: 18px; height: 18px;"></i>
+                                            <i class="ti ti-user text-primary me-2"></i>
                                             <div>
                                                 <strong>{{ job.first_name }} {{ job.family_name }}</strong>
                                                 <small class="text-muted d-block">ID: {{ job.customer_id }}</small>
@@ -213,7 +229,7 @@ Customer Management - Administrator Portal
                                     </td>
                                     <td>
                                         <span class="d-flex align-items-center gap-1">
-                                            <i data-lucide="calendar" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                            <i class="ti ti-calendar text-muted"></i>
                                             {{ job.job_date }}
                                         </span>
                                     </td>
@@ -222,33 +238,33 @@ Customer Management - Administrator Portal
                                     </td>
                                     <td>
                                         {% if job.completed == 1 %}
-                                            <span class="status-badge status-badge-success">
-                                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                            <span class="badge bg-success">
+                                                <i class="ti ti-circle-check me-1"></i>
                                                 Completed
                                             </span>
                                         {% else %}
-                                            <span class="status-badge status-badge-warning">
-                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                            <span class="badge bg-warning">
+                                                <i class="ti ti-clock me-1"></i>
                                                 In Progress
                                             </span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if job.paid == 1 %}
-                                            <span class="status-badge status-badge-success">
-                                                <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
+                                            <span class="badge bg-success">
+                                                <i class="ti ti-credit-card me-1"></i>
                                                 Paid
                                             </span>
                                         {% else %}
-                                            <span class="status-badge status-badge-error">
-                                                <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
+                                            <span class="badge bg-danger">
+                                                <i class="ti ti-alert-triangle me-1"></i>
                                                 Unpaid
                                             </span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         <a href="{{ url_for('technician.modify_job', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary">
-                                            <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                            <i class="ti ti-pencil"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -268,7 +284,7 @@ Customer Management - Administrator Portal
         <div class="modal-content" style="border-top: 4px solid var(--success);">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2">
-                    <i data-lucide="user-plus" style="width: 20px; height: 20px;"></i>
+                    <i class="ti ti-user-plus"></i>
                     Add New Customer
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -297,7 +313,7 @@ Customer Management - Administrator Portal
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">
-                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-plus me-1"></i>
                         Add Customer
                     </button>
                 </div>
@@ -312,7 +328,7 @@ Customer Management - Administrator Portal
         <div class="modal-content" style="border-top: 4px solid var(--accent);">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2">
-                    <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
+                    <i class="ti ti-settings"></i>
                     Add New Service
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -359,7 +375,7 @@ Customer Management - Administrator Portal
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-accent">
-                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-plus me-1"></i>
                         Add Service
                     </button>
                 </div>
@@ -374,7 +390,7 @@ Customer Management - Administrator Portal
         <div class="modal-content" style="border-top: 4px solid var(--warning);">
             <div class="modal-header">
                 <h5 class="modal-title d-flex align-items-center gap-2">
-                    <i data-lucide="puzzle" style="width: 20px; height: 20px;"></i>
+                    <i class="ti ti-puzzle"></i>
                     Add New Part
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -421,7 +437,7 @@ Customer Management - Administrator Portal
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning">
-                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-plus me-1"></i>
                         Add Part
                     </button>
                 </div>

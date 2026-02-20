@@ -14,14 +14,14 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0 d-flex align-items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-chart-bar text-primary"></i>
                         Reports
                     </h1>
                     <p class="text-muted mb-0">Business analytics and performance metrics</p>
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-primary" onclick="window.print()">
-                        <i data-lucide="download" class="me-1" style="width: 16px; height: 16px;"></i>
+                        <i class="ti ti-download me-1"></i>
                         Export
                     </button>
                 </div>
@@ -34,7 +34,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="alert alert-info d-flex align-items-center gap-2">
-                <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                <i class="ti ti-info-circle"></i>
                 <div>
                     <strong>Report Period:</strong>
                     {{ report_data.period_info.start_date|default('N/A') }} to {{ report_data.period_info.end_date|default('N/A') }}
@@ -50,10 +50,10 @@
     <!-- Job Statistics -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="table-container card--status card--status-active">
-                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="briefcase" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-briefcase"></i>
                         Job Statistics
                     </h5>
                 </div>
@@ -93,10 +93,10 @@
     <!-- Billing Statistics -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="table-container card--status card--status-accent">
-                <div class="table-header" style="background: var(--info); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="dollar-sign" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: var(--info); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-currency-dollar"></i>
                         Billing Statistics
                     </h5>
                 </div>
@@ -136,10 +136,10 @@
     <!-- Customer Statistics -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="table-container">
-                <div class="table-header" style="background: var(--success); color: white;">
-                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
-                        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+            <div class="card">
+                <div class="card-header" style="background: var(--success); color: white;">
+                    <h5 class="card-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i class="ti ti-users"></i>
                         Customer Statistics
                     </h5>
                 </div>

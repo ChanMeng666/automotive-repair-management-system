@@ -17,17 +17,17 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
-            <i data-lucide="user" class="text-primary" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-user text-primary"></i>
             {{ customer.first_name }} {{ customer.family_name }}
         </h1>
         <p class="text-muted mb-0">Customer ID: #{{ customer.customer_id }}</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{{ url_for('main.edit_customer', customer_id=customer.customer_id) }}" class="btn btn-accent">
-            <i data-lucide="pencil" class="me-2" style="width: 16px; height: 16px;"></i>Edit Customer
+            <i class="ti ti-pencil me-2"></i>Edit Customer
         </a>
         <a href="{{ url_for('main.customers') }}" class="btn btn-outline-secondary">
-            <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Back to Customers
+            <i class="ti ti-arrow-left me-2"></i>Back to Customers
         </a>
     </div>
 </div>
@@ -36,39 +36,47 @@
 {% if stats %}
 <div class="row mb-4">
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--primary">
-            <div class="stat-card-icon text-primary">
-                <i data-lucide="briefcase"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary-lt me-2"><i class="ti ti-briefcase"></i></span>
+                    <div class="subheader">Total Jobs</div>
+                </div>
+                <div class="h1 mb-0">{{ stats.total_jobs|default(0) }}</div>
             </div>
-            <div class="stat-card-value">{{ stats.total_jobs|default(0) }}</div>
-            <div class="stat-card-label">Total Jobs</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--success">
-            <div class="stat-card-icon text-success">
-                <i data-lucide="check-circle"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success-lt me-2"><i class="ti ti-circle-check"></i></span>
+                    <div class="subheader">Completed</div>
+                </div>
+                <div class="h1 mb-0">{{ stats.completed_jobs|default(0) }}</div>
             </div>
-            <div class="stat-card-value">{{ stats.completed_jobs|default(0) }}</div>
-            <div class="stat-card-label">Completed</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--accent">
-            <div class="stat-card-icon text-info">
-                <i data-lucide="dollar-sign"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-info-lt me-2"><i class="ti ti-currency-dollar"></i></span>
+                    <div class="subheader">Total Revenue</div>
+                </div>
+                <div class="h1 mb-0">${{ "%.2f"|format(stats.total_revenue|default(0)|float) }}</div>
             </div>
-            <div class="stat-card-value">${{ "%.2f"|format(stats.total_revenue|default(0)|float) }}</div>
-            <div class="stat-card-label">Total Revenue</div>
         </div>
     </div>
     <div class="col-md-3 col-sm-6 mb-3">
-        <div class="stat-card stat-card--error">
-            <div class="stat-card-icon text-error">
-                <i data-lucide="alert-triangle"></i>
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-danger-lt me-2"><i class="ti ti-alert-triangle"></i></span>
+                    <div class="subheader">Unpaid Amount</div>
+                </div>
+                <div class="h1 mb-0">${{ "%.2f"|format(stats.unpaid_amount|default(0)|float) }}</div>
             </div>
-            <div class="stat-card-value">${{ "%.2f"|format(stats.unpaid_amount|default(0)|float) }}</div>
-            <div class="stat-card-label">Unpaid Amount</div>
         </div>
     </div>
 </div>
@@ -77,17 +85,17 @@
 <div class="row">
     <!-- Customer Information Card -->
     <div class="col-lg-4 mb-4">
-        <div class="table-container h-100">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-user me-1"></i>
                     Customer Information
                 </h3>
             </div>
-            <div class="p-4">
+            <div class="card-body">
                 <div class="d-flex align-items-center mb-4">
                     <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3 d-flex align-items-center justify-content-center">
-                        <i data-lucide="user" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-user text-primary" style="font-size: 1.5rem;"></i>
                     </div>
                     <div>
                         <div class="fw-bold fs-5">{{ customer.first_name }} {{ customer.family_name }}</div>
@@ -97,7 +105,7 @@
 
                 {% if customer.email %}
                 <div class="d-flex align-items-center mb-3">
-                    <i data-lucide="mail" class="text-muted me-3" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-mail text-muted me-3"></i>
                     <div>
                         <small class="text-muted d-block">Email</small>
                         <span class="fw-medium">{{ customer.email }}</span>
@@ -107,7 +115,7 @@
 
                 {% if customer.phone %}
                 <div class="d-flex align-items-center mb-3">
-                    <i data-lucide="phone" class="text-muted me-3" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-phone text-muted me-3"></i>
                     <div>
                         <small class="text-muted d-block">Phone</small>
                         <span class="fw-medium">{{ customer.phone }}</span>
@@ -120,17 +128,17 @@
 
     <!-- Job History -->
     <div class="col-lg-8 mb-4">
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-file-text me-1"></i>
                     Job History
                 </h3>
             </div>
 
             {% if stats and stats.jobs %}
             <div class="table-responsive">
-                <table class="table">
+                <table class="table table-vcenter card-table">
                     <thead>
                         <tr>
                             <th>Job ID</th>
@@ -153,30 +161,22 @@
                             <td><span class="fw-semibold text-success">${{ "%.2f"|format(job.total_cost|float) }}</span></td>
                             <td>
                                 {% if job.completed %}
-                                <span class="status-badge status-badge-success">
-                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>Completed
-                                </span>
+                                <span class="badge bg-success"><i class="ti ti-circle-check me-1"></i>Completed</span>
                                 {% else %}
-                                <span class="status-badge status-badge-warning">
-                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>In Progress
-                                </span>
+                                <span class="badge bg-warning"><i class="ti ti-clock me-1"></i>In Progress</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if job.paid %}
-                                <span class="status-badge status-badge-success">
-                                    <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>Paid
-                                </span>
+                                <span class="badge bg-success"><i class="ti ti-credit-card me-1"></i>Paid</span>
                                 {% else %}
-                                <span class="status-badge status-badge-error">
-                                    <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>Unpaid
-                                </span>
+                                <span class="badge bg-danger"><i class="ti ti-alert-triangle me-1"></i>Unpaid</span>
                                 {% endif %}
                             </td>
                             <td>
                                 <a href="{{ url_for('technician.job_detail', job_id=job.job_id) }}"
                                    class="btn btn-sm btn-outline-primary" title="View">
-                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                    <i class="ti ti-eye"></i>
                                 </a>
                             </td>
                         </tr>
@@ -185,12 +185,10 @@
                 </table>
             </div>
             {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="file-text"></i>
-                </div>
-                <div class="empty-state-title">No Job History</div>
-                <div class="empty-state-description">This customer has no jobs on record yet.</div>
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-file-text"></i></div>
+                <p class="empty-title">No Job History</p>
+                <p class="empty-subtitle text-secondary">This customer has no jobs on record yet.</p>
             </div>
             {% endif %}
         </div>

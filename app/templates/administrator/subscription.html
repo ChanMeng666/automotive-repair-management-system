@@ -14,7 +14,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h1 class="h3 mb-0 d-flex align-items-center gap-2">
-                        <i data-lucide="crown" class="text-warning" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-crown text-warning"></i>
                         Subscription Management
                     </h1>
                     <p class="text-muted mb-0">Manage your plan and usage</p>
@@ -26,16 +26,16 @@
     <div class="row g-4">
         <!-- Current Plan -->
         <div class="col-lg-6">
-            <div class="table-container h-100" style="border-top: 3px solid var(--primary);">
+            <div class="card h-100" style="border-top: 3px solid var(--primary);">
                 <div class="card-body p-4">
                     <h5 class="fw-bold d-flex align-items-center gap-2 mb-4">
-                        <i data-lucide="package" class="text-primary" style="width: 20px; height: 20px;"></i>
+                        <i class="ti ti-package text-primary"></i>
                         Current Plan
                     </h5>
                     <div class="text-center mb-4">
                         <div class="h2 fw-bold text-primary">{{ current_plan.name|default('Free') }}</div>
-                        <span class="status-badge {% if current_plan.status|default('active') == 'active' %}status-badge-success{% else %}status-badge-warning{% endif %}">
-                            <i data-lucide="{% if current_plan.status|default('active') == 'active' %}check-circle{% else %}clock{% endif %}" style="width: 12px; height: 12px;"></i>
+                        <span class="badge {% if current_plan.status|default('active') == 'active' %}bg-success{% else %}bg-warning{% endif %}">
+                            <i class="ti ti-{% if current_plan.status|default('active') == 'active' %}circle-check{% else %}clock{% endif %} me-1"></i>
                             {{ current_plan.status|default('Active')|title }}
                         </span>
                     </div>
@@ -53,11 +53,11 @@
                     {% endif %}
                     <div class="mt-4 d-flex gap-2">
                         <a href="#" class="btn btn-primary flex-fill">
-                            <i data-lucide="arrow-up-circle" class="me-1" style="width: 16px; height: 16px;"></i>
+                            <i class="ti ti-arrow-up-circle me-1"></i>
                             Upgrade Plan
                         </a>
                         <a href="#" class="btn btn-outline-secondary flex-fill">
-                            <i data-lucide="settings" class="me-1" style="width: 16px; height: 16px;"></i>
+                            <i class="ti ti-settings me-1"></i>
                             Manage
                         </a>
                     </div>
@@ -67,10 +67,10 @@
 
         <!-- Usage Statistics -->
         <div class="col-lg-6">
-            <div class="table-container h-100">
+            <div class="card h-100">
                 <div class="card-body p-4">
                     <h5 class="fw-bold d-flex align-items-center gap-2 mb-4">
-                        <i data-lucide="bar-chart-3" class="text-info" style="width: 20px; height: 20px;"></i>
+                        <i class="ti ti-chart-bar text-info"></i>
                         Usage Statistics
                     </h5>
 

@@ -1,6 +1,5 @@
 // RepairOS - Main JavaScript
 // ================================
-// Precision Industrial Theme
 
 // Design System Colors
 const DesignColors = {
@@ -21,111 +20,86 @@ const RepairOSApp = {
     settings: {},
 
     init() {
-        this.initializeLucideIcons();
         this.setupEventListeners();
         this.loadUserPreferences();
-        this.initializeComponents();
         this.setupNotifications();
     },
 
-    // Initialize Lucide Icons
-    initializeLucideIcons() {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    },
-    
     setupEventListeners() {
-        // Global event listeners
         document.addEventListener('DOMContentLoaded', () => {
             this.onDOMLoaded();
         });
-        
+
         // Handle form submissions with loading states
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
             form.addEventListener('submit', this.handleFormSubmit.bind(this));
         });
-        
+
         // Setup search functionality
         this.setupGlobalSearch();
-        
+
         // Setup tooltips and popovers
         this.initializeBootstrapComponents();
-        
+
         // Setup keyboard shortcuts
         this.setupKeyboardShortcuts();
     },
-    
+
     onDOMLoaded() {
-        // Add loading animations
-        this.addLoadingAnimations();
-        
         // Setup auto-save for forms
         this.setupAutoSave();
-        
-        // Initialize data tables
-        this.initializeDataTables();
-        
+
         // Setup live updates
         this.setupLiveUpdates();
 
         // Initialize charts
         this.initializeCharts();
     },
-    
+
     // Form handling with enhanced UX
     handleFormSubmit(event) {
         const form = event.target;
         const submitBtn = form.querySelector('button[type="submit"]');
-        
+
         if (submitBtn && !form.dataset.noLoadingState) {
             this.showFormLoading(submitBtn);
-            this.showLoadingIndicator(); // Show global loading indicator
-            
+
             // Reset loading state after timeout (fallback)
             setTimeout(() => {
                 this.hideFormLoading(submitBtn);
-                this.hideLoadingIndicator(); // Hide global loading indicator
             }, 10000);
         }
-        
+
         // Validate form before submission
         if (!this.validateForm(form)) {
             event.preventDefault();
             this.hideFormLoading(submitBtn);
-            this.hideLoadingIndicator(); // Hide global loading indicator if validation fails
         }
     },
-    
+
     showFormLoading(button) {
         if (!button) return;
-        
+
         button.disabled = true;
         button.classList.add('loading');
-        
+
         const originalText = button.innerHTML;
         button.dataset.originalText = originalText;
-        
-        const icon = button.querySelector('i');
-        if (icon) {
-            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
-        } else {
-            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + button.textContent;
-        }
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
     },
-    
+
     hideFormLoading(button) {
         if (!button) return;
-        
+
         button.disabled = false;
         button.classList.remove('loading');
-        
+
         if (button.dataset.originalText) {
             button.innerHTML = button.dataset.originalText;
         }
     },
-    
+
     validateForm(form) {
         const inputs = form.querySelectorAll('[required]');
         let isValid = true;
@@ -136,13 +110,12 @@ const RepairOSApp = {
                 isValid = false;
             } else {
                 this.clearFieldError(input);
-                
-                // Additional validation based on input type
+
                 if (input.type === 'email' && !this.isValidEmail(input.value)) {
                     this.showFieldError(input, 'Please enter a valid email address');
                     isValid = false;
                 }
-                
+
                 if (input.type === 'tel' && !this.isValidPhone(input.value)) {
                     this.showFieldError(input, 'Please enter a valid phone number');
                     isValid = false;
@@ -152,10 +125,10 @@ const RepairOSApp = {
 
         return isValid;
     },
-    
+
     showFieldError(input, message) {
         input.classList.add('is-invalid');
-        
+
         let feedback = input.parentNode.querySelector('.invalid-feedback');
         if (!feedback) {
             feedback = document.createElement('div');
@@ -164,7 +137,7 @@ const RepairOSApp = {
         }
         feedback.textContent = message;
     },
-    
+
     clearFieldError(input) {
         input.classList.remove('is-invalid');
         const feedback = input.parentNode.querySelector('.invalid-feedback');
@@ -172,25 +145,25 @@ const RepairOSApp = {
             feedback.textContent = '';
         }
     },
-    
+
     // Global search functionality
     setupGlobalSearch() {
         const searchInput = document.getElementById('globalSearch');
         if (!searchInput) return;
-        
+
         let searchTimeout;
         searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
-            
+
             searchTimeout = setTimeout(() => {
                 this.performGlobalSearch(e.target.value);
             }, 300);
         });
-        
+
         // Setup search results dropdown
         this.createSearchDropdown(searchInput);
     },
-    
+
     createSearchDropdown(searchInput) {
         const dropdown = document.createElement('div');
         dropdown.className = 'search-dropdown';
@@ -200,26 +173,25 @@ const RepairOSApp = {
             left: 0;
             right: 0;
             background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border: 1px solid var(--tblr-border-color, #e2e8f0);
+            border-radius: 4px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             max-height: 300px;
             overflow-y: auto;
             display: none;
         `;
-        
+
         searchInput.parentNode.style.position = 'relative';
         searchInput.parentNode.appendChild(dropdown);
-        
-        // Hide dropdown when clicking outside
+
         document.addEventListener('click', (e) => {
             if (!searchInput.parentNode.contains(e.target)) {
                 dropdown.style.display = 'none';
             }
         });
     },
-    
+
     async performGlobalSearch(query) {
         if (!query || query.length < 2) {
             this.hideSearchResults();
@@ -248,15 +220,15 @@ const RepairOSApp = {
             this.showSearchError();
         }
     },
-    
+
     displaySearchResults(results) {
         const dropdown = document.querySelector('.search-dropdown');
         if (!dropdown) return;
 
         if (results.length === 0) {
             dropdown.innerHTML = `
-                <div class="p-3 text-center text-muted">
-                    <i data-lucide="search" style="width: 16px; height: 16px; vertical-align: text-bottom;"></i>
+                <div class="p-3 text-center text-secondary">
+                    <i class="ti ti-search"></i>
                     No results found
                 </div>
             `;
@@ -264,37 +236,35 @@ const RepairOSApp = {
             dropdown.innerHTML = results.map(result => `
                 <div class="search-result-item p-3 border-bottom" data-type="${result.type}" data-id="${result.id}">
                     <div class="d-flex align-items-center">
-                        <i data-lucide="${result.type === 'customer' ? 'user' : 'wrench'}" class="me-3 text-primary" style="width: 20px; height: 20px;"></i>
+                        <i class="ti ti-${result.type === 'customer' ? 'user' : 'tool'} me-3 text-primary"></i>
                         <div>
                             <div class="fw-semibold">${result.title}</div>
-                            <small class="text-muted">${result.subtitle}</small>
+                            <small class="text-secondary">${result.subtitle}</small>
                         </div>
                     </div>
                 </div>
             `).join('');
-            
-            // Add click handlers
+
             dropdown.querySelectorAll('.search-result-item').forEach(item => {
                 item.style.cursor = 'pointer';
                 item.addEventListener('click', () => {
                     this.handleSearchResultClick(item.dataset.type, item.dataset.id);
                 });
-                
+
                 item.addEventListener('mouseenter', () => {
                     item.style.backgroundColor = '#f8fafc';
                 });
-                
+
                 item.addEventListener('mouseleave', () => {
                     item.style.backgroundColor = 'white';
                 });
             });
         }
-        
+
         dropdown.style.display = 'block';
     },
-    
+
     handleSearchResultClick(type, id) {
-        // Navigate to the appropriate page
         if (type === 'customer') {
             window.location.href = `/customers/${id}`;
         } else if (type === 'job') {
@@ -303,7 +273,7 @@ const RepairOSApp = {
 
         this.hideSearchResults();
     },
-    
+
     showSearchLoading() {
         const dropdown = document.querySelector('.search-dropdown');
         if (dropdown) {
@@ -322,17 +292,13 @@ const RepairOSApp = {
         if (dropdown) {
             dropdown.innerHTML = `
                 <div class="p-3 text-center text-danger">
-                    <i data-lucide="alert-triangle" style="width: 16px; height: 16px; vertical-align: text-bottom;"></i>
+                    <i class="ti ti-alert-triangle"></i>
                     Search error occurred
                 </div>
             `;
-            // Re-initialize Lucide icons for the new content
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
         }
     },
-    
+
     hideSearchResults() {
         const dropdown = document.querySelector('.search-dropdown');
         if (dropdown) {
@@ -340,25 +306,10 @@ const RepairOSApp = {
         }
     },
 
-    // Global Loading Indicator
-    showLoadingIndicator() {
-        const indicator = document.getElementById('loading-indicator');
-        if (indicator) {
-            indicator.classList.remove('d-none');
-        }
-    },
-
-    hideLoadingIndicator() {
-        const indicator = document.getElementById('loading-indicator');
-        if (indicator) {
-            indicator.classList.add('d-none');
-        }
-    },
-    
     // Auto-save functionality
     setupAutoSave() {
         const forms = document.querySelectorAll('[data-autosave]');
-        
+
         forms.forEach(form => {
             const inputs = form.querySelectorAll('input, textarea, select');
             inputs.forEach(input => {
@@ -368,20 +319,18 @@ const RepairOSApp = {
             });
         });
     },
-    
+
     autoSaveForm(form) {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
-        
-        // Save to localStorage
+
         const formId = form.id || 'auto-save-form';
         localStorage.setItem(`autosave_${formId}`, JSON.stringify(data));
-        
+
         this.showAutoSaveIndicator();
     },
-    
+
     showAutoSaveIndicator() {
-        // Create or update auto-save indicator
         let indicator = document.getElementById('autosave-indicator');
         if (!indicator) {
             indicator = document.createElement('div');
@@ -405,25 +354,19 @@ const RepairOSApp = {
             document.body.appendChild(indicator);
         }
 
-        indicator.innerHTML = '<i data-lucide="check" style="width: 16px; height: 16px;"></i>Auto-saved';
+        indicator.innerHTML = '<i class="ti ti-check"></i>Auto-saved';
         indicator.style.opacity = '1';
-
-        // Re-initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
 
         setTimeout(() => {
             indicator.style.opacity = '0';
         }, 2000);
     },
-    
+
     // Notification system
     setupNotifications() {
         this.loadNotifications();
         this.updateNotificationBadge();
-        
-        // Setup notification dropdown
+
         const notificationDropdown = document.querySelector('[data-bs-toggle="dropdown"]');
         if (notificationDropdown) {
             notificationDropdown.addEventListener('click', () => {
@@ -431,9 +374,8 @@ const RepairOSApp = {
             });
         }
     },
-    
+
     loadNotifications() {
-        // In a real app, this would fetch from an API
         this.notifications = [
             {
                 id: 1,
@@ -453,7 +395,7 @@ const RepairOSApp = {
             }
         ];
     },
-    
+
     updateNotificationBadge() {
         const badge = document.querySelector('.navbar .badge');
         if (badge) {
@@ -462,33 +404,30 @@ const RepairOSApp = {
             badge.style.display = unreadCount > 0 ? 'inline' : 'none';
         }
     },
-    
+
     markNotificationsAsRead() {
         this.notifications.forEach(notification => {
             notification.read = true;
         });
         this.updateNotificationBadge();
     },
-    
-    // Initialize Bootstrap components
+
+    // Initialize Bootstrap/Tabler components
     initializeBootstrapComponents() {
-        // Initialize tooltips
         const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         tooltips.forEach(tooltip => {
             new bootstrap.Tooltip(tooltip);
         });
-        
-        // Initialize popovers
+
         const popovers = document.querySelectorAll('[data-bs-toggle="popover"]');
         popovers.forEach(popover => {
             new bootstrap.Popover(popover);
         });
     },
-    
+
     // Keyboard shortcuts
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + K for search
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
                 const searchInput = document.getElementById('globalSearch');
@@ -496,57 +435,20 @@ const RepairOSApp = {
                     searchInput.focus();
                 }
             }
-            
-            // Escape to close modals and dropdowns
+
             if (e.key === 'Escape') {
                 const activeModal = document.querySelector('.modal.show');
                 if (activeModal) {
                     const modal = bootstrap.Modal.getInstance(activeModal);
                     if (modal) modal.hide();
                 }
-                
+
                 this.hideSearchResults();
             }
         });
     },
-    
-    // Add loading animations to elements
-    addLoadingAnimations() {
-        const animatedElements = document.querySelectorAll('.stat-card, .action-card, .card');
-        
-        animatedElements.forEach((element, index) => {
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(20px)';
-            element.style.transition = 'all 0.5s ease';
-            
-            setTimeout(() => {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-    },
-    
-    // Data table initialization
-    initializeDataTables() {
-        const tables = document.querySelectorAll('.table');
-        
-        tables.forEach(table => {
-            // Add hover effects
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                row.addEventListener('mouseenter', () => {
-                    row.style.transform = 'translateX(4px)';
-                    row.style.transition = 'transform 0.2s ease';
-                });
-                
-                row.addEventListener('mouseleave', () => {
-                    row.style.transform = 'translateX(0)';
-                });
-            });
-        });
-    },
 
-    // Chart initialization with Precision Industrial colors
+    // Chart initialization
     initializeCharts() {
         const isDashboard = window.location.pathname.includes('dashboard');
         const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
@@ -555,7 +457,6 @@ const RepairOSApp = {
         if (!monthlyRevenueCtx && !jobStatusCtx) return;
 
         if (isDashboard) {
-            // Determine API URL - check if we're in an org-scoped route
             const pathParts = window.location.pathname.split('/');
             const orgIndex = pathParts.indexOf('org');
             let apiUrl = '/administrator/api/dashboard/summary';
@@ -583,7 +484,6 @@ const RepairOSApp = {
 
     _renderRevenueChart(ctx) {
         if (!ctx) return;
-        // TODO: Connect to a monthly revenue API endpoint when available
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -655,24 +555,20 @@ const RepairOSApp = {
             }
         });
     },
-    
+
     // Live updates simulation
     setupLiveUpdates() {
-        // In a real application, this would use WebSockets or Server-Sent Events
-        if (window.location.pathname.includes('dashboard') || 
+        if (window.location.pathname.includes('dashboard') ||
             window.location.pathname.includes('current-jobs')) {
-            
             setInterval(() => {
                 this.checkForUpdates();
-            }, 30000); // Check every 30 seconds
+            }, 30000);
         }
     },
-    
+
     async checkForUpdates() {
         try {
-            // Simulate checking for updates
             const hasUpdates = Math.random() > 0.8;
-            
             if (hasUpdates) {
                 this.showUpdateNotification();
             }
@@ -680,7 +576,7 @@ const RepairOSApp = {
             console.error('Update check failed:', error);
         }
     },
-    
+
     showUpdateNotification() {
         const notification = document.createElement('div');
         notification.className = 'alert alert-dismissible fade show position-fixed';
@@ -692,33 +588,27 @@ const RepairOSApp = {
             background: ${DesignColors.info};
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             gap: 8px;
         `;
 
         notification.innerHTML = `
-            <i data-lucide="info" style="width: 18px; height: 18px;"></i>
+            <i class="ti ti-info-circle"></i>
             New updates available
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
         `;
 
         document.body.appendChild(notification);
 
-        // Re-initialize Lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-
-        // Auto-remove after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.remove();
             }
         }, 5000);
     },
-    
+
     // User preferences
     loadUserPreferences() {
         const savedPrefs = localStorage.getItem('repairos_preferences');
@@ -727,41 +617,35 @@ const RepairOSApp = {
             this.applyUserPreferences();
         }
     },
-    
+
     saveUserPreferences() {
         localStorage.setItem('repairos_preferences', JSON.stringify(this.settings));
     },
-    
+
     applyUserPreferences() {
-        // Apply theme preferences
         if (this.settings.theme === 'dark') {
             document.body.classList.add('dark-theme');
         }
-        
-        // Apply other preferences
-        if (this.settings.animations === false) {
-            document.body.classList.add('no-animations');
-        }
     },
-    
+
     // Utility functions
     isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     },
-    
+
     isValidPhone(phone) {
         const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
         return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
     },
-    
+
     formatCurrency(amount) {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD'
         }).format(amount);
     },
-    
+
     formatDate(date) {
         return new Intl.DateTimeFormat('en-US', {
             year: 'numeric',
@@ -769,13 +653,13 @@ const RepairOSApp = {
             day: 'numeric'
         }).format(new Date(date));
     },
-    
+
     showToast(message, type = 'info') {
         const iconMap = {
-            success: 'check-circle',
+            success: 'circle-check',
             error: 'alert-circle',
             warning: 'alert-triangle',
-            info: 'info'
+            info: 'info-circle'
         };
         const colorMap = {
             success: DesignColors.success,
@@ -791,14 +675,13 @@ const RepairOSApp = {
         toast.innerHTML = `
             <div class="d-flex">
                 <div class="toast-body d-flex align-items-center gap-2">
-                    <i data-lucide="${iconMap[type] || 'info'}" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-${iconMap[type] || 'info-circle'}"></i>
                     ${message}
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         `;
-        
-        // Create toast container if it doesn't exist
+
         let container = document.getElementById('toast-container');
         if (!container) {
             container = document.createElement('div');
@@ -806,28 +689,15 @@ const RepairOSApp = {
             container.className = 'toast-container position-fixed top-0 end-0 p-3';
             document.body.appendChild(container);
         }
-        
+
         container.appendChild(toast);
-        
-        // Re-initialize Lucide icons for the new content
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
 
         const bsToast = new bootstrap.Toast(toast);
         bsToast.show();
 
-        // Remove toast element after it's hidden
         toast.addEventListener('hidden.bs.toast', () => {
             toast.remove();
         });
-    },
-
-    // Re-initialize Lucide icons (useful after dynamic content updates)
-    refreshIcons() {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
     }
 };
 
@@ -835,4 +705,4 @@ const RepairOSApp = {
 RepairOSApp.init();
 
 // Expose to global scope for debugging
-window.RepairOSApp = RepairOSApp; 
+window.RepairOSApp = RepairOSApp;

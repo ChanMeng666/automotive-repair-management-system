@@ -8,9 +8,9 @@
 
 {% block content %}
 <!-- Welcome Hero Section -->
-<div class="row mb-6">
+<div class="row mb-4">
     <div class="col-12">
-        <div class="card border-0 shadow-lg hero-section-bg">
+        <div class="card border-0 hero-section-bg">
             <div class="card-body d-flex align-items-center text-white p-5">
                 <div class="row w-100 align-items-center">
                     <div class="col-lg-8">
@@ -22,14 +22,14 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center">
-                            <i data-lucide="calendar" class="me-2" style="width: 18px; height: 18px;"></i>
+                            <i class="ti ti-calendar me-2"></i>
                             <span>Today is {{ current_date.strftime('%B %d, %Y') if current_date else 'Loading...' }}</span>
                         </div>
                     </div>
                     <div class="col-lg-4 text-end">
                         {% if not session.logged_in %}
                             <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg">
-                                <i data-lucide="log-in" class="me-2" style="width: 20px; height: 20px;"></i>Sign In
+                                <i class="ti ti-login me-2"></i>Sign In
                             </a>
                         {% else %}
                             <div class="text-end">
@@ -47,170 +47,159 @@
 
 {% if session.logged_in %}
 <!-- Statistics Dashboard -->
-<div class="row mb-6">
-    <div class="col-12 mb-4">
+<div class="row mb-4">
+    <div class="col-12 mb-3">
         <h2 class="fw-semibold d-flex align-items-center">
-            <i data-lucide="bar-chart-3" class="text-primary me-3" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-chart-bar text-primary me-3"></i>
             System Overview
         </h2>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="stats-grid">
-        <!-- Total Jobs -->
-        <div class="stat-card stat-card--primary">
-            <div class="stat-card-icon text-primary">
-                <i data-lucide="clipboard-list"></i>
-            </div>
-            <div class="stat-card-value">{{ job_stats.get('total_jobs', 0) }}</div>
-            <div class="stat-card-label">Total Work Orders</div>
-            <div class="stat-card-change">
-                <span class="text-warning">{{ job_stats.get('pending_jobs', 0) }} pending</span>
-            </div>
-        </div>
-
-        <!-- Revenue -->
-        <div class="stat-card stat-card--success">
-            <div class="stat-card-icon text-success">
-                <i data-lucide="dollar-sign"></i>
-            </div>
-            <div class="stat-card-value">${{ "%.0f"|format(billing_stats.get('total_revenue', 0)) }}</div>
-            <div class="stat-card-label">Total Revenue</div>
-            <div class="stat-card-change">
-                <span class="text-warning">${{ "%.0f"|format(billing_stats.get('unpaid_amount', 0)) }} unpaid</span>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary-lt me-2"><i class="ti ti-clipboard-list"></i></span>
+                    <div class="subheader">Total Work Orders</div>
+                </div>
+                <div class="h1 mb-0">{{ job_stats.get('total_jobs', 0) }}</div>
+                <small class="text-warning">{{ job_stats.get('pending_jobs', 0) }} pending</small>
             </div>
         </div>
-
-        <!-- Customers -->
-        <div class="stat-card stat-card--accent">
-            <div class="stat-card-icon text-info">
-                <i data-lucide="users"></i>
-            </div>
-            <div class="stat-card-value">{{ billing_stats.get('total_customers', 0) }}</div>
-            <div class="stat-card-label">Active Customers</div>
-            <div class="stat-card-change">
-                <span class="text-success">+{{ billing_stats.get('new_customers_month', 0) }} this month</span>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success-lt me-2"><i class="ti ti-currency-dollar"></i></span>
+                    <div class="subheader">Total Revenue</div>
+                </div>
+                <div class="h1 mb-0">${{ "%.0f"|format(billing_stats.get('total_revenue', 0)) }}</div>
+                <small class="text-warning">${{ "%.0f"|format(billing_stats.get('unpaid_amount', 0)) }} unpaid</small>
             </div>
         </div>
-
-        <!-- Overdue Bills -->
-        <div class="stat-card stat-card--warning">
-            <div class="stat-card-icon text-warning">
-                <i data-lucide="alert-triangle"></i>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-info-lt me-2"><i class="ti ti-users"></i></span>
+                    <div class="subheader">Active Customers</div>
+                </div>
+                <div class="h1 mb-0">{{ billing_stats.get('total_customers', 0) }}</div>
+                <small class="text-success">+{{ billing_stats.get('new_customers_month', 0) }} this month</small>
             </div>
-            <div class="stat-card-value">{{ (overdue_bills|length) if overdue_bills else 0 }}</div>
-            <div class="stat-card-label">Overdue Bills</div>
-            <div class="stat-card-change">
-                <span class="text-error">Needs attention</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-warning-lt me-2"><i class="ti ti-alert-triangle"></i></span>
+                    <div class="subheader">Overdue Bills</div>
+                </div>
+                <div class="h1 mb-0">{{ (overdue_bills|length) if overdue_bills else 0 }}</div>
+                <small class="text-danger">Needs attention</small>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="row mb-6">
-    <div class="col-12 mb-4">
+<div class="row mb-4">
+    <div class="col-12 mb-3">
         <h2 class="fw-semibold d-flex align-items-center">
-            <i data-lucide="zap" class="text-accent me-3" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-bolt text-warning me-3"></i>
             Quick Actions
         </h2>
     </div>
 
-    <div class="action-grid">
-        <!-- Customer Management -->
-        <div class="action-card">
-            <div class="action-card-header">
-                <div class="action-card-icon">
-                    <i data-lucide="user-plus"></i>
-                </div>
-                <div class="action-card-title">Customer Management</div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-user-plus me-2"></i>Customer Management</h3>
             </div>
-            <div class="action-card-description">
-                View customer database, add new customers, or search existing customer information and history.
+            <div class="card-body">
+                <p class="text-secondary">View customer database, add new customers, or search existing customer information and history.</p>
             </div>
-            <div class="action-card-buttons">
+            <div class="card-footer d-flex gap-2">
                 <a href="{{ url_for('main.customers') }}" class="btn btn-outline-primary">
-                    <i data-lucide="users" class="me-2" style="width: 16px; height: 16px;"></i>View All
+                    <i class="ti ti-users me-1"></i>View All
                 </a>
                 <a href="{{ url_for('main.new_customer') }}" class="btn btn-accent">
-                    <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Add New
+                    <i class="ti ti-plus me-1"></i>Add New
                 </a>
             </div>
         </div>
+    </div>
 
-        <!-- Work Order Management -->
-        <div class="action-card">
-            <div class="action-card-header">
-                <div class="action-card-icon">
-                    <i data-lucide="wrench"></i>
-                </div>
-                <div class="action-card-title">Work Orders</div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-tool me-2"></i>Work Orders</h3>
             </div>
-            <div class="action-card-description">
-                Manage repair work orders, track progress, and create new service requests for customers.
+            <div class="card-body">
+                <p class="text-secondary">Manage repair work orders, track progress, and create new service requests for customers.</p>
             </div>
-            <div class="action-card-buttons">
+            <div class="card-footer d-flex gap-2">
                 {% if session.user_type == 'technician' %}
                     <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
-                        <i data-lucide="clipboard-list" class="me-2" style="width: 16px; height: 16px;"></i>Current Jobs
+                        <i class="ti ti-clipboard-list me-1"></i>Current Jobs
                     </a>
                     <a href="{{ url_for('technician.new_job') }}" class="btn btn-success">
-                        <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>New Job
+                        <i class="ti ti-plus me-1"></i>New Job
                     </a>
                 {% else %}
                     <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-success">
-                        <i data-lucide="layout-dashboard" class="me-2" style="width: 16px; height: 16px;"></i>View Dashboard
+                        <i class="ti ti-layout-dashboard me-1"></i>View Dashboard
                     </a>
                 {% endif %}
             </div>
         </div>
+    </div>
 
-        <!-- Billing & Payments -->
-        <div class="action-card">
-            <div class="action-card-header">
-                <div class="action-card-icon">
-                    <i data-lucide="credit-card"></i>
-                </div>
-                <div class="action-card-title">Billing & Payments</div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-credit-card me-2"></i>Billing & Payments</h3>
             </div>
-            <div class="action-card-description">
-                Process payments, manage billing records, and track outstanding balances and overdue accounts.
+            <div class="card-body">
+                <p class="text-secondary">Process payments, manage billing records, and track outstanding balances and overdue accounts.</p>
             </div>
-            <div class="action-card-buttons">
+            <div class="card-footer d-flex gap-2">
                 {% if session.user_type == 'administrator' %}
                     <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-info">
-                        <i data-lucide="credit-card" class="me-2" style="width: 16px; height: 16px;"></i>Process Payments
+                        <i class="ti ti-credit-card me-1"></i>Payments
                     </a>
                     <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-warning">
-                        <i data-lucide="alert-triangle" class="me-2" style="width: 16px; height: 16px;"></i>Overdue Bills
+                        <i class="ti ti-alert-triangle me-1"></i>Overdue
                     </a>
                 {% else %}
                     <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-info">
-                        <i data-lucide="info" class="me-2" style="width: 16px; height: 16px;"></i>View Info
+                        <i class="ti ti-info-circle me-1"></i>View Info
                     </a>
                 {% endif %}
             </div>
         </div>
+    </div>
 
-        <!-- Reports & Analytics -->
-        <div class="action-card">
-            <div class="action-card-header">
-                <div class="action-card-icon">
-                    <i data-lucide="trending-up"></i>
-                </div>
-                <div class="action-card-title">Reports & Analytics</div>
+    <div class="col-sm-6 col-lg-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-trending-up me-2"></i>Reports & Analytics</h3>
             </div>
-            <div class="action-card-description">
-                Generate detailed reports, view business analytics, and track performance metrics and trends.
+            <div class="card-body">
+                <p class="text-secondary">Generate detailed reports, view business analytics, and track performance metrics and trends.</p>
             </div>
-            <div class="action-card-buttons">
+            <div class="card-footer d-flex gap-2">
                 {% if session.user_type == 'administrator' %}
                     <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-secondary">
-                        <i data-lucide="file-text" class="me-2" style="width: 16px; height: 16px;"></i>View Reports
+                        <i class="ti ti-file-text me-1"></i>View Reports
                     </a>
                 {% endif %}
                 <a href="#" class="btn btn-secondary">
-                    <i data-lucide="download" class="me-2" style="width: 16px; height: 16px;"></i>Export Data
+                    <i class="ti ti-download me-1"></i>Export Data
                 </a>
             </div>
         </div>
@@ -218,15 +207,15 @@
 </div>
 
 <!-- Performance Overview Section -->
-<div class="row mb-6">
-    <div class="col-12 mb-4">
+<div class="row mb-4">
+    <div class="col-12 mb-3">
         <h2 class="fw-semibold d-flex align-items-center">
-            <i data-lucide="activity" class="text-success me-3" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-activity text-success me-3"></i>
             Performance Overview
         </h2>
     </div>
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm">
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title fw-semibold">Monthly Revenue</h5>
                 <canvas id="monthlyRevenueChart"></canvas>
@@ -234,7 +223,7 @@
         </div>
     </div>
     <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm">
+        <div class="card">
             <div class="card-body">
                 <h5 class="card-title fw-semibold">Job Status Distribution</h5>
                 <canvas id="jobStatusChart"></canvas>
@@ -247,12 +236,10 @@
 <div class="row">
     <!-- Recent Work Orders -->
     <div class="col-lg-8 mb-4">
-        <div class="table-container">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="clock" style="width: 20px; height: 20px;"></i>Recent Work Orders
-                </h3>
-                <div class="table-actions">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-clock me-2"></i>Recent Work Orders</h3>
+                <div class="card-actions">
                     <a href="{{ url_for('technician.current_jobs') if session.user_type == 'technician' else url_for('main.dashboard') }}" class="btn btn-sm btn-outline-primary">
                         View All
                     </a>
@@ -261,7 +248,7 @@
 
             {% if recent_jobs %}
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-vcenter card-table">
                         <thead>
                             <tr>
                                 <th>Job ID</th>
@@ -283,22 +270,20 @@
                                 <td>
                                     <div>
                                         <div class="fw-medium">{{ job.get('first_name', '') }} {{ job.get('family_name', '') }}</div>
-                                        <small class="text-muted">#{{ job.get('customer_id', '') }}</small>
+                                        <small class="text-secondary">#{{ job.get('customer_id', '') }}</small>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="text-muted">{{ job.get('job_date', 'N/A') }}</span>
+                                    <span class="text-secondary">{{ job.get('job_date', 'N/A') }}</span>
                                 </td>
                                 <td>
                                     {% if job.get('completed') %}
-                                        <span class="status-badge status-badge-success">
-                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
-                                            Completed
+                                        <span class="badge bg-success">
+                                            <i class="ti ti-circle-check me-1"></i>Completed
                                         </span>
                                     {% else %}
-                                        <span class="status-badge status-badge-warning">
-                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
-                                            In Progress
+                                        <span class="badge bg-warning">
+                                            <i class="ti ti-clock me-1"></i>In Progress
                                         </span>
                                     {% endif %}
                                 </td>
@@ -311,11 +296,11 @@
                                 <td>
                                     <div class="d-flex gap-1">
                                         <a href="{{ url_for('technician.job_detail', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-primary" title="View Details">
-                                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                            <i class="ti ti-eye"></i>
                                         </a>
                                         {% if not job.get('completed') %}
                                             <a href="{{ url_for('technician.modify_job', job_id=job.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success" title="Edit">
-                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                                <i class="ti ti-pencil"></i>
                                             </a>
                                         {% endif %}
                                     </div>
@@ -326,18 +311,18 @@
                     </table>
                 </div>
             {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i data-lucide="inbox"></i>
-                    </div>
-                    <div class="empty-state-title">No Recent Work Orders</div>
-                    <div class="empty-state-description">
+                <div class="empty">
+                    <div class="empty-icon"><i class="ti ti-inbox"></i></div>
+                    <p class="empty-title">No Recent Work Orders</p>
+                    <p class="empty-subtitle text-secondary">
                         There are no recent work orders to display. Create a new work order to get started.
-                    </div>
+                    </p>
                     {% if session.user_type == 'technician' %}
+                    <div class="empty-action">
                         <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
-                            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Create New Job
+                            <i class="ti ti-plus me-2"></i>Create New Job
                         </a>
+                    </div>
                     {% endif %}
                 </div>
             {% endif %}
@@ -346,12 +331,10 @@
 
     <!-- Overdue Bills -->
     <div class="col-lg-4 mb-4">
-        <div class="table-container card--status card--status-warning">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="alert-triangle" class="text-warning" style="width: 20px; height: 20px;"></i>Overdue Bills
-                </h3>
-                <div class="table-actions">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="ti ti-alert-triangle text-warning me-2"></i>Overdue Bills</h3>
+                <div class="card-actions">
                     {% if session.user_type == 'administrator' %}
                         <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-sm btn-outline-warning">
                             View All
@@ -361,20 +344,20 @@
             </div>
 
             {% if overdue_bills %}
-                <div class="p-3">
+                <div class="card-body p-3">
                     {% for bill in overdue_bills[:5] %}
                         <div class="d-flex justify-content-between align-items-center py-3 {% if not loop.last %}border-bottom{% endif %}">
                             <div>
                                 <div class="fw-semibold">{{ bill.get('first_name', '') }} {{ bill.get('family_name', '') }}</div>
-                                <small class="text-muted">Job #{{ bill.get('job_id', '') }}</small>
+                                <small class="text-secondary">Job #{{ bill.get('job_id', '') }}</small>
                                 <br>
                                 <small class="text-warning d-flex align-items-center gap-1">
-                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                    <i class="ti ti-clock"></i>
                                     {{ bill.get('days_overdue', 0) }} days overdue
                                 </small>
                             </div>
                             <div class="text-end">
-                                <div class="fw-bold text-error">${{ "%.2f"|format(bill.get('total_cost', 0)) }}</div>
+                                <div class="fw-bold text-danger">${{ "%.2f"|format(bill.get('total_cost', 0)) }}</div>
                                 {% if session.user_type == 'administrator' %}
                                     <a href="{{ url_for('administrator.pay_single_bill', job_id=bill.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success mt-1">
                                         Pay
@@ -385,14 +368,12 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="empty-state py-4">
-                    <div class="empty-state-icon">
-                        <i data-lucide="check-circle" class="text-success"></i>
-                    </div>
-                    <div class="empty-state-title">All Bills Current</div>
-                    <div class="empty-state-description">
+                <div class="empty py-4">
+                    <div class="empty-icon"><i class="ti ti-circle-check text-success"></i></div>
+                    <p class="empty-title">All Bills Current</p>
+                    <p class="empty-subtitle text-secondary">
                         Great! No overdue bills at this time.
-                    </div>
+                    </p>
                 </div>
             {% endif %}
         </div>
@@ -414,76 +395,42 @@
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="text-center">
-                    <div class="bg-primary bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                        <i data-lucide="users" class="text-primary" style="width: 40px; height: 40px;"></i>
+                    <div class="bg-primary-lt rounded-circle p-4 d-inline-flex mb-3">
+                        <i class="ti ti-users text-primary" style="font-size: 2.5rem;"></i>
                     </div>
                     <h4>Customer Management</h4>
-                    <p class="text-muted">Organize customer information, track service history, and build lasting relationships.</p>
+                    <p class="text-secondary">Organize customer information, track service history, and build lasting relationships.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="text-center">
-                    <div class="bg-success bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                        <i data-lucide="wrench" class="text-success" style="width: 40px; height: 40px;"></i>
+                    <div class="bg-success-lt rounded-circle p-4 d-inline-flex mb-3">
+                        <i class="ti ti-tool text-success" style="font-size: 2.5rem;"></i>
                     </div>
                     <h4>Work Order Tracking</h4>
-                    <p class="text-muted">Efficiently manage repair jobs from start to finish with detailed tracking.</p>
+                    <p class="text-secondary">Efficiently manage repair jobs from start to finish with detailed tracking.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="text-center">
-                    <div class="bg-info bg-opacity-10 rounded-circle p-4 d-inline-flex mb-3">
-                        <i data-lucide="trending-up" class="text-info" style="width: 40px; height: 40px;"></i>
+                    <div class="bg-info-lt rounded-circle p-4 d-inline-flex mb-3">
+                        <i class="ti ti-trending-up text-info" style="font-size: 2.5rem;"></i>
                     </div>
                     <h4>Business Analytics</h4>
-                    <p class="text-muted">Track revenue, monitor performance, and make data-driven business decisions.</p>
+                    <p class="text-secondary">Track revenue, monitor performance, and make data-driven business decisions.</p>
                 </div>
             </div>
         </div>
 
         <div class="d-flex gap-3 justify-content-center">
             <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg">
-                <i data-lucide="log-in" class="me-2" style="width: 20px; height: 20px;"></i>Get Started
+                <i class="ti ti-login me-2"></i>Get Started
             </a>
             <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary btn-lg">
-                <i data-lucide="info" class="me-2" style="width: 20px; height: 20px;"></i>Learn More
+                <i class="ti ti-info-circle me-2"></i>Learn More
             </a>
         </div>
     </div>
 </div>
 {% endif %}
 {% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add fade-in animation to stat cards
-    const statCards = document.querySelectorAll('.stat-card');
-    statCards.forEach((card, index) => {
-        setTimeout(() => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.5s ease';
-            
-            // Trigger animation
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 100);
-        }, index * 100);
-    });
-    
-    // Add hover effects to action cards
-    const actionCards = document.querySelectorAll('.action-card');
-    actionCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(-2px)';
-        });
-    });
-});
-</script>
-{% endblock %} 

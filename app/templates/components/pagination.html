@@ -4,40 +4,40 @@
     <div class="text-muted">
         Showing {{ ((page - 1) * per_page) + 1 }} - {{ [page * per_page, total]|min }} of {{ total }} items
     </div>
-    
+
     <ul class="pagination mb-0">
         <!-- First Page -->
         {% if page > 1 %}
             <li class="page-item">
-                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=1) }}" 
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=1) }}"
                    aria-label="First">
-                    <i class="bi bi-chevron-double-left"></i>
+                    <i class="ti ti-chevrons-left"></i>
                 </a>
             </li>
         {% else %}
             <li class="page-item disabled">
-                <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+                <span class="page-link"><i class="ti ti-chevrons-left"></i></span>
             </li>
         {% endif %}
-        
+
         <!-- Previous Page -->
         {% if page > 1 %}
             <li class="page-item">
-                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page-1) }}" 
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page-1) }}"
                    aria-label="Previous">
-                    <i class="bi bi-chevron-left"></i>
+                    <i class="ti ti-chevron-left"></i>
                 </a>
             </li>
         {% else %}
             <li class="page-item disabled">
-                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                <span class="page-link"><i class="ti ti-chevron-left"></i></span>
             </li>
         {% endif %}
-        
+
         <!-- Page Numbers -->
         {% set start_page = [1, page - 2]|max %}
         {% set end_page = [total_pages, page + 2]|min %}
-        
+
         {% if start_page > 1 %}
             <li class="page-item">
                 <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=1) }}">1</a>
@@ -48,7 +48,7 @@
                 </li>
             {% endif %}
         {% endif %}
-        
+
         {% for page_num in range(start_page, end_page + 1) %}
             {% if page_num == page %}
                 <li class="page-item active">
@@ -60,7 +60,7 @@
                 </li>
             {% endif %}
         {% endfor %}
-        
+
         {% if end_page < total_pages %}
             {% if end_page < total_pages - 1 %}
                 <li class="page-item disabled">
@@ -71,34 +71,34 @@
                 <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=total_pages) }}">{{ total_pages }}</a>
             </li>
         {% endif %}
-        
+
         <!-- Next Page -->
         {% if page < total_pages %}
             <li class="page-item">
-                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page+1) }}" 
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=page+1) }}"
                    aria-label="Next">
-                    <i class="bi bi-chevron-right"></i>
+                    <i class="ti ti-chevron-right"></i>
                 </a>
             </li>
         {% else %}
             <li class="page-item disabled">
-                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                <span class="page-link"><i class="ti ti-chevron-right"></i></span>
             </li>
         {% endif %}
-        
+
         <!-- Last Page -->
         {% if page < total_pages %}
             <li class="page-item">
-                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=total_pages) }}" 
+                <a class="page-link" href="{{ request.path }}?{{ request.args.to_dict()|urlencode_filter(page=total_pages) }}"
                    aria-label="Last">
-                    <i class="bi bi-chevron-double-right"></i>
+                    <i class="ti ti-chevrons-right"></i>
                 </a>
             </li>
         {% else %}
             <li class="page-item disabled">
-                <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
+                <span class="page-link"><i class="ti ti-chevrons-right"></i></span>
             </li>
         {% endif %}
     </ul>
 </nav>
-{% endif %} 
+{% endif %}

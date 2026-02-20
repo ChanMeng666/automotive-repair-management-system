@@ -17,7 +17,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
-            <i data-lucide="file-text" class="text-primary" style="width: 28px; height: 28px;"></i>
+            <i class="ti ti-file-text text-primary"></i>
             Job #{{ data.job_id }} Details
         </h1>
         <p class="text-muted mb-0">View job information, services, and parts</p>
@@ -25,16 +25,16 @@
     <div class="d-flex gap-2">
         {% if not data.completed %}
         <a href="{{ url_for('technician.modify_job', job_id=data.job_id) }}" class="btn btn-accent">
-            <i data-lucide="pencil" class="me-2" style="width: 16px; height: 16px;"></i>Edit Job
+            <i class="ti ti-pencil me-2"></i>Edit Job
         </a>
         <form action="{{ url_for('technician.complete_job', job_id=data.job_id) }}" method="POST" class="d-inline">
             <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to mark this job as completed? This action cannot be undone.')">
-                <i data-lucide="check-circle" class="me-2" style="width: 16px; height: 16px;"></i>Mark Complete
+                <i class="ti ti-circle-check me-2"></i>Mark Complete
             </button>
         </form>
         {% endif %}
         <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
-            <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Back to Jobs
+            <i class="ti ti-arrow-left me-2"></i>Back to Jobs
         </a>
     </div>
 </div>
@@ -44,17 +44,17 @@
     <div class="col-12">
         {% if data.completed and data.paid %}
         <div class="alert alert-success d-flex align-items-center gap-2 mb-0" role="alert">
-            <i data-lucide="check-circle" style="width: 20px; height: 20px;"></i>
+            <i class="ti ti-circle-check"></i>
             <strong>Completed and Paid</strong> -- This job has been completed and payment has been received.
         </div>
         {% elif data.completed %}
         <div class="alert alert-info d-flex align-items-center gap-2 mb-0" role="alert">
-            <i data-lucide="check-circle" style="width: 20px; height: 20px;"></i>
+            <i class="ti ti-circle-check"></i>
             <strong>Completed</strong> -- This job has been marked as completed. Awaiting payment.
         </div>
         {% else %}
         <div class="alert alert-warning d-flex align-items-center gap-2 mb-0" role="alert">
-            <i data-lucide="clock" style="width: 20px; height: 20px;"></i>
+            <i class="ti ti-clock"></i>
             <strong>In Progress</strong> -- This job is currently active.
         </div>
         {% endif %}
@@ -64,17 +64,17 @@
 <div class="row">
     <!-- Customer Information -->
     <div class="col-lg-4 mb-4">
-        <div class="table-container h-100">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-user me-2"></i>
                     Customer Information
                 </h3>
             </div>
-            <div class="p-4">
+            <div class="card-body">
                 <div class="d-flex align-items-center mb-4">
                     <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3 d-flex align-items-center justify-content-center">
-                        <i data-lucide="user" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        <i class="ti ti-user text-primary"></i>
                     </div>
                     <div>
                         <div class="fw-bold fs-5">{{ data.first_name }} {{ data.family_name }}</div>
@@ -84,7 +84,7 @@
 
                 {% if data.email %}
                 <div class="d-flex align-items-center mb-3">
-                    <i data-lucide="mail" class="text-muted me-3" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-mail text-muted me-3"></i>
                     <div>
                         <small class="text-muted d-block">Email</small>
                         <span class="fw-medium">{{ data.email }}</span>
@@ -94,7 +94,7 @@
 
                 {% if data.phone %}
                 <div class="d-flex align-items-center mb-3">
-                    <i data-lucide="phone" class="text-muted me-3" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-phone text-muted me-3"></i>
                     <div>
                         <small class="text-muted d-block">Phone</small>
                         <span class="fw-medium">{{ data.phone }}</span>
@@ -105,7 +105,7 @@
                 <hr>
 
                 <div class="d-flex align-items-center mb-3">
-                    <i data-lucide="calendar" class="text-muted me-3" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-calendar text-muted me-3"></i>
                     <div>
                         <small class="text-muted d-block">Job Date</small>
                         <span class="fw-medium">{{ data.job_date.strftime('%b %d, %Y') if data.job_date else 'N/A' }}</span>
@@ -113,22 +113,22 @@
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <i data-lucide="tag" class="text-muted me-3" style="width: 18px; height: 18px;"></i>
+                    <i class="ti ti-tag text-muted me-3"></i>
                     <div>
                         <small class="text-muted d-block">Status</small>
                         {% if data.completed %}
-                            <span class="status-badge status-badge-success">
-                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                            <span class="badge bg-success">
+                                <i class="ti ti-circle-check me-1"></i>
                                 Completed
                             </span>
                         {% elif data.paid %}
-                            <span class="status-badge status-badge-success">
-                                <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
+                            <span class="badge bg-success">
+                                <i class="ti ti-credit-card me-1"></i>
                                 Paid
                             </span>
                         {% else %}
-                            <span class="status-badge status-badge-warning">
-                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                            <span class="badge bg-warning">
+                                <i class="ti ti-clock me-1"></i>
                                 In Progress
                             </span>
                         {% endif %}
@@ -141,17 +141,17 @@
     <!-- Services & Parts -->
     <div class="col-lg-8 mb-4">
         <!-- Services Table -->
-        <div class="table-container mb-4">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="wrench" style="width: 20px; height: 20px;"></i>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-tool me-2"></i>
                     Services
                 </h3>
             </div>
 
             {% if services %}
             <div class="table-responsive">
-                <table class="table">
+                <table class="table table-vcenter card-table">
                     <thead>
                         <tr>
                             <th>Service</th>
@@ -184,28 +184,26 @@
                 </table>
             </div>
             {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="wrench"></i>
-                </div>
-                <div class="empty-state-title">No Services</div>
-                <div class="empty-state-description">No services have been added to this job.</div>
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-tool"></i></div>
+                <p class="empty-title">No Services</p>
+                <p class="empty-subtitle text-secondary">No services have been added to this job.</p>
             </div>
             {% endif %}
         </div>
 
         <!-- Parts Table -->
-        <div class="table-container mb-4">
-            <div class="table-header">
-                <h3 class="table-title">
-                    <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="ti ti-package me-2"></i>
                     Parts
                 </h3>
             </div>
 
             {% if parts %}
             <div class="table-responsive">
-                <table class="table">
+                <table class="table table-vcenter card-table">
                     <thead>
                         <tr>
                             <th>Part</th>
@@ -238,19 +236,17 @@
                 </table>
             </div>
             {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i data-lucide="package"></i>
-                </div>
-                <div class="empty-state-title">No Parts</div>
-                <div class="empty-state-description">No parts have been added to this job.</div>
+            <div class="empty">
+                <div class="empty-icon"><i class="ti ti-package"></i></div>
+                <p class="empty-title">No Parts</p>
+                <p class="empty-subtitle text-secondary">No parts have been added to this job.</p>
             </div>
             {% endif %}
         </div>
 
         <!-- Total Cost Summary -->
-        <div class="table-container">
-            <div class="p-4">
+        <div class="card">
+            <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h4 class="fw-bold mb-1">Total Cost</h4>
@@ -260,13 +256,13 @@
                         <span class="fs-2 fw-bold text-success">${{ "%.2f"|format(data.total_cost|float) }}</span>
                         <div class="mt-1">
                             {% if data.paid %}
-                                <span class="status-badge status-badge-success">
-                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                <span class="badge bg-success">
+                                    <i class="ti ti-circle-check me-1"></i>
                                     Paid
                                 </span>
                             {% else %}
-                                <span class="status-badge status-badge-warning">
-                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                <span class="badge bg-warning">
+                                    <i class="ti ti-clock me-1"></i>
                                     Unpaid
                                 </span>
                             {% endif %}
