@@ -2,9 +2,13 @@
 Seed Data Script
 Creates demo data for development and testing.
 Usage: python scripts/seed_data.py
+
+Set SEED_ADMIN_PASSWORD and SEED_TECH_PASSWORD environment variables
+to specify custom passwords. Random passwords are generated if not set.
 """
 import sys
 import os
+import secrets
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -37,26 +41,29 @@ def seed():
             return
 
         # --- Users ---
+        admin_password = os.environ.get('SEED_ADMIN_PASSWORD') or secrets.token_urlsafe(16)
+        tech_password = os.environ.get('SEED_TECH_PASSWORD') or secrets.token_urlsafe(16)
+
         admin_user = User(
             username='admin',
             email='admin@demo.local',
             is_superadmin=False,
         )
-        admin_user.set_password('admin123')
+        admin_user.set_password(admin_password)
         db.session.add(admin_user)
 
         tech_user = User(
             username='tech1',
             email='tech1@demo.local',
         )
-        tech_user.set_password('tech123')
+        tech_user.set_password(tech_password)
         db.session.add(tech_user)
 
         tech2_user = User(
             username='tech2',
             email='tech2@demo.local',
         )
-        tech2_user.set_password('tech123')
+        tech2_user.set_password(tech_password)
         db.session.add(tech2_user)
 
         db.session.flush()
@@ -235,8 +242,9 @@ def seed():
 
         db.session.commit()
         print("\nSeed data created successfully!")
-        print(f"  Login: admin / admin123 (owner)")
-        print(f"  Login: tech1 / tech123 (technician)")
+        print(f"  Login: admin / {admin_password} (owner)")
+        print(f"  Login: tech1 / {tech_password} (technician)")
+        print(f"  Login: tech2 / {tech_password} (technician)")
         print(f"  Org: Joe's Auto Repair (slug: joes-auto-repair)")
 
 
