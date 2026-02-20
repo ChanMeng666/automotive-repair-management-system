@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>{% block title %}Selwyn Panel Beaters Online{% endblock %}</title>
+    <title>{% block title %}RepairOS{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Professional automotive repair management system">
     
@@ -179,8 +179,8 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}">
-                <i class="bi bi-tools me-2 text-primary"></i>
-                <span>Selwyn Panel Beaters</span>
+                <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 30px; width: auto; margin-right: 8px;">
+                <span>RepairOS</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -220,13 +220,13 @@
                         <div class="hero-content">
                             <!-- Company Logo -->
                             <div class="text-center text-lg-start mb-4">
-                                <img src="{{ url_for('static', filename='../public/selwyn-panel-beaters-online.svg') }}" 
-                                     alt="Selwyn Panel Beaters" class="company-logo">
+                                <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}"
+                                     alt="RepairOS" class="company-logo">
                             </div>
-                            
+
                             <h1 class="display-4 fw-bold mb-4">
-                                Welcome to 
-                                <span class="text-gradient">Selwyn Panel Beaters</span>
+                                Welcome to
+                                <span class="text-gradient">RepairOS</span>
                             </h1>
                             
                             <p class="lead mb-4 text-muted">
@@ -337,12 +337,12 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h6 class="fw-bold mb-2">Selwyn Panel Beaters Online</h6>
-                    <p class="text-muted mb-0">Professional automotive repair management system</p>
+                    <h6 class="fw-bold mb-2">RepairOS</h6>
+                    <p class="text-muted mb-0">Professional automotive repair management platform</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="text-muted mb-0">
-                        &copy; 2024 Selwyn Panel Beaters. All rights reserved.
+                        &copy; 2024 RepairOS. All rights reserved.
                     </p>
                 </div>
             </div>

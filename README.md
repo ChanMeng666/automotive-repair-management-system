@@ -1,8 +1,8 @@
 <div align="center"><a name="readme-top"></a>
 
-[![Project Banner](./public/selwyn-panel-beaters-online.svg)](#)
+[![Project Banner](./public/RepairOS-logo.svg)](#)
 
-# Selwyn Panel Beaters Online Service<br/><h3>Multi-Tenant Automotive Repair Management Platform</h3>
+# RepairOS<br/><h3>Multi-Tenant Automotive Repair Management Platform</h3>
 
 A production-ready SaaS platform for automotive repair shop management, featuring multi-tenant architecture with shared-schema isolation, role-based access control, Stripe subscription billing, and a "Precision Industrial" design system.<br/>
 Built with **Flask 3.1**, **SQLAlchemy 2.0**, **Neon PostgreSQL**, **Google OAuth**, and **Bootstrap 5.3**.<br/>
@@ -103,7 +103,7 @@ One-click deployment to **Heroku** with cloud-native database on **Neon**.
 
 <h4>About This Project</h4>
 
-Selwyn Panel Beaters Online Service is a production-grade multi-tenant SaaS platform purpose-built for automotive repair shops. It enables repair businesses to manage work orders, customers, billing, inventory, and team members through a single unified platform with complete tenant data isolation.
+RepairOS is a production-grade multi-tenant SaaS platform purpose-built for automotive repair shops. It enables repair businesses to manage work orders, customers, billing, inventory, and team members through a single unified platform with complete tenant data isolation.
 
 The platform supports multiple organizations on a shared database schema using `tenant_id` discriminator columns, with automatic query filtering via custom SQLAlchemy mixins. Each organization gets its own isolated workspace with configurable service catalogs, parts inventory, and team roles.
 

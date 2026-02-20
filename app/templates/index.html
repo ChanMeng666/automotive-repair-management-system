@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Dashboard - AutoRepair Pro{% endblock %}
+{% block title %}Dashboard - RepairOS{% endblock %}
 
 {% block breadcrumb_items %}
     <li class="breadcrumb-item active">Dashboard</li>
@@ -15,9 +15,9 @@
                 <div class="row w-100 align-items-center">
                     <div class="col-lg-8">
                         <div class="d-flex align-items-center mb-3">
-                            <i data-lucide="settings-2" class="me-4 opacity-75" style="width: 48px; height: 48px;"></i>
+                            <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 48px; width: auto; margin-right: 1rem; opacity: 0.9;">
                             <div>
-                                <h1 class="display-5 fw-bold mb-2 text-white">AutoRepair Pro</h1>
+                                <h1 class="display-5 fw-bold mb-2 text-white">RepairOS</h1>
                                 <p class="lead mb-0 opacity-90">Professional Automotive Repair Management System</p>
                             </div>
                         </div>
@@ -404,9 +404,9 @@
 <div class="row">
     <div class="col-lg-8 mx-auto text-center">
         <div class="mb-5">
-            <h2 class="display-6 fw-bold mb-4">Streamline Your Auto Repair Business</h2>
+            <h2 class="display-6 fw-bold mb-4">Streamline Your Repair Business</h2>
             <p class="lead mb-4">
-                AutoRepair Pro helps you manage customer relationships, track work orders,
+                RepairOS helps you manage customer relationships, track work orders,
                 process payments, and grow your automotive repair business with professional tools.
             </p>
         </div>

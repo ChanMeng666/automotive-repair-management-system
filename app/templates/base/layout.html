@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Automotive Repair Management System - Professional repair order and customer management platform">
-    <meta name="author" content="Automotive Repair Management System">
+    <meta name="description" content="RepairOS - Professional automotive repair shop management platform">
+    <meta name="author" content="RepairOS">
     
     <!-- Neon Auth Configuration -->
     {% if config and config.get('NEON_AUTH_URL') %}
     <meta name="neon-auth-url" content="{{ config.get('NEON_AUTH_URL') }}">
     {% endif %}
     
-    <title>{% block title %}Automotive Repair Management System{% endblock %}</title>
+    <title>{% block title %}RepairOS{% endblock %}</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
@@ -43,8 +43,8 @@
             <div class="container-fluid">
                 <!-- Brand Logo -->
                 <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                    <i data-lucide="settings-2" class="brand-icon"></i>
-                    <span>AutoRepair Pro{% if current_tenant %} &middot; {{ current_tenant.name }}{% endif %}</span>
+                    <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" class="brand-logo" style="height: 32px; width: auto; margin-right: 8px;">
+                    <span>RepairOS{% if current_tenant %} &middot; {{ current_tenant.name }}{% endif %}</span>
                 </a>
 
                 {% if user_tenants and user_tenants|length > 1 %}
@@ -325,8 +325,8 @@
         <div class="container-fluid">
             <div class="footer-content">
                 <div class="footer-text">
-                    <i data-lucide="settings-2" class="footer-icon me-2"></i>
-                    AutoRepair Pro &copy; {{ moment().year if moment else '2024' }}. All rights reserved.
+                    <img src="{{ url_for('static', filename='../public/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 20px; width: auto; margin-right: 6px;">
+                    RepairOS &copy; {{ moment().year if moment else '2024' }}. All rights reserved.
                 </div>
                 <div class="footer-links">
                     <a href="{{ url_for('main.help_page') }}" class="footer-link">

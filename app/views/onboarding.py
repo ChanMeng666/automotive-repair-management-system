@@ -84,7 +84,7 @@ def save_step(step_number):
             _save_step3(tenant_id)
         elif step_number == 4:
             _save_step4(tenant_id)
-            flash('Setup complete! Welcome to AutoRepair Pro.', 'success')
+            flash('Setup complete! Welcome to RepairOS.', 'success')
             return redirect(url_for('onboarding.complete'))
 
         # Move to next step

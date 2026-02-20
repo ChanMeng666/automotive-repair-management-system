@@ -1,4 +1,4 @@
-// AutoRepair Pro - Main JavaScript
+// RepairOS - Main JavaScript
 // ================================
 // Precision Industrial Theme
 
@@ -15,7 +15,7 @@ const DesignColors = {
 };
 
 // Global application state
-const AutoRepairApp = {
+const RepairOSApp = {
     currentUser: null,
     notifications: [],
     settings: {},
@@ -721,7 +721,7 @@ const AutoRepairApp = {
     
     // User preferences
     loadUserPreferences() {
-        const savedPrefs = localStorage.getItem('autorepair_preferences');
+        const savedPrefs = localStorage.getItem('repairos_preferences');
         if (savedPrefs) {
             this.settings = JSON.parse(savedPrefs);
             this.applyUserPreferences();
@@ -729,7 +729,7 @@ const AutoRepairApp = {
     },
     
     saveUserPreferences() {
-        localStorage.setItem('autorepair_preferences', JSON.stringify(this.settings));
+        localStorage.setItem('repairos_preferences', JSON.stringify(this.settings));
     },
     
     applyUserPreferences() {
@@ -832,7 +832,7 @@ const AutoRepairApp = {
 };
 
 // Initialize the application
-AutoRepairApp.init();
+RepairOSApp.init();
 
 // Expose to global scope for debugging
-window.AutoRepairApp = AutoRepairApp; 
+window.RepairOSApp = RepairOSApp; 

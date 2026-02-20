@@ -25,8 +25,8 @@ def main():
     debug = app.config.get('DEBUG', False)
 
     print("\n" + "=" * 60)
-    print("Selwyn Panel Beaters Online Service")
-    print("Automotive Repair Management System")
+    print("RepairOS")
+    print("Automotive Repair Management Platform")
     print("=" * 60)
     print(f"Application URL: http://{host}:{port}")
     print(f"Debug Mode: {'Enabled' if debug else 'Disabled'}")
