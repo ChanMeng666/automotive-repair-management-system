@@ -985,8 +985,8 @@ git push heroku main
 **4. Google OAuth for Production**
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Add authorized redirect URI: `https://your-app-name.herokuapp.com/auth/google/callback`
-3. Add authorized JavaScript origin: `https://your-app-name.herokuapp.com`
+2. Add authorized redirect URI: `https://repairos.chanmeng.org/auth/google/callback`
+3. Add authorized JavaScript origin: `https://repairos.chanmeng.org`
 
 ### Database Migrations
 
@@ -1326,7 +1326,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 [back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-151515?style=flat-square
 
 <!-- Project Links -->
-[project-link]: https://automotive-repair-system-d51413a4c459.herokuapp.com
+[project-link]: https://repairos.chanmeng.org
 [github-issues-link]: https://github.com/ChanMeng666/automotive-repair-management-system/issues
 [pr-welcome-link]: https://github.com/ChanMeng666/automotive-repair-management-system/pulls
 [license-link]: ./LICENSE

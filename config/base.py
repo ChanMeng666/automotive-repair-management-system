@@ -96,6 +96,7 @@ class ProductionConfig(BaseConfig):
     ENV = 'production'
 
     SESSION_COOKIE_SECURE = True
+    PREFERRED_URL_SCHEME = 'https'
     DB_SSLMODE = os.environ.get('DB_SSLMODE', 'require')
 
     @classmethod

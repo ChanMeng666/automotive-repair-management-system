@@ -105,7 +105,7 @@ heroku open
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 2. Create OAuth 2.0 Client ID
-3. Set redirect URI: `https://your-app.herokuapp.com/auth/google/callback`
+3. Set redirect URI: `https://repairos.chanmeng.org/auth/google/callback`
 
 ### 2. Configure Heroku
 

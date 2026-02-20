@@ -3,6 +3,7 @@ Automotive Repair Management System
 Flask Application Factory and Initialization
 """
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from config.base import get_config
 from app.extensions import db
 from app.utils.error_handler import ErrorHandler, LoggerConfig
@@ -13,6 +14,10 @@ import os
 def create_app(config_name=None):
     """Application Factory Function"""
     app = Flask(__name__)
+
+    # Trust reverse proxy headers (Heroku/Cloudflare)
+    # This ensures url_for(_external=True) generates correct https:// URLs
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # Load configuration
     if config_name is None:

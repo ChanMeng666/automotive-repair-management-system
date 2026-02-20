@@ -93,12 +93,12 @@ Google OAuth provides secure "Sign in with Google" functionality.
 
 **Authorized JavaScript origins:**
 ```
-https://your-app-name.herokuapp.com
+https://repairos.chanmeng.org
 ```
 
 **Authorized redirect URIs:**
 ```
-https://your-app-name.herokuapp.com/auth/google/callback
+https://repairos.chanmeng.org/auth/google/callback
 ```
 
 ### Step 3: Set Credentials in Heroku
@@ -249,7 +249,7 @@ heroku restart
 1. Verify Client ID and Secret are set
 2. Check redirect URI matches exactly:
    ```
-   https://your-app.herokuapp.com/auth/google/callback
+   https://repairos.chanmeng.org/auth/google/callback
    ```
 3. Ensure domain is in authorized origins
 4. Publish OAuth app for public access
@@ -305,17 +305,19 @@ heroku rollback v5
 
 ## Custom Domain
 
+The application is deployed at **https://repairos.chanmeng.org** using a custom domain configured via Cloudflare DNS.
+
 ```bash
 # Add domain
-heroku domains:add www.yourdomain.com
+heroku domains:add repairos.chanmeng.org
 
 # Get DNS target
 heroku domains
 
-# Configure DNS: CNAME record to the target
+# Configure DNS in Cloudflare:
+# CNAME record: repairos -> <heroku-dns-target>.herokudns.com (Proxied)
 
-# Enable SSL (automatic with paid dynos)
-heroku certs:auto:enable
+# SSL is handled by Cloudflare (Full mode recommended)
 ```
 
 ---
@@ -355,12 +357,12 @@ heroku certs:auto:enable
 ## Architecture
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│    Browser      │────>│   Heroku App    │
-│                 │     │   (Flask +      │
-│                 │<────│    Gunicorn)    │
-└─────────────────┘     └────────┬────────┘
-                                 │
+┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
+│    Browser      │────>│  Cloudflare  │────>│   Heroku App    │
+│                 │     │  (DNS/SSL/   │     │   (Flask +      │
+│ repairos.      │<────│   Proxy)     │<────│    Gunicorn)    │
+│ chanmeng.org   │     └──────────────┘     └────────┬────────┘
+└─────────────────┘                                  │
         ┌────────────────────────┼────────────────────────┐
         │                        │                        │
         v                        v                        v
