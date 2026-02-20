@@ -1,6 +1,6 @@
 """
-主要路由蓝图
-包含首页、登录、公共功能等路由
+Main Routes Blueprint
+Contains home page, login, public functionality routes
 """
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, session
 from datetime import date
@@ -13,11 +13,11 @@ from app.utils.validators import validate_customer_data, sanitize_input
 from app.utils.security import csrf_protect, require_auth, InputSanitizer, SQLInjectionProtection
 from app.utils.error_handler import ValidationError, BusinessLogicError
 
-# 创建蓝图
+# Create blueprint
 main_bp = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
 
-# 初始化服务
+# Initialize services
 customer_service = CustomerService()
 job_service = JobService()
 billing_service = BillingService()

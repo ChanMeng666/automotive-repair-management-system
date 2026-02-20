@@ -1,0 +1,176 @@
+{% extends "base/layout.html" %}
+{% block title %}Parts Catalog - Administrator Portal{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Parts Catalog</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="puzzle" class="text-warning" style="width: 28px; height: 28px;"></i>
+                        Parts Catalog
+                    </h1>
+                    <p class="text-muted mb-0">Manage your parts inventory catalog</p>
+                </div>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPartModal">
+                    <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                    Add Part
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Parts Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-container card--status card--status-active">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="package" style="width: 20px; height: 20px;"></i>
+                        Parts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Cost</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for part in parts|default([]) %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i data-lucide="puzzle" class="text-warning me-2" style="width: 18px; height: 18px;"></i>
+                                            <strong>{{ part.part_name|default(part.name) }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code>{{ part.sku|default('N/A') }}</code>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ part.category|default('General') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">${{ "%.2f"|format(part.cost|default(0)|float) }}</span>
+                                    </td>
+                                    <td>{{ part.supplier|default('N/A') }}</td>
+                                    <td>
+                                        {% if part.active|default(true) %}
+                                        <span class="status-badge status-badge-success">
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                            Active
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge status-badge-error">
+                                            <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                            Inactive
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            <form method="post" action="#" class="d-inline">
+                                                <input type="hidden" name="part_id" value="{{ part.id|default(part.part_id|default('')) }}">
+                                                <input type="hidden" name="action" value="toggle">
+                                                <button type="submit" class="btn btn-sm btn-outline-{% if part.active|default(true) %}warning{% else %}success{% endif %}" title="{% if part.active|default(true) %}Deactivate{% else %}Activate{% endif %}">
+                                                    <i data-lucide="{% if part.active|default(true) %}pause{% else %}play{% endif %}" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i data-lucide="puzzle" style="width: 48px; height: 48px;" class="mb-2 d-block mx-auto"></i>
+                                        No parts configured. Add your first part above.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Part Modal -->
+<div class="modal fade" id="addPartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-top: 4px solid var(--warning);">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i data-lucide="plus-circle" style="width: 20px; height: 20px;"></i>
+                    Add New Part
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="#">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Part Name *</label>
+                            <input type="text" class="form-control" name="part_name" required placeholder="e.g. Brake Pads">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SKU</label>
+                            <input type="text" class="form-control" name="sku" placeholder="e.g. BP-1234">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" name="category">
+                                <option value="General">General</option>
+                                <option value="Engine">Engine</option>
+                                <option value="Brakes">Brakes</option>
+                                <option value="Suspension">Suspension</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Body">Body</option>
+                                <option value="Fluids">Fluids</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Cost *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" name="cost" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Supplier</label>
+                            <input type="text" class="form-control" name="supplier" placeholder="Supplier name">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                        Add Part
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

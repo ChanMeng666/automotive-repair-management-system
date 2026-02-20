@@ -1,0 +1,246 @@
+{% extends "base/layout.html" %}
+{% block title %}Pricing Plans - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Plans</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="h2 mb-2 d-flex align-items-center justify-content-center gap-2">
+                <i data-lucide="crown" class="text-warning" style="width: 32px; height: 32px;"></i>
+                Choose Your Plan
+            </h1>
+            <p class="text-muted">Select the plan that best fits your shop's needs</p>
+        </div>
+    </div>
+
+    <!-- Plan Cards -->
+    <div class="row g-4 mb-5 justify-content-center">
+        <!-- Free Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="table-container h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="rounded-circle bg-secondary bg-opacity-10 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i data-lucide="user" class="text-secondary" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <h4 class="fw-bold">Free</h4>
+                    <div class="h2 fw-bold mb-1">$0<small class="fs-6 fw-normal text-muted">/mo</small></div>
+                    <p class="text-muted mb-4">Get started with basic features</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Up to 5 customers
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            10 jobs per month
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Basic reporting
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2 text-muted">
+                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            Team members
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2 text-muted">
+                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            Inventory management
+                        </li>
+                    </ul>
+                    <a href="#" class="btn btn-outline-secondary w-100">Current Plan</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Starter Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="table-container h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="rounded-circle bg-primary bg-opacity-10 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i data-lucide="zap" class="text-primary" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <h4 class="fw-bold">Starter</h4>
+                    <div class="h2 fw-bold mb-1">$29<small class="fs-6 fw-normal text-muted">/mo</small></div>
+                    <p class="text-muted mb-4">For small repair shops</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Up to 50 customers
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Unlimited jobs
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Full reporting
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            3 team members
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2 text-muted">
+                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                            Inventory management
+                        </li>
+                    </ul>
+                    <a href="#" class="btn btn-primary w-100">Upgrade</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="table-container h-100" style="border-top: 3px solid var(--accent);">
+                <div class="card-body p-4 text-center">
+                    <span class="badge bg-warning text-dark mb-2">Most Popular</span>
+                    <div class="rounded-circle bg-warning bg-opacity-10 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i data-lucide="award" class="text-warning" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <h4 class="fw-bold">Professional</h4>
+                    <div class="h2 fw-bold mb-1">$79<small class="fs-6 fw-normal text-muted">/mo</small></div>
+                    <p class="text-muted mb-4">For growing businesses</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Unlimited customers
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Unlimited jobs
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Advanced analytics
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            10 team members
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Inventory management
+                        </li>
+                    </ul>
+                    <a href="#" class="btn btn-accent w-100">Upgrade</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="col-lg-3 col-md-6">
+            <div class="table-container h-100">
+                <div class="card-body p-4 text-center">
+                    <div class="rounded-circle bg-dark bg-opacity-10 mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i data-lucide="building" class="text-dark" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <h4 class="fw-bold">Enterprise</h4>
+                    <div class="h2 fw-bold mb-1">$199<small class="fs-6 fw-normal text-muted">/mo</small></div>
+                    <p class="text-muted mb-4">For multi-location shops</p>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Everything in Professional
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Unlimited team members
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Multi-location support
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Priority support
+                        </li>
+                        <li class="py-1 d-flex align-items-center gap-2">
+                            <i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i>
+                            Custom integrations
+                        </li>
+                    </ul>
+                    <a href="#" class="btn btn-dark w-100">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Comparison Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-container">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="list-checks" style="width: 20px; height: 20px;"></i>
+                        Feature Comparison
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Feature</th>
+                                    <th class="text-center">Free</th>
+                                    <th class="text-center">Starter</th>
+                                    <th class="text-center">Professional</th>
+                                    <th class="text-center">Enterprise</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Customers</td>
+                                    <td class="text-center">5</td>
+                                    <td class="text-center">50</td>
+                                    <td class="text-center">Unlimited</td>
+                                    <td class="text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td>Jobs per month</td>
+                                    <td class="text-center">10</td>
+                                    <td class="text-center">Unlimited</td>
+                                    <td class="text-center">Unlimited</td>
+                                    <td class="text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td>Team members</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-center">3</td>
+                                    <td class="text-center">10</td>
+                                    <td class="text-center">Unlimited</td>
+                                </tr>
+                                <tr>
+                                    <td>Reporting</td>
+                                    <td class="text-center">Basic</td>
+                                    <td class="text-center">Full</td>
+                                    <td class="text-center">Advanced</td>
+                                    <td class="text-center">Advanced</td>
+                                </tr>
+                                <tr>
+                                    <td>Inventory management</td>
+                                    <td class="text-center"><i data-lucide="x" class="text-muted" style="width: 16px; height: 16px;"></i></td>
+                                    <td class="text-center"><i data-lucide="x" class="text-muted" style="width: 16px; height: 16px;"></i></td>
+                                    <td class="text-center"><i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i></td>
+                                    <td class="text-center"><i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>Priority support</td>
+                                    <td class="text-center"><i data-lucide="x" class="text-muted" style="width: 16px; height: 16px;"></i></td>
+                                    <td class="text-center"><i data-lucide="x" class="text-muted" style="width: 16px; height: 16px;"></i></td>
+                                    <td class="text-center"><i data-lucide="x" class="text-muted" style="width: 16px; height: 16px;"></i></td>
+                                    <td class="text-center"><i data-lucide="check" class="text-success" style="width: 16px; height: 16px;"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

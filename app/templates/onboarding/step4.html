@@ -1,0 +1,168 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Invite Team Members - Step 4 of 4 - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.onboarding-bg {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #e8eef5 100%);
+    min-height: 80vh;
+}
+
+.progress-bar-custom {
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+}
+
+.progress-bar-custom .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), #f59e0b);
+    transition: width 0.5s ease;
+}
+
+.step-indicator {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.invite-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #fff;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-bg py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6">
+                <!-- Step Indicator -->
+                <div class="text-center mb-4">
+                    <span class="step-indicator">Step 4 of 4</span>
+                    <div class="progress-bar-custom mt-2">
+                        <div class="progress-fill" style="width: 90%;"></div>
+                    </div>
+                </div>
+
+                <!-- Card -->
+                <div class="card border-0 shadow-lg" style="border-top: 4px solid var(--accent) !important;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                                <i data-lucide="user-plus" class="text-primary" style="width: 36px; height: 36px;"></i>
+                            </div>
+                            <h1 class="h3 fw-bold mb-2">Invite Team Members</h1>
+                            <p class="text-muted">Send invitations to your team. You can skip this and invite later.</p>
+                        </div>
+
+                        <!-- Invite Form -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3 d-flex align-items-center">
+                                    <i data-lucide="send" class="me-2 text-accent" style="width: 18px; height: 18px;"></i>
+                                    Send Invitation
+                                </h6>
+                                <form method="POST" action="" id="invite-form">
+                                    <input type="hidden" name="action" value="invite">
+                                    <div class="row g-3">
+                                        <div class="col-md-7">
+                                            <label for="invite_email" class="form-label">Email Address</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white">
+                                                    <i data-lucide="mail" class="text-muted" style="width: 18px; height: 18px;"></i>
+                                                </span>
+                                                <input type="email" class="form-control" id="invite_email" name="invite_email" placeholder="team@example.com" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label for="invite_role" class="form-label">Role</label>
+                                            <select class="form-select" id="invite_role" name="invite_role" required>
+                                                <option value="">Select role</option>
+                                                <option value="manager">Manager</option>
+                                                <option value="technician">Technician</option>
+                                                <option value="parts_clerk">Parts Clerk</option>
+                                                <option value="administrator">Administrator</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i data-lucide="send" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                Send Invite
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Pending Invites -->
+                        {% if invites %}
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3 d-flex align-items-center">
+                                <i data-lucide="clock" class="me-2 text-muted" style="width: 18px; height: 18px;"></i>
+                                Pending Invitations ({{ invites|length }})
+                            </h6>
+                            <div class="d-flex flex-column gap-2">
+                                {% for invite in invites %}
+                                <div class="invite-item d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                            <i data-lucide="user" class="text-primary" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ invite.email }}</div>
+                                            <small class="text-muted">{{ invite.role|title }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
+                                        <form method="POST" action="" class="d-inline">
+                                            <input type="hidden" name="action" value="remove_invite">
+                                            <input type="hidden" name="invite_email" value="{{ invite.email }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel invite">
+                                                <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Navigation -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('onboarding.step3') if url_for('onboarding.step3') is defined else '#' }}" class="btn btn-outline-secondary px-4 py-2">
+                                <i data-lucide="arrow-left" class="me-2" style="width: 18px; height: 18px;"></i>
+                                Back
+                            </a>
+                            <form method="POST" action="">
+                                <input type="hidden" name="action" value="next">
+                                <button type="submit" class="btn btn-accent px-4 py-2">
+                                    Complete Setup
+                                    <i data-lucide="check" class="ms-2" style="width: 18px; height: 18px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

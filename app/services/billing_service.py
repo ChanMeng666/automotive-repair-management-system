@@ -5,6 +5,7 @@ Business logic for billing and payment operations using SQLAlchemy ORM
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import date
 import logging
+from flask import g
 from app.extensions import db
 from app.models.job import Job
 from app.models.customer import Customer
@@ -15,6 +16,11 @@ class BillingService:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+
+    @staticmethod
+    def _current_tenant_id() -> Optional[int]:
+        """Get current tenant ID from Flask g context"""
+        return getattr(g, 'current_tenant_id', None)
 
     def get_unpaid_bills(self, customer_name: Optional[str] = None) -> List[Job]:
         """
@@ -172,6 +178,11 @@ class BillingService:
         """Get overall billing statistics"""
         try:
             # Get all jobs with costs
+            filters = [Job.total_cost > 0]
+            tenant_id = self._current_tenant_id()
+            if tenant_id:
+                filters.append(Job.tenant_id == tenant_id)
+
             query = db.select(
                 db.func.count(Job.job_id).label('total_bills'),
                 db.func.coalesce(db.func.sum(Job.total_cost), 0).label('total_amount'),
@@ -179,7 +190,7 @@ class BillingService:
                 db.func.coalesce(db.func.sum(db.case((Job.paid == True, Job.total_cost), else_=0)), 0).label('paid_amount'),
                 db.func.count(db.case((Job.paid == False, 1))).label('unpaid_bills'),
                 db.func.coalesce(db.func.sum(db.case((Job.paid == False, Job.total_cost), else_=0)), 0).label('unpaid_amount')
-            ).where(Job.total_cost > 0)
+            ).where(db.and_(*filters))
 
             result = db.session.execute(query).one()
 
@@ -208,6 +219,11 @@ class BillingService:
     def get_customers_with_unpaid_bills(self) -> List[Dict[str, Any]]:
         """Get customers with unpaid bills"""
         try:
+            filters = [Job.paid == False]
+            tenant_id = self._current_tenant_id()
+            if tenant_id:
+                filters.append(Job.tenant_id == tenant_id)
+
             query = db.select(
                 Customer.customer_id,
                 Customer.first_name,
@@ -216,7 +232,7 @@ class BillingService:
                 Customer.phone,
                 db.func.count(Job.job_id).label('unpaid_count'),
                 db.func.coalesce(db.func.sum(Job.total_cost), 0).label('unpaid_amount')
-            ).join(Job).where(Job.paid == False).group_by(
+            ).join(Job).where(db.and_(*filters)).group_by(
                 Customer.customer_id,
                 Customer.first_name,
                 Customer.family_name,

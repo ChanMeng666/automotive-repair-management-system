@@ -1,0 +1,236 @@
+{% extends "base/layout.html" %}
+{% block title %}Admin Dashboard - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="layout-dashboard" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        Admin Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Overview of shop performance and key metrics</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-primary">
+                        <i data-lucide="bar-chart-3" class="me-1" style="width: 16px; height: 16px;"></i>
+                        View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card stat-card--primary">
+            <div class="stat-card-icon text-primary">
+                <i data-lucide="briefcase"></i>
+            </div>
+            <div class="stat-card-value">{{ job_stats.total|default(0) }}</div>
+            <div class="stat-card-label">Total Jobs</div>
+        </div>
+        <div class="stat-card stat-card--success">
+            <div class="stat-card-icon text-success">
+                <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="stat-card-value">${{ "%.2f"|format(billing_stats.total_revenue|default(0)|float) }}</div>
+            <div class="stat-card-label">Revenue</div>
+        </div>
+        <div class="stat-card stat-card--accent">
+            <div class="stat-card-icon text-info">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="stat-card-value">{{ total_customers|default(0) }}</div>
+            <div class="stat-card-label">Customers</div>
+        </div>
+        <div class="stat-card stat-card--warning">
+            <div class="stat-card-icon text-warning">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="stat-card-value">{{ overdue_bills|length if overdue_bills else 0 }}</div>
+            <div class="stat-card-label">Overdue Bills</div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="table-container">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>
+                        Monthly Revenue
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="table-container">
+                <div class="table-header" style="background: var(--info); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="pie-chart" style="width: 20px; height: 20px;"></i>
+                        Job Status
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="statusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Overdue Alerts -->
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="table-container card--status card--status-active">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+                        Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if recent_jobs %}
+                    <div class="list-group list-group-flush">
+                        {% for job in recent_jobs[:5] %}
+                        <div class="list-group-item d-flex align-items-center px-0">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i data-lucide="wrench" class="text-primary" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">Job #{{ job.job_id }}</div>
+                                <small class="text-muted">{{ job.first_name }} {{ job.family_name }} &mdash; {{ job.job_date }}</small>
+                            </div>
+                            <div>
+                                {% if job.completed == 1 %}
+                                <span class="status-badge status-badge-success">
+                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                    Completed
+                                </span>
+                                {% else %}
+                                <span class="status-badge status-badge-warning">
+                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                    In Progress
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i data-lucide="inbox" style="width: 48px; height: 48px;" class="mb-2"></i>
+                        <p class="mb-0">No recent activity</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="table-container card--status card--status-error">
+                <div class="table-header" style="background: var(--danger); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i>
+                        Overdue Alerts
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if overdue_bills %}
+                    <div class="list-group list-group-flush">
+                        {% for bill in overdue_bills[:5] %}
+                        <div class="list-group-item d-flex align-items-center justify-content-between px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-danger bg-opacity-10 p-2 me-3">
+                                    <i data-lucide="alert-circle" class="text-danger" style="width: 18px; height: 18px;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">{{ bill.first_name }} {{ bill.family_name }}</div>
+                                    <small class="text-muted">Job #{{ bill.job_id }}</small>
+                                </div>
+                            </div>
+                            <span class="fw-bold text-danger">${{ "%.2f"|format(bill.total_cost|default(0)|float) }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i data-lucide="check-circle" style="width: 48px; height: 48px;" class="text-success mb-2"></i>
+                        <p class="mb-0">No overdue bills</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Monthly Revenue Bar Chart
+    const revenueCtx = document.getElementById('revenueChart');
+    if (revenueCtx) {
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: {{ billing_stats.monthly_revenue|default([0,0,0,0,0,0,0,0,0,0,0,0])|tojson }},
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: function(v) { return '$' + v; } } }
+                }
+            }
+        });
+    }
+
+    // Job Status Doughnut Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Pending'],
+                datasets: [{
+                    data: [
+                        {{ job_stats.completed|default(0) }},
+                        {{ job_stats.in_progress|default(0) }},
+                        {{ job_stats.pending|default(0) }}
+                    ],
+                    backgroundColor: ['#16a34a', '#f59e0b', '#6b7280'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

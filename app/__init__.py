@@ -48,6 +48,10 @@ def create_app(config_name=None):
     # Register security middleware
     register_security_middleware(app)
 
+    # Register tenant middleware
+    from app.middleware.tenant import init_tenant_middleware
+    init_tenant_middleware(app)
+
     app.logger.info("Application initialization complete")
 
     return app
@@ -55,55 +59,50 @@ def create_app(config_name=None):
 
 def _configure_database(app, config):
     """Configure SQLAlchemy database URI"""
-    # Check for DATABASE_URL first (Neon, Heroku, etc.)
     database_url = os.environ.get('DATABASE_URL')
 
     if database_url:
-        # Handle Heroku's postgres:// vs postgresql:// issue
         if database_url.startswith('postgres://'):
             database_url = database_url.replace('postgres://', 'postgresql://', 1)
         app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    elif app.config.get('SQLALCHEMY_DATABASE_URI'):
+        # Config class already set a URI (e.g. TestingConfig uses sqlite)
+        pass
     else:
-        # Build URI from individual components
         db_user = config.DB_USER
         db_password = config.DB_PASSWORD
         db_host = config.DB_HOST
         db_port = config.DB_PORT
         db_name = config.DB_NAME
-
-        # Build PostgreSQL URI
         app.config['SQLALCHEMY_DATABASE_URI'] = (
             f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
         )
 
-    # SQLAlchemy configuration
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ECHO'] = app.config.get('DEBUG', False)
 
-    # Connection pool settings for Neon/cloud databases
     sslmode = getattr(config, 'DB_SSLMODE', 'require')
     if sslmode and sslmode != 'disable':
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
             'connect_args': {'sslmode': sslmode},
-            'pool_pre_ping': True,  # Verify connections before use
+            'pool_pre_ping': True,
             'pool_size': 5,
             'max_overflow': 10,
-            'pool_recycle': 300,  # Recycle connections every 5 minutes
+            'pool_recycle': 300,
         }
 
 
 def init_extensions(app):
     """Initialize Flask extensions"""
-    # Setup logging system
     LoggerConfig.setup_logging(app)
 
-    # Initialize SQLAlchemy
     db.init_app(app)
 
-    # Create tables in development (in production, use migrations)
     with app.app_context():
-        # Import models to register with SQLAlchemy
-        from app.models import Customer, Job, JobService, JobPart, Service, Part, User
+        from app.models import (
+            Customer, Job, JobService, JobPart, Service, Part, User,
+            Tenant, TenantMembership, Inventory, InventoryTransaction, Subscription
+        )
 
         if app.config.get('ENV') != 'production':
             db.create_all()
@@ -112,7 +111,6 @@ def init_extensions(app):
     from app.services.oauth_service import init_oauth
     init_oauth(app)
 
-    # Initialize error handler
     ErrorHandler(app)
 
 
@@ -126,12 +124,34 @@ def register_blueprints(app):
     app.register_blueprint(technician_bp, url_prefix='/technician')
     app.register_blueprint(administrator_bp, url_prefix='/administrator')
 
-    # Register auth blueprint if it exists
+    # Also register tenant-scoped versions
+    app.register_blueprint(technician_bp, url_prefix='/org/<tenant_slug>/technician',
+                          name='tenant_technician')
+    app.register_blueprint(administrator_bp, url_prefix='/org/<tenant_slug>/administrator',
+                          name='tenant_administrator')
+
+    # Register auth blueprint
     try:
         from app.views.auth import auth_bp
         app.register_blueprint(auth_bp, url_prefix='/auth')
     except ImportError:
-        pass  # Auth blueprint not yet created
+        pass
+
+    # Register billing blueprint
+    try:
+        from app.views.billing import billing_bp
+        app.register_blueprint(billing_bp, url_prefix='/billing')
+        app.register_blueprint(billing_bp, url_prefix='/org/<tenant_slug>/billing',
+                              name='tenant_billing')
+    except ImportError:
+        pass
+
+    # Register onboarding blueprint
+    try:
+        from app.views.onboarding import onboarding_bp
+        app.register_blueprint(onboarding_bp, url_prefix='/onboarding')
+    except ImportError:
+        pass
 
 
 def register_error_handlers(app):

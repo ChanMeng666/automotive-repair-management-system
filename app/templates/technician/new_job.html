@@ -1,0 +1,115 @@
+{% extends "base/layout.html" %}
+
+{% block title %}New Job - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('technician.current_jobs') }}">Current Jobs</a>
+    </li>
+    <li class="breadcrumb-item active">New Job</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
+            <i data-lucide="plus-circle" class="text-primary" style="width: 28px; height: 28px;"></i>
+            Create New Job
+        </h1>
+        <p class="text-muted mb-0">Start a new work order for a customer</p>
+    </div>
+    <div>
+        <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
+            <i data-lucide="arrow-left" class="me-2" style="width: 16px; height: 16px;"></i>Back to Jobs
+        </a>
+    </div>
+</div>
+
+<!-- New Job Form -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i data-lucide="file-plus" style="width: 20px; height: 20px;"></i>
+                    Job Details
+                </h3>
+            </div>
+            <div class="p-4">
+                <form method="POST" action="{{ url_for('technician.new_job') }}" id="newJobForm">
+                    <!-- Customer Selection -->
+                    <div class="mb-4">
+                        <label for="customer_id" class="form-label fw-semibold">
+                            <i data-lucide="user" class="me-1" style="width: 16px; height: 16px; vertical-align: text-top;"></i>
+                            Customer
+                        </label>
+                        <select class="form-select" id="customer_id" name="customer_id" required>
+                            <option value="">Select a customer...</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.customer_id }}">
+                                {{ customer.first_name }} {{ customer.family_name }}
+                                {% if customer.email %} ({{ customer.email }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <i data-lucide="info" class="me-1" style="width: 12px; height: 12px; vertical-align: text-top;"></i>
+                            Choose the customer for this work order.
+                        </div>
+                    </div>
+
+                    <!-- Job Date -->
+                    <div class="mb-4">
+                        <label for="job_date" class="form-label fw-semibold">
+                            <i data-lucide="calendar" class="me-1" style="width: 16px; height: 16px; vertical-align: text-top;"></i>
+                            Job Date
+                        </label>
+                        <input type="date" class="form-control" id="job_date" name="job_date"
+                               min="{{ min_date }}" required>
+                        <div class="form-text">
+                            <i data-lucide="info" class="me-1" style="width: 12px; height: 12px; vertical-align: text-top;"></i>
+                            Select the date for this work order.
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
+                            <i data-lucide="x" class="me-1" style="width: 16px; height: 16px;"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-accent">
+                            <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>Create Job
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flash Message Display -->
+{% if message %}
+<div class="alert alert-warning alert-dismissible fade show mt-3 d-flex align-items-center gap-2" role="alert">
+    <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i>
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date to today
+    const dateInput = document.getElementById('job_date');
+    if (dateInput && !dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+});
+</script>
+{% endblock %}

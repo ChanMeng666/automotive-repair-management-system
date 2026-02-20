@@ -193,7 +193,7 @@
                         <a class="nav-link" href="{{ url_for('home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('currentjoblist') }}">Current Jobs</a>
+                        <a class="nav-link" href="{{ url_for('technician.current_jobs') }}">Current Jobs</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('administrator_customer_list') }}">Customer Management</a>
@@ -261,7 +261,7 @@
                                             <li><i class="bi bi-check-circle-fill"></i> Update job status</li>
                                             <li><i class="bi bi-check-circle-fill"></i> Add services & parts</li>
                                         </ul>
-                                        <a href="{{ url_for('currentjoblist') }}" class="btn btn-portal w-100">
+                                        <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-portal w-100">
                                             <i class="bi bi-arrow-right-circle me-2"></i>
                                             Enter Portal
                                         </a>

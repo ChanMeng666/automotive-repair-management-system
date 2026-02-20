@@ -1,66 +1,115 @@
 """
-模型层单元测试
-测试Customer、Job、Service、Part等模型的业务逻辑
+Model Unit Tests
+Tests for Customer, Job, Service, Part model business logic
 """
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, date
 
-from app.models.customer import Customer
-from app.models.job import Job
-from app.models.service import Service
-from app.models.part import Part
-
 
 @pytest.mark.unit
 class TestCustomerModel:
-    """客户模型测试类"""
-    
-    def test_customer_init(self, sample_customer_data):
-        """测试客户模型初始化"""
-        customer = Customer(**sample_customer_data)
-        
-        assert customer.customer_id == sample_customer_data['customer_id']
-        assert customer.first_name == sample_customer_data['first_name']
-        assert customer.last_name == sample_customer_data['last_name']
-        assert customer.full_name == sample_customer_data['full_name']
-        assert customer.email == sample_customer_data['email']
-        assert customer.phone == sample_customer_data['phone']
-        assert customer.address == sample_customer_data['address']
-    
-    @patch('app.models.customer.execute_query')
-    def test_get_by_id_found(self, mock_execute_query, sample_customer_data):
-        """测试根据ID获取客户 - 找到客户"""
-        mock_execute_query.return_value = sample_customer_data
-        
-        customer = Customer.get_by_id(1)
-        
-        assert customer is not None
-        assert customer.customer_id == 1
-        assert customer.full_name == '张三'
-        mock_execute_query.assert_called_once()
-    
-    @patch('app.models.customer.execute_query')
-    def test_get_by_id_not_found(self, mock_execute_query):
-        """测试根据ID获取客户 - 未找到客户"""
-        mock_execute_query.return_value = None
-        
-        customer = Customer.get_by_id(999)
-        
-        assert customer is None
-        mock_execute_query.assert_called_once()
-    
-    def test_validate_customer_data_valid(self):
-        """测试有效客户数据验证"""
-        valid_data = {
-            'first_name': '王',
-            'last_name': '五',
-            'email': 'wangwu@example.com',
-            'phone': '13812345678',
-            'address': '广州市天河区测试街789号'
-        }
-        
-        is_valid, errors = Customer.validate_customer_data(valid_data)
-        
-        assert is_valid is True
-        assert len(errors) == 0
+    """Customer model tests"""
+
+    def test_customer_creation(self, app):
+        """Test customer model can be instantiated"""
+        with app.app_context():
+            from app.models.customer import Customer
+            customer = Customer(
+                first_name='John',
+                family_name='Smith',
+                email='john@example.com',
+                phone='5551234567',
+                tenant_id=1,
+            )
+            assert customer.first_name == 'John'
+            assert customer.family_name == 'Smith'
+            assert customer.email == 'john@example.com'
+
+    def test_customer_full_name(self, app):
+        """Test customer full_name property"""
+        with app.app_context():
+            from app.models.customer import Customer
+            customer = Customer(
+                first_name='John',
+                family_name='Smith',
+                tenant_id=1,
+            )
+            assert customer.full_name == 'John Smith'
+
+
+@pytest.mark.unit
+class TestServiceModel:
+    """Service model tests"""
+
+    def test_service_creation(self, app):
+        """Test service model can be instantiated"""
+        with app.app_context():
+            from app.models.service import Service
+            service = Service(
+                service_name='Oil Change',
+                cost=49.99,
+                tenant_id=1,
+                category='Maintenance',
+                is_active=True,
+            )
+            assert service.service_name == 'Oil Change'
+            assert service.cost == 49.99
+            assert service.is_active is True
+
+
+@pytest.mark.unit
+class TestPartModel:
+    """Part model tests"""
+
+    def test_part_creation(self, app):
+        """Test part model can be instantiated"""
+        with app.app_context():
+            from app.models.part import Part
+            part = Part(
+                part_name='Oil Filter',
+                cost=12.99,
+                sku='OIL-FLT-001',
+                tenant_id=1,
+                category='Filters',
+                is_active=True,
+            )
+            assert part.part_name == 'Oil Filter'
+            assert part.cost == 12.99
+            assert part.sku == 'OIL-FLT-001'
+
+
+@pytest.mark.unit
+class TestTenantModel:
+    """Tenant model tests"""
+
+    def test_tenant_creation(self, app):
+        """Test tenant model can be instantiated"""
+        with app.app_context():
+            from app.models.tenant import Tenant
+            tenant = Tenant(
+                name="Joe's Auto Repair",
+                slug='joes-auto-repair',
+                business_type='auto_repair',
+                status='active',
+            )
+            assert tenant.name == "Joe's Auto Repair"
+            assert tenant.slug == 'joes-auto-repair'
+            assert tenant.business_type == 'auto_repair'
+
+
+@pytest.mark.unit
+class TestSubscriptionModel:
+    """Subscription model tests"""
+
+    def test_subscription_creation(self, app):
+        """Test subscription model can be instantiated"""
+        with app.app_context():
+            from app.models.subscription import Subscription
+            sub = Subscription(
+                tenant_id=1,
+                plan='starter',
+                status='active',
+            )
+            assert sub.plan == 'starter'
+            assert sub.status == 'active'

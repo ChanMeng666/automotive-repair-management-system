@@ -5,6 +5,7 @@ Business logic for work order operations using SQLAlchemy ORM
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import date
 import logging
+from flask import g
 from app.extensions import db
 from app.models.job import Job
 from app.models.service import Service
@@ -16,6 +17,11 @@ class JobService:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+
+    @staticmethod
+    def _current_tenant_id():
+        """Get current tenant ID from Flask g context"""
+        return getattr(g, 'current_tenant_id', None)
 
     def get_current_jobs(self, page: int = 1, per_page: int = 10) -> Tuple[List[Job], int, int]:
         """
@@ -217,8 +223,9 @@ class JobService:
             return []
 
     def get_job_statistics(self) -> Dict[str, Any]:
-        """Get job statistics"""
+        """Get job statistics (tenant-scoped via model)"""
         try:
+            # Job.count() and Job.get_overdue_jobs() are tenant-scoped via TenantScopedMixin
             total_jobs = Job.count()
             completed_jobs = Job.count(completed=True)
             unpaid_jobs = Job.count(paid=False)
@@ -264,6 +271,7 @@ class JobService:
             job = Job(
                 job_date=job_date,
                 customer=customer_id,
+                tenant_id=self._current_tenant_id(),
                 total_cost=0.0,
                 completed=False,
                 paid=False

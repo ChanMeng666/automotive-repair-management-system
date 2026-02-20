@@ -227,32 +227,26 @@ const AutoRepairApp = {
         }
 
         try {
-            // Show loading state
             this.showSearchLoading();
-            
-            // In a real application, this would be an API call
-            const results = await this.mockSearchAPI(query);
-            
+
+            const response = await fetch(`/api/search/customers?q=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                throw new Error(`Search request failed: ${response.status}`);
+            }
+
+            const customers = await response.json();
+            const results = customers.map(c => ({
+                type: 'customer',
+                id: c.customer_id,
+                title: c.full_name,
+                subtitle: [c.email, c.phone].filter(Boolean).join(' | ')
+            }));
+
             this.displaySearchResults(results);
         } catch (error) {
             console.error('Search error:', error);
             this.showSearchError();
         }
-    },
-    
-    async mockSearchAPI(query) {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Mock search results
-        return [
-            { type: 'customer', id: 1, title: 'John Smith', subtitle: 'Customer ID: #1001' },
-            { type: 'job', id: 123, title: 'Job #123', subtitle: 'BMW X5 - Oil Change' },
-            { type: 'customer', id: 2, title: 'Jane Doe', subtitle: 'Customer ID: #1002' }
-        ].filter(item => 
-            item.title.toLowerCase().includes(query.toLowerCase()) ||
-            item.subtitle.toLowerCase().includes(query.toLowerCase())
-        );
     },
     
     displaySearchResults(results) {
@@ -302,11 +296,11 @@ const AutoRepairApp = {
     handleSearchResultClick(type, id) {
         // Navigate to the appropriate page
         if (type === 'customer') {
-            window.location.href = `/customer/${id}`;
+            window.location.href = `/customers/${id}`;
         } else if (type === 'job') {
-            window.location.href = `/job/${id}`;
+            window.location.href = `/jobs/${id}`;
         }
-        
+
         this.hideSearchResults();
     },
     
@@ -554,86 +548,112 @@ const AutoRepairApp = {
 
     // Chart initialization with Precision Industrial colors
     initializeCharts() {
+        const isDashboard = window.location.pathname.includes('dashboard');
         const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
-        if (monthlyRevenueCtx) {
-            new Chart(monthlyRevenueCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    datasets: [{
-                        label: 'Monthly Revenue',
-                        data: [12000, 19000, 30000, 50000, 20000, 30000, 45000, 35000, 40000, 55000, 60000, 70000],
-                        borderColor: DesignColors.primary,
-                        backgroundColor: 'rgba(30, 58, 95, 0.1)',
-                        tension: 0.3,
-                        fill: true,
-                        pointBackgroundColor: DesignColors.accent,
-                        pointBorderColor: DesignColors.accent,
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: DesignColors.accent,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(30, 58, 95, 0.08)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
+        const jobStatusCtx = document.getElementById('jobStatusChart');
+
+        if (!monthlyRevenueCtx && !jobStatusCtx) return;
+
+        if (isDashboard) {
+            // Determine API URL - check if we're in an org-scoped route
+            const pathParts = window.location.pathname.split('/');
+            const orgIndex = pathParts.indexOf('org');
+            let apiUrl = '/administrator/api/dashboard/summary';
+            if (orgIndex !== -1 && pathParts[orgIndex + 1]) {
+                const slug = pathParts[orgIndex + 1];
+                apiUrl = `/org/${slug}/administrator/api/dashboard/summary`;
+            }
+
+            fetch(apiUrl)
+                .then(res => res.ok ? res.json() : Promise.reject(res.status))
+                .then(data => {
+                    this._renderJobStatusChart(jobStatusCtx, data.jobs);
+                    this._renderRevenueChart(monthlyRevenueCtx);
+                })
+                .catch(err => {
+                    console.warn('Dashboard API unavailable, using fallback data:', err);
+                    this._renderJobStatusChart(jobStatusCtx, null);
+                    this._renderRevenueChart(monthlyRevenueCtx);
+                });
+        } else {
+            this._renderJobStatusChart(jobStatusCtx, null);
+            this._renderRevenueChart(monthlyRevenueCtx);
+        }
+    },
+
+    _renderRevenueChart(ctx) {
+        if (!ctx) return;
+        // TODO: Connect to a monthly revenue API endpoint when available
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Monthly Revenue',
+                    data: [12000, 19000, 30000, 50000, 20000, 30000, 45000, 35000, 40000, 55000, 60000, 70000],
+                    borderColor: DesignColors.primary,
+                    backgroundColor: 'rgba(30, 58, 95, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: DesignColors.accent,
+                    pointBorderColor: DesignColors.accent,
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: DesignColors.accent,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(30, 58, 95, 0.08)' } },
+                    x: { grid: { display: false } }
                 }
-            });
+            }
+        });
+    },
+
+    _renderJobStatusChart(ctx, jobsData) {
+        if (!ctx) return;
+
+        let completed = 300, pending = 50, inProgress = 150, cancelled = 20;
+        if (jobsData) {
+            completed = jobsData.completed_jobs || 0;
+            pending = jobsData.pending_jobs || 0;
+            inProgress = (jobsData.total_jobs || 0) - completed - pending;
+            if (inProgress < 0) inProgress = 0;
+            cancelled = 0;
         }
 
-        const jobStatusCtx = document.getElementById('jobStatusChart');
-        if (jobStatusCtx) {
-            new Chart(jobStatusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'In Progress', 'Pending', 'Cancelled'],
-                    datasets: [{
-                        label: 'Job Status',
-                        data: [300, 150, 50, 20],
-                        backgroundColor: [
-                            DesignColors.success,   // Completed - Industrial green
-                            DesignColors.info,      // In Progress - Industrial blue
-                            DesignColors.warning,   // Pending - Caution yellow
-                            DesignColors.error      // Cancelled - Automotive red
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 8
-                    }]
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Pending', 'Cancelled'],
+                datasets: [{
+                    label: 'Job Status',
+                    data: [completed, inProgress, pending, cancelled],
+                    backgroundColor: [
+                        DesignColors.success,
+                        DesignColors.info,
+                        DesignColors.warning,
+                        DesignColors.error
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' }
+                    }
                 },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        }
-                    },
-                    cutout: '60%'
-                }
-            });
-        }
+                cutout: '60%'
+            }
+        });
     },
     
     // Live updates simulation

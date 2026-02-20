@@ -1,0 +1,139 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Parts - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item">
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+    </li>
+    <li class="breadcrumb-item active">Parts</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
+            <i data-lucide="package" class="text-primary" style="width: 28px; height: 28px;"></i>
+            Parts Inventory
+        </h1>
+        <p class="text-muted mb-0">Browse available parts and supplies</p>
+    </div>
+</div>
+
+<!-- Parts Table -->
+<div class="table-container">
+    <div class="table-header">
+        <h3 class="table-title">
+            <i data-lucide="list" style="width: 20px; height: 20px;"></i>
+            All Parts
+        </h3>
+        <div class="table-actions">
+            <span class="text-muted">{{ parts|length if parts else 0 }} part{{ 's' if not parts or parts|length != 1 }}</span>
+        </div>
+    </div>
+
+    {% if parts %}
+    <div class="table-responsive">
+        <table class="table" id="partsTable">
+            <thead>
+                <tr>
+                    <th>Part Name</th>
+                    <th>SKU</th>
+                    <th>Category</th>
+                    <th class="text-end">Cost</th>
+                    <th>Stock Level</th>
+                    <th>Supplier</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for part in parts %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
+                                <i data-lucide="package" class="text-primary" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">{{ part.part_name }}</div>
+                                {% if part.description %}
+                                <small class="text-muted">{{ part.description }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if part.sku %}
+                        <code class="text-muted">{{ part.sku }}</code>
+                        {% else %}
+                        <span class="text-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if part.category %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary">{{ part.category }}</span>
+                        {% else %}
+                        <span class="text-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <span class="fw-semibold text-success">${{ "%.2f"|format(part.cost|float) }}</span>
+                    </td>
+                    <td>
+                        {% if part.stock_level is defined %}
+                        <div class="d-flex align-items-center gap-1">
+                            <i data-lucide="layers" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            <span class="{% if part.stock_level <= 5 %}text-danger fw-semibold{% elif part.stock_level <= 20 %}text-warning fw-semibold{% else %}fw-medium{% endif %}">
+                                {{ part.stock_level }}
+                            </span>
+                            {% if part.stock_level <= 5 %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger ms-1" style="font-size: 0.7rem;">Low</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="text-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if part.supplier %}
+                        <div class="d-flex align-items-center gap-1">
+                            <i data-lucide="truck" class="text-muted" style="width: 14px; height: 14px;"></i>
+                            <span>{{ part.supplier }}</span>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">--</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if part.active is defined and not part.active %}
+                            <span class="status-badge status-badge-error">
+                                <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                Inactive
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-badge-success">
+                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                Active
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="package"></i>
+        </div>
+        <div class="empty-state-title">No Parts Available</div>
+        <div class="empty-state-description">
+            There are no parts in the inventory at this time. Contact an administrator to add parts.
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

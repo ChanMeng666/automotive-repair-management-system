@@ -110,7 +110,7 @@ class OAuthService:
                     username=username,
                     email=email,
                     neon_auth_user_id=f"google:{google_id}",
-                    role=User.ROLE_TECHNICIAN,  # Default role
+                    role='technician',  # Default role
                     is_active=True
                 )
                 # Set a random password for OAuth users (they won't use it)

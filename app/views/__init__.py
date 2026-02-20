@@ -6,5 +6,6 @@ from .main import main_bp
 from .technician import technician_bp
 from .administrator import administrator_bp
 from .auth import auth_bp
+from .billing import billing_bp
 
-__all__ = ['main_bp', 'technician_bp', 'administrator_bp', 'auth_bp']
+__all__ = ['main_bp', 'technician_bp', 'administrator_bp', 'auth_bp', 'billing_bp']

@@ -1,0 +1,235 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Technician Dashboard - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold text-gray-900 mb-2 d-flex align-items-center gap-2">
+            <i data-lucide="layout-dashboard" class="text-primary" style="width: 28px; height: 28px;"></i>
+            Technician Dashboard
+        </h1>
+        <p class="text-muted mb-0">Overview of your work orders and schedule</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>New Job
+        </a>
+        <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
+            <i data-lucide="clipboard-list" class="me-2" style="width: 16px; height: 16px;"></i>All Jobs
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-card--warning">
+            <div class="stat-card-icon text-warning">
+                <i data-lucide="clock"></i>
+            </div>
+            <div class="stat-card-value">{{ active_jobs|default(0) }}</div>
+            <div class="stat-card-label">Active Jobs</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-card--accent">
+            <div class="stat-card-icon text-info">
+                <i data-lucide="calendar"></i>
+            </div>
+            <div class="stat-card-value">{{ todays_jobs|default(0) }}</div>
+            <div class="stat-card-label">Today's Jobs</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="stat-card stat-card--success">
+            <div class="stat-card-icon text-success">
+                <i data-lucide="check-circle"></i>
+            </div>
+            <div class="stat-card-value">{{ completed_this_week|default(0) }}</div>
+            <div class="stat-card-label">Completed This Week</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Jobs Table -->
+<div class="table-container mb-4">
+    <div class="table-header">
+        <h3 class="table-title">
+            <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+            Recent Jobs
+        </h3>
+        <div class="table-actions">
+            <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-primary btn-sm">
+                View All <i data-lucide="arrow-right" class="ms-1" style="width: 14px; height: 14px;"></i>
+            </a>
+        </div>
+    </div>
+
+    {% if recent_jobs %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in recent_jobs[:5] %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('technician.job_detail', job_id=job.job_id) }}" class="text-decoration-none fw-semibold">
+                            #{{ job.job_id }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 d-flex align-items-center justify-content-center">
+                                <i data-lucide="user" class="text-primary" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">{{ job.first_name }} {{ job.family_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-medium">{{ job.job_date.strftime('%b %d, %Y') if job.job_date else 'N/A' }}</div>
+                    </td>
+                    <td>
+                        {% if job.completed %}
+                            <span class="status-badge status-badge-success">
+                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                Completed
+                            </span>
+                        {% elif job.paid %}
+                            <span class="status-badge status-badge-success">
+                                <i data-lucide="credit-card" style="width: 12px; height: 12px;"></i>
+                                Paid
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-badge-warning">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                In Progress
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-success">${{ "%.2f"|format(job.total_cost) }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ url_for('technician.job_detail', job_id=job.job_id) }}"
+                               class="btn btn-sm btn-outline-primary" title="View Details">
+                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                            </a>
+                            <a href="{{ url_for('modifyjob', job_id=job.job_id) }}"
+                               class="btn btn-sm btn-outline-secondary" title="Edit">
+                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="inbox"></i>
+        </div>
+        <div class="empty-state-title">No Recent Jobs</div>
+        <div class="empty-state-description">
+            You have no recent work orders. Create a new job to get started.
+        </div>
+        <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
+            <i data-lucide="plus" class="me-2" style="width: 16px; height: 16px;"></i>Create New Job
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Today's Schedule -->
+<div class="table-container">
+    <div class="table-header">
+        <h3 class="table-title">
+            <i data-lucide="calendar-days" style="width: 20px; height: 20px;"></i>
+            Today's Schedule
+        </h3>
+    </div>
+
+    {% if todays_schedule %}
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in todays_schedule %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('technician.job_detail', job_id=job.job_id) }}" class="text-decoration-none fw-semibold">
+                            #{{ job.job_id }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">{{ job.first_name }} {{ job.family_name }}</div>
+                    </td>
+                    <td>
+                        {% if job.completed %}
+                            <span class="status-badge status-badge-success">
+                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                Completed
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-badge-warning">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                In Progress
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-success">${{ "%.2f"|format(job.total_cost) }}</span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('technician.job_detail', job_id=job.job_id) }}"
+                           class="btn btn-sm btn-outline-primary" title="View Details">
+                            <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="calendar-x"></i>
+        </div>
+        <div class="empty-state-title">No Jobs Scheduled Today</div>
+        <div class="empty-state-description">
+            There are no work orders scheduled for today.
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

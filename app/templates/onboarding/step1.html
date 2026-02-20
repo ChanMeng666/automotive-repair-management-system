@@ -1,0 +1,150 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Set Up Your Organization - Step 1 of 4 - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.onboarding-bg {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #e8eef5 100%);
+    min-height: 80vh;
+}
+
+.progress-bar-custom {
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+}
+
+.progress-bar-custom .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), #f59e0b);
+    transition: width 0.5s ease;
+}
+
+.step-indicator {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-bg d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-xl-6">
+                <!-- Step Indicator -->
+                <div class="text-center mb-4">
+                    <span class="step-indicator">Step 1 of 4</span>
+                    <div class="progress-bar-custom mt-2">
+                        <div class="progress-fill" style="width: 25%;"></div>
+                    </div>
+                </div>
+
+                <!-- Card -->
+                <div class="card border-0 shadow-lg" style="border-top: 4px solid var(--accent) !important;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                                <i data-lucide="building-2" class="text-primary" style="width: 36px; height: 36px;"></i>
+                            </div>
+                            <h1 class="h3 fw-bold mb-2">Set Up Your Organization</h1>
+                            <p class="text-muted">Tell us about your business</p>
+                        </div>
+
+                        <form method="POST" action="" class="needs-validation" novalidate>
+                            <!-- Organization Name -->
+                            <div class="mb-3">
+                                <label for="org_name" class="form-label fw-semibold">Organization Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i data-lucide="building" class="text-muted" style="width: 18px; height: 18px;"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="org_name" name="org_name" placeholder="e.g. Mike's Auto Shop" required>
+                                </div>
+                                <div class="invalid-feedback">Please enter your organization name.</div>
+                            </div>
+
+                            <!-- Business Type -->
+                            <div class="mb-3">
+                                <label for="business_type" class="form-label fw-semibold">Business Type</label>
+                                <select class="form-select" id="business_type" name="business_type" required>
+                                    <option value="">Select business type</option>
+                                    <option value="auto_repair">Auto Repair</option>
+                                    <option value="parts_seller">Parts Seller</option>
+                                    <option value="both">Both</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a business type.</div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="mb-3">
+                                <label for="address" class="form-label fw-semibold">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="2" placeholder="Street address, city, state, zip"></textarea>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="mb-3">
+                                <label for="phone" class="form-label fw-semibold">Phone</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i data-lucide="phone" class="text-muted" style="width: 18px; height: 18px;"></i>
+                                    </span>
+                                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="(555) 123-4567">
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i data-lucide="mail" class="text-muted" style="width: 18px; height: 18px;"></i>
+                                    </span>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="shop@example.com">
+                                </div>
+                            </div>
+
+                            <!-- Navigation -->
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-accent px-4 py-2">
+                                    Next
+                                    <i data-lucide="arrow-right" class="ms-2" style="width: 18px; height: 18px;"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+});
+</script>
+{% endblock %}

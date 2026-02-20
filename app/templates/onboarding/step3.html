@@ -1,0 +1,189 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Add Parts & Inventory - Step 3 of 4 - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.onboarding-bg {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #e8eef5 100%);
+    min-height: 80vh;
+}
+
+.progress-bar-custom {
+    height: 6px;
+    border-radius: 3px;
+    background: #e2e8f0;
+}
+
+.progress-bar-custom .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), #f59e0b);
+    transition: width 0.5s ease;
+}
+
+.step-indicator {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.parts-table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--primary);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-bg py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9 col-xl-8">
+                <!-- Step Indicator -->
+                <div class="text-center mb-4">
+                    <span class="step-indicator">Step 3 of 4</span>
+                    <div class="progress-bar-custom mt-2">
+                        <div class="progress-fill" style="width: 75%;"></div>
+                    </div>
+                </div>
+
+                <!-- Card -->
+                <div class="card border-0 shadow-lg" style="border-top: 4px solid var(--accent) !important;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                                <i data-lucide="package" class="text-primary" style="width: 36px; height: 36px;"></i>
+                            </div>
+                            <h1 class="h3 fw-bold mb-2">Add Parts & Inventory</h1>
+                            <p class="text-muted">Set up your initial parts inventory. You can add more later.</p>
+                        </div>
+
+                        <!-- Current Parts Table -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-hover parts-table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Part Name</th>
+                                        <th>SKU</th>
+                                        <th>Category</th>
+                                        <th>Cost</th>
+                                        <th>Supplier</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parts-body">
+                                    {% for part in parts %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ part.name }}</td>
+                                        <td><code>{{ part.sku }}</code></td>
+                                        <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ part.category }}</span></td>
+                                        <td>${{ "%.2f"|format(part.cost) }}</td>
+                                        <td>{{ part.supplier }}</td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                                <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Remove">
+                                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% if not parts %}
+                                    <tr id="no-parts-row">
+                                        <td colspan="6" class="text-center text-muted py-4">
+                                            <i data-lucide="inbox" class="mb-2" style="width: 32px; height: 32px;"></i>
+                                            <p class="mb-0">No parts added yet. Use the form below to add your first part.</p>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Add Part Form -->
+                        <div class="card bg-light border-0 mb-4">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3 d-flex align-items-center">
+                                    <i data-lucide="plus-circle" class="me-2 text-accent" style="width: 18px; height: 18px;"></i>
+                                    Add New Part
+                                </h6>
+                                <form method="POST" action="" id="add-part-form">
+                                    <input type="hidden" name="action" value="add_part">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="part_name" class="form-label">Part Name</label>
+                                            <input type="text" class="form-control" id="part_name" name="part_name" placeholder="e.g. Oil Filter" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="part_sku" class="form-label">SKU</label>
+                                            <input type="text" class="form-control" id="part_sku" name="part_sku" placeholder="e.g. OIL-FLT-001">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="part_cost" class="form-label">Cost ($)</label>
+                                            <input type="number" class="form-control" id="part_cost" name="part_cost" min="0" step="0.01" placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="part_category" class="form-label">Category</label>
+                                            <select class="form-select" id="part_category" name="part_category" required>
+                                                <option value="">Select category</option>
+                                                <option value="Filters">Filters</option>
+                                                <option value="Brakes">Brakes</option>
+                                                <option value="Engine">Engine</option>
+                                                <option value="Electrical">Electrical</option>
+                                                <option value="Fluids">Fluids</option>
+                                                <option value="Tires">Tires</option>
+                                                <option value="Suspension">Suspension</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="part_supplier" class="form-label">Supplier</label>
+                                            <input type="text" class="form-control" id="part_supplier" name="part_supplier" placeholder="e.g. AutoZone">
+                                        </div>
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i data-lucide="plus" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                Add Part
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('onboarding.step2') if url_for('onboarding.step2') is defined else '#' }}" class="btn btn-outline-secondary px-4 py-2">
+                                <i data-lucide="arrow-left" class="me-2" style="width: 18px; height: 18px;"></i>
+                                Back
+                            </a>
+                            <form method="POST" action="">
+                                <input type="hidden" name="action" value="next">
+                                <button type="submit" class="btn btn-accent px-4 py-2">
+                                    Next
+                                    <i data-lucide="arrow-right" class="ms-2" style="width: 18px; height: 18px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

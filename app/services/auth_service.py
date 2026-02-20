@@ -11,6 +11,7 @@ import requests
 from functools import wraps
 from flask import request, current_app, g, session
 from app.models.user import User
+from app.models.tenant_membership import TenantMembership
 from app.extensions import db
 
 logger = logging.getLogger(__name__)
@@ -185,7 +186,8 @@ class AuthService:
 
     def authenticate(self, username: str, password: str, user_type: str = 'technician') -> Tuple[bool, Dict[str, Any], Optional[str]]:
         """
-        Authenticate with username and password (main login method)
+        Authenticate with username and password (main login method).
+        Returns user data including tenant memberships.
 
         Args:
             username: Username
@@ -197,25 +199,51 @@ class AuthService:
         """
         try:
             user = User.authenticate(username, password)
-            
+
             if user:
                 # Check if user role matches expected type (or allow admin to log in as any role)
                 if user.role != user_type and not user.is_admin:
                     return False, {}, f"Your account is not registered as a {user_type}"
-                
+
+                # Fetch tenant memberships
+                memberships = self._get_user_memberships(user.user_id)
+
                 user_data = {
                     'user_id': user.user_id,
                     'username': user.username,
                     'role': user.role,
-                    'email': user.email
+                    'email': user.email,
+                    'memberships': memberships,
                 }
                 return True, user_data, None
             else:
                 return False, {}, "Invalid username or password"
-                
+
         except Exception as e:
             self.logger.error(f"Authentication error: {e}")
             return False, {}, "Authentication failed. Please try again."
+
+    def _get_user_memberships(self, user_id: int) -> List[Dict[str, Any]]:
+        """Get active tenant memberships for a user"""
+        try:
+            rows = db.session.execute(
+                db.select(TenantMembership).where(
+                    TenantMembership.user_id == user_id,
+                    TenantMembership.status == TenantMembership.STATUS_ACTIVE,
+                )
+            ).scalars().all()
+
+            return [
+                {
+                    'tenant_id': m.tenant_id,
+                    'role': m.role,
+                    'is_default': m.is_default,
+                }
+                for m in rows
+            ]
+        except Exception as e:
+            self.logger.error(f"Failed to get memberships: {e}")
+            return []
 
     def authenticate_password(self, username: str, password: str) -> Optional[User]:
         """
@@ -281,17 +309,58 @@ class AuthService:
         return None
 
     def login_user(self, user: User) -> None:
-        """Store user in session"""
+        """Store user in session. Auto-selects tenant if user has exactly one."""
         session['user_id'] = user.user_id
         session['username'] = user.username
         session['role'] = user.role
         user.update_last_login()
+
+        # Auto-select tenant
+        memberships = self._get_user_memberships(user.user_id)
+        if len(memberships) == 1:
+            session['tenant_id'] = memberships[0]['tenant_id']
+            session['tenant_role'] = memberships[0]['role']
+        elif memberships:
+            # Pick the default membership
+            default = next((m for m in memberships if m['is_default']), None)
+            if default:
+                session['tenant_id'] = default['tenant_id']
+                session['tenant_role'] = default['role']
+
+    def switch_tenant(self, user_id: int, tenant_id: int) -> Tuple[bool, Optional[str]]:
+        """
+        Switch the active tenant for the current session.
+
+        Returns:
+            (success, error_message)
+        """
+        try:
+            membership = db.session.execute(
+                db.select(TenantMembership).where(
+                    TenantMembership.user_id == user_id,
+                    TenantMembership.tenant_id == tenant_id,
+                    TenantMembership.status == TenantMembership.STATUS_ACTIVE,
+                )
+            ).scalar_one_or_none()
+
+            if not membership:
+                return False, "You do not have access to this organization"
+
+            session['tenant_id'] = tenant_id
+            session['tenant_role'] = membership.role
+            return True, None
+
+        except Exception as e:
+            self.logger.error(f"Failed to switch tenant: {e}")
+            return False, "Failed to switch organization"
 
     def logout_user(self) -> None:
         """Clear user from session"""
         session.pop('user_id', None)
         session.pop('username', None)
         session.pop('role', None)
+        session.pop('tenant_id', None)
+        session.pop('tenant_role', None)
         if hasattr(g, 'current_user'):
             g.current_user = None
 
@@ -300,7 +369,7 @@ class AuthService:
         username: str,
         password: str,
         email: Optional[str] = None,
-        role: str = User.ROLE_TECHNICIAN
+        role: str = 'technician'
     ) -> Tuple[bool, List[str], Optional[User]]:
         """
         Create a new user

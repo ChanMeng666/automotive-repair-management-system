@@ -1,0 +1,145 @@
+{% extends "base/layout.html" %}
+{% block title %}Organization Settings - Administrator Portal{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Organization Settings</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="building" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        Organization Settings
+                    </h1>
+                    <p class="text-muted mb-0">Configure your shop's profile and preferences</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="table-container" style="border-top: 3px solid var(--primary);">
+                <div class="card-body p-4">
+                    <form method="post" action="{{ url_for('administrator.org_settings') if url_for('administrator.org_settings') is defined else '#' }}">
+                        <div class="row g-4">
+                            <!-- Organization Name -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="building" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Organization Name
+                                </label>
+                                <input type="text" class="form-control" name="org_name" value="{{ org.name|default('') }}" placeholder="Your Shop Name" required>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="phone" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Phone
+                                </label>
+                                <input type="tel" class="form-control" name="phone" value="{{ org.phone|default('') }}" placeholder="(555) 123-4567">
+                            </div>
+
+                            <!-- Address -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="map-pin" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Address
+                                </label>
+                                <textarea class="form-control" name="address" rows="2" placeholder="123 Main Street, City, State ZIP">{{ org.address|default('') }}</textarea>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="mail" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Email
+                                </label>
+                                <input type="email" class="form-control" name="email" value="{{ org.email|default('') }}" placeholder="shop@example.com">
+                            </div>
+
+                            <!-- Logo URL -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="image" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Logo URL
+                                </label>
+                                <input type="url" class="form-control" name="logo_url" value="{{ org.logo_url|default('') }}" placeholder="https://example.com/logo.png">
+                            </div>
+
+                            <!-- Tax Rate -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="percent" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Tax Rate (%)
+                                </label>
+                                <input type="number" class="form-control" name="tax_rate" step="0.01" min="0" max="100" value="{{ org.tax_rate|default('') }}" placeholder="8.25">
+                            </div>
+
+                            <!-- Currency -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i data-lucide="dollar-sign" class="me-1" style="width: 14px; height: 14px;"></i>
+                                    Currency
+                                </label>
+                                <select class="form-select" name="currency">
+                                    <option value="USD" {% if org.currency|default('USD') == 'USD' %}selected{% endif %}>USD - US Dollar</option>
+                                    <option value="EUR" {% if org.currency|default('') == 'EUR' %}selected{% endif %}>EUR - Euro</option>
+                                    <option value="GBP" {% if org.currency|default('') == 'GBP' %}selected{% endif %}>GBP - British Pound</option>
+                                    <option value="CAD" {% if org.currency|default('') == 'CAD' %}selected{% endif %}>CAD - Canadian Dollar</option>
+                                    <option value="AUD" {% if org.currency|default('') == 'AUD' %}selected{% endif %}>AUD - Australian Dollar</option>
+                                </select>
+                            </div>
+
+                            <!-- Save Button -->
+                            <div class="col-12">
+                                <hr class="my-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-lucide="save" class="me-1" style="width: 16px; height: 16px;"></i>
+                                    Save Settings
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="table-container">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold d-flex align-items-center gap-2 mb-3">
+                        <i data-lucide="info" class="text-info" style="width: 18px; height: 18px;"></i>
+                        About Settings
+                    </h6>
+                    <p class="text-muted small mb-3">
+                        These settings apply to your entire organization. Changes will be reflected across all invoices, reports, and customer-facing documents.
+                    </p>
+                    <ul class="list-unstyled text-muted small">
+                        <li class="py-1 d-flex align-items-start gap-2">
+                            <i data-lucide="check" class="text-success mt-1" style="width: 14px; height: 14px; flex-shrink: 0;"></i>
+                            Organization name appears on invoices
+                        </li>
+                        <li class="py-1 d-flex align-items-start gap-2">
+                            <i data-lucide="check" class="text-success mt-1" style="width: 14px; height: 14px; flex-shrink: 0;"></i>
+                            Tax rate is applied to all new jobs
+                        </li>
+                        <li class="py-1 d-flex align-items-start gap-2">
+                            <i data-lucide="check" class="text-success mt-1" style="width: 14px; height: 14px; flex-shrink: 0;"></i>
+                            Currency affects all pricing displays
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

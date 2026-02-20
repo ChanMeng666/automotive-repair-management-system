@@ -1,5 +1,5 @@
 """
-输入验证工具
+Input Validation Utilities
 """
 import re
 from datetime import datetime, date
@@ -9,56 +9,56 @@ import html
 
 def validate_email(email: str) -> bool:
     """
-    验证邮箱格式
-    
+    Validate email format.
+
     Args:
-        email: 邮箱地址
-    
+        email: Email address
+
     Returns:
-        是否有效
+        Whether the email is valid
     """
     if not email or not isinstance(email, str):
         return False
-    
+
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return bool(re.match(pattern, email.strip()))
 
 
 def validate_phone(phone: str) -> bool:
     """
-    验证手机号格式
-    
+    Validate phone number format.
+
     Args:
-        phone: 手机号
-    
+        phone: Phone number
+
     Returns:
-        是否有效
+        Whether the phone number is valid
     """
     if not phone or not isinstance(phone, str):
         return False
-    
-    # 移除空格和连字符
+
+    # Remove spaces and hyphens
     clean_phone = phone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
-    
-    # 检查是否为10-11位数字
+
+    # Check if it's 10-11 digits
     pattern = r'^\d{10,11}$'
     return bool(re.match(pattern, clean_phone))
 
 
 def validate_date(date_str: str, format_str: str = '%Y-%m-%d') -> bool:
     """
-    验证日期格式
-    
+    Validate date format.
+
     Args:
-        date_str: 日期字符串
-        format_str: 日期格式
-    
+        date_str: Date string
+        format_str: Date format
+
     Returns:
-        是否有效
+        Whether the date is valid
     """
     if not date_str or not isinstance(date_str, str):
         return False
-    
+
     try:
         datetime.strptime(date_str.strip(), format_str)
         return True
@@ -68,13 +68,13 @@ def validate_date(date_str: str, format_str: str = '%Y-%m-%d') -> bool:
 
 def validate_positive_number(value: Any) -> bool:
     """
-    验证正数
-    
+    Validate positive number.
+
     Args:
-        value: 数值
-    
+        value: Numeric value
+
     Returns:
-        是否为正数
+        Whether the value is a positive number
     """
     try:
         num = float(value)
@@ -85,13 +85,13 @@ def validate_positive_number(value: Any) -> bool:
 
 def validate_positive_integer(value: Any) -> bool:
     """
-    验证正整数
-    
+    Validate positive integer.
+
     Args:
-        value: 数值
-    
+        value: Numeric value
+
     Returns:
-        是否为正整数
+        Whether the value is a positive integer
     """
     try:
         num = int(value)
@@ -102,97 +102,97 @@ def validate_positive_integer(value: Any) -> bool:
 
 def validate_string_length(text: str, min_length: int = 1, max_length: int = 255) -> bool:
     """
-    验证字符串长度
-    
+    Validate string length.
+
     Args:
-        text: 文本
-        min_length: 最小长度
-        max_length: 最大长度
-    
+        text: Text string
+        min_length: Minimum length
+        max_length: Maximum length
+
     Returns:
-        是否在有效长度范围内
+        Whether the length is within the valid range
     """
     if not isinstance(text, str):
         return False
-    
+
     length = len(text.strip())
     return min_length <= length <= max_length
 
 
 def sanitize_input(value: Any) -> str:
     """
-    清理输入数据
-    
+    Sanitize input data.
+
     Args:
-        value: 输入值
-    
+        value: Input value
+
     Returns:
-        清理后的字符串
+        Sanitized string
     """
     if value is None:
         return ""
-    
-    # 转换为字符串
+
+    # Convert to string
     text = str(value)
-    
-    # HTML转义
+
+    # HTML escape
     text = html.escape(text)
-    
-    # 移除多余的空白字符
+
+    # Remove excess whitespace
     text = re.sub(r'\s+', ' ', text).strip()
-    
+
     return text
 
 
 def validate_name(name: str) -> bool:
     """
-    验证姓名格式
-    
+    Validate name format.
+
     Args:
-        name: 姓名
-    
+        name: Name string
+
     Returns:
-        是否有效
+        Whether the name is valid
     """
     if not name or not isinstance(name, str):
         return False
-    
-    # 姓名应该只包含字母、空格、连字符和撇号
+
+    # Names should only contain letters, spaces, hyphens, and apostrophes
     pattern = r"^[a-zA-Z\s\-']{1,50}$"
     return bool(re.match(pattern, name.strip()))
 
 
 def validate_service_part_name(name: str) -> bool:
     """
-    验证服务或零件名称
-    
+    Validate service or part name.
+
     Args:
-        name: 名称
-    
+        name: Name string
+
     Returns:
-        是否有效
+        Whether the name is valid
     """
     if not name or not isinstance(name, str):
         return False
-    
-    # 服务/零件名称可以包含字母、数字、空格、连字符和括号
+
+    # Service/part names can contain letters, numbers, spaces, hyphens, and parentheses
     pattern = r"^[a-zA-Z0-9\s\-()]{1,100}$"
     return bool(re.match(pattern, name.strip()))
 
 
 def validate_cost(cost: Any) -> bool:
     """
-    验证成本/价格
-    
+    Validate cost/price.
+
     Args:
-        cost: 成本值
-    
+        cost: Cost value
+
     Returns:
-        是否有效
+        Whether the cost is valid
     """
     try:
         value = float(cost)
-        # 成本应该为非负数，且不超过合理上限
+        # Cost should be non-negative and not exceed a reasonable upper limit
         return 0 <= value <= 999999.99
     except (ValueError, TypeError):
         return False
@@ -200,17 +200,17 @@ def validate_cost(cost: Any) -> bool:
 
 def validate_quantity(quantity: Any) -> bool:
     """
-    验证数量
-    
+    Validate quantity.
+
     Args:
-        quantity: 数量值
-    
+        quantity: Quantity value
+
     Returns:
-        是否有效
+        Whether the quantity is valid
     """
     try:
         value = int(quantity)
-        # 数量应该为正整数，且不超过合理上限
+        # Quantity should be a positive integer and not exceed a reasonable upper limit
         return 1 <= value <= 1000
     except (ValueError, TypeError):
         return False
@@ -218,18 +218,18 @@ def validate_quantity(quantity: Any) -> bool:
 
 def validate_date_not_past(date_str: str, format_str: str = '%Y-%m-%d') -> bool:
     """
-    验证日期不能是过去的日期
-    
+    Validate that the date is not in the past.
+
     Args:
-        date_str: 日期字符串
-        format_str: 日期格式
-    
+        date_str: Date string
+        format_str: Date format
+
     Returns:
-        是否有效（不是过去的日期）
+        Whether the date is valid (not in the past)
     """
     if not validate_date(date_str, format_str):
         return False
-    
+
     try:
         input_date = datetime.strptime(date_str.strip(), format_str).date()
         return input_date >= date.today()
@@ -238,116 +238,116 @@ def validate_date_not_past(date_str: str, format_str: str = '%Y-%m-%d') -> bool:
 
 
 class ValidationResult:
-    """验证结果类"""
-    
+    """Validation result container"""
+
     def __init__(self):
         self.is_valid = True
         self.errors = []
-    
+
     def add_error(self, field: str, message: str):
-        """添加错误"""
+        """Add an error"""
         self.is_valid = False
         self.errors.append(f"{field}: {message}")
-    
+
     def get_errors(self) -> list:
-        """获取错误列表"""
+        """Get the list of errors"""
         return self.errors
 
 
 def validate_customer_data(data: dict) -> ValidationResult:
     """
-    验证客户数据
-    
+    Validate customer data.
+
     Args:
-        data: 客户数据字典
-    
+        data: Customer data dictionary
+
     Returns:
-        验证结果
+        Validation result
     """
     result = ValidationResult()
-    
-    # 验证姓氏
+
+    # Validate family name
     family_name = data.get('family_name', '')
     if not family_name or not family_name.strip():
-        result.add_error('family_name', '姓氏不能为空')
+        result.add_error('family_name', 'Family name is required')
     elif not validate_name(family_name):
-        result.add_error('family_name', '姓氏格式无效')
-    
-    # 验证名字（可选）
+        result.add_error('family_name', 'Invalid family name format')
+
+    # Validate first name (optional)
     first_name = data.get('first_name', '')
     if first_name and not validate_name(first_name):
-        result.add_error('first_name', '名字格式无效')
-    
-    # 验证邮箱
+        result.add_error('first_name', 'Invalid first name format')
+
+    # Validate email
     email = data.get('email', '')
     if not email or not email.strip():
-        result.add_error('email', '邮箱不能为空')
+        result.add_error('email', 'Email is required')
     elif not validate_email(email):
-        result.add_error('email', '邮箱格式无效')
-    
-    # 验证手机号
+        result.add_error('email', 'Invalid email format')
+
+    # Validate phone number
     phone = data.get('phone', '')
     if not phone or not phone.strip():
-        result.add_error('phone', '手机号不能为空')
+        result.add_error('phone', 'Phone number is required')
     elif not validate_phone(phone):
-        result.add_error('phone', '手机号格式无效')
-    
+        result.add_error('phone', 'Invalid phone number format')
+
     return result
 
 
 def validate_service_data(data: dict) -> ValidationResult:
     """
-    验证服务数据
-    
+    Validate service data.
+
     Args:
-        data: 服务数据字典
-    
+        data: Service data dictionary
+
     Returns:
-        验证结果
+        Validation result
     """
     result = ValidationResult()
-    
-    # 验证服务名称
+
+    # Validate service name
     service_name = data.get('service_name', '')
     if not service_name or not service_name.strip():
-        result.add_error('service_name', '服务名称不能为空')
+        result.add_error('service_name', 'Service name is required')
     elif not validate_service_part_name(service_name):
-        result.add_error('service_name', '服务名称格式无效')
-    
-    # 验证成本
+        result.add_error('service_name', 'Invalid service name format')
+
+    # Validate cost
     cost = data.get('cost')
     if cost is None:
-        result.add_error('cost', '成本不能为空')
+        result.add_error('cost', 'Cost is required')
     elif not validate_cost(cost):
-        result.add_error('cost', '成本必须为有效的正数')
-    
+        result.add_error('cost', 'Cost must be a valid positive number')
+
     return result
 
 
 def validate_part_data(data: dict) -> ValidationResult:
     """
-    验证零件数据
-    
+    Validate part data.
+
     Args:
-        data: 零件数据字典
-    
+        data: Part data dictionary
+
     Returns:
-        验证结果
+        Validation result
     """
     result = ValidationResult()
-    
-    # 验证零件名称
+
+    # Validate part name
     part_name = data.get('part_name', '')
     if not part_name or not part_name.strip():
-        result.add_error('part_name', '零件名称不能为空')
+        result.add_error('part_name', 'Part name is required')
     elif not validate_service_part_name(part_name):
-        result.add_error('part_name', '零件名称格式无效')
-    
-    # 验证成本
+        result.add_error('part_name', 'Invalid part name format')
+
+    # Validate cost
     cost = data.get('cost')
     if cost is None:
-        result.add_error('cost', '成本不能为空')
+        result.add_error('cost', 'Cost is required')
     elif not validate_cost(cost):
-        result.add_error('cost', '成本必须为有效的正数')
-    
-    return result 
+        result.add_error('cost', 'Cost must be a valid positive number')
+
+    return result

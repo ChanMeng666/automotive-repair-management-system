@@ -1,6 +1,6 @@
 """
 Job Model - SQLAlchemy ORM
-Work orders with services and parts
+Work orders with services and parts, multi-tenant scoped
 """
 from typing import List, Optional, Tuple
 from datetime import date, datetime
@@ -9,7 +9,7 @@ from sqlalchemy import String, Date, Numeric, Boolean, Integer, ForeignKey, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from app.extensions import db
-from app.models.base import BaseModelMixin
+from app.models.base import BaseModelMixin, TenantScopedMixin
 
 
 class JobService(db.Model):
@@ -50,52 +50,67 @@ class JobPart(db.Model):
         return self.part.cost * Decimal(str(self.qty))
 
 
-class Job(db.Model, BaseModelMixin):
+class Job(db.Model, BaseModelMixin, TenantScopedMixin):
     """Job (Work Order) model class"""
 
     __tablename__ = 'job'
 
     job_id: Mapped[int] = mapped_column(primary_key=True)
+    tenant_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey('tenant.tenant_id'), nullable=True, index=True
+    )
     job_date: Mapped[date] = mapped_column(Date, nullable=False)
     customer: Mapped[int] = mapped_column(ForeignKey('customer.customer_id', onupdate='CASCADE'), nullable=False)
     total_cost: Mapped[Optional[Decimal]] = mapped_column(Numeric(6, 2), nullable=True)
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
     paid: Mapped[bool] = mapped_column(Boolean, default=False)
+    assigned_to: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey('user.user_id'), nullable=True
+    )
 
     # Relationships
     customer_rel: Mapped["Customer"] = relationship("Customer", back_populates="jobs")
     job_services: Mapped[List["JobService"]] = relationship("JobService", back_populates="job", cascade="all, delete-orphan")
     job_parts: Mapped[List["JobPart"]] = relationship("JobPart", back_populates="job", cascade="all, delete-orphan")
+    assignee: Mapped[Optional["User"]] = relationship("User", foreign_keys=[assigned_to])
+    tenant: Mapped[Optional["Tenant"]] = relationship("Tenant", backref="jobs")
 
     @classmethod
     def get_current_jobs(cls, page: int = 1, per_page: int = 10) -> Tuple[List['Job'], int]:
-        """
-        Get current incomplete jobs with pagination
-
-        Returns:
-            Tuple of (jobs list, total count)
-        """
+        """Get current incomplete jobs with pagination, scoped to tenant"""
         from app.models.customer import Customer
 
-        # Get total count
+        base_filter = [cls.completed == False]
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            base_filter.append(cls.tenant_id == tenant_id)
+
         total = db.session.execute(
-            db.select(db.func.count()).select_from(cls).where(cls.completed == False)
+            db.select(db.func.count()).select_from(cls).where(and_(*base_filter))
         ).scalar() or 0
 
-        # Get paginated results
         offset = (page - 1) * per_page
-        query = db.select(cls).where(cls.completed == False).join(
-            Customer, cls.customer == Customer.customer_id
-        ).order_by(Customer.first_name, Customer.family_name, cls.job_date.desc()).offset(offset).limit(per_page)
+        query = (
+            db.select(cls)
+            .where(and_(*base_filter))
+            .join(Customer, cls.customer == Customer.customer_id)
+            .order_by(Customer.first_name, Customer.family_name, cls.job_date.desc())
+            .offset(offset)
+            .limit(per_page)
+        )
 
         jobs = list(db.session.execute(query).scalars())
         return jobs, total
 
     @classmethod
     def get_all_with_customer_info(cls) -> List['Job']:
-        """Get all jobs with customer information loaded"""
+        """Get all jobs with customer information loaded, scoped to tenant"""
         from app.models.customer import Customer
-        query = db.select(cls).join(Customer).order_by(cls.job_date.desc())
+        query = db.select(cls).join(Customer)
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.job_date.desc())
         return list(db.session.execute(query).scalars())
 
     @classmethod
@@ -103,7 +118,12 @@ class Job(db.Model, BaseModelMixin):
         """Get unpaid jobs, optionally filtered by customer name"""
         from app.models.customer import Customer
 
-        query = db.select(cls).join(Customer).where(cls.paid == False)
+        filters = [cls.paid == False]
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            filters.append(cls.tenant_id == tenant_id)
+
+        query = db.select(cls).join(Customer).where(and_(*filters))
 
         if customer_name and customer_name != 'Choose...':
             full_name_expr = db.func.concat(
@@ -118,11 +138,20 @@ class Job(db.Model, BaseModelMixin):
     def get_overdue_jobs(cls, days_threshold: int = 14) -> List['Job']:
         """Get overdue jobs (unpaid and past threshold)"""
         from app.models.customer import Customer
+        import datetime as dt
 
-        threshold_date = date.today() - __import__('datetime').timedelta(days=days_threshold)
-        query = db.select(cls).join(Customer).where(
-            and_(cls.paid == False, cls.job_date < threshold_date)
-        ).order_by(cls.job_date.asc())
+        threshold_date = date.today() - dt.timedelta(days=days_threshold)
+        filters = [cls.paid == False, cls.job_date < threshold_date]
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            filters.append(cls.tenant_id == tenant_id)
+
+        query = (
+            db.select(cls)
+            .join(Customer)
+            .where(and_(*filters))
+            .order_by(cls.job_date.asc())
+        )
 
         return list(db.session.execute(query).scalars())
 
@@ -233,7 +262,6 @@ class Job(db.Model, BaseModelMixin):
         data['days_since_job'] = self.days_since_job
         if self.total_cost:
             data['total_cost'] = float(self.total_cost)
-        # Include customer info if loaded
         if self.customer_rel:
             data['first_name'] = self.customer_rel.first_name
             data['family_name'] = self.customer_rel.family_name

@@ -1,4 +1,4 @@
 """
-测试框架初始化模块
-提供测试基础设施和通用工具
-""" 
+Test framework initialization module
+Provides test infrastructure and common utilities
+"""

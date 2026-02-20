@@ -3,8 +3,9 @@ Customer Service
 Business logic for customer operations using SQLAlchemy ORM
 """
 from typing import List, Optional, Dict, Any, Tuple
-from datetime import date
+from datetime import date, timedelta
 import logging
+from sqlalchemy import and_
 from app.extensions import db
 from app.models.customer import Customer
 from app.models.job import Job
@@ -215,6 +216,44 @@ class CustomerService:
         except Exception as e:
             self.logger.error(f"Failed to get customer statistics (ID: {customer_id}): {e}")
             return {}
+
+    def get_customers_with_filter(
+        self,
+        has_unpaid: Optional[bool] = None,
+        has_overdue: Optional[bool] = None,
+    ) -> List[Customer]:
+        """
+        Get customers with optional billing filters.
+
+        Args:
+            has_unpaid: If True, only customers with unpaid jobs.
+                        If False, only customers with no unpaid jobs.
+            has_overdue: If True, only customers with overdue (>14 days unpaid) jobs.
+                         If False, only customers with no overdue jobs.
+
+        Returns:
+            Filtered list of customers
+        """
+        try:
+            customers = Customer.get_all_sorted()
+
+            if has_unpaid is not None:
+                if has_unpaid:
+                    customers = [c for c in customers if c.get_unpaid_jobs()]
+                else:
+                    customers = [c for c in customers if not c.get_unpaid_jobs()]
+
+            if has_overdue is not None:
+                if has_overdue:
+                    customers = [c for c in customers if c.has_overdue_bills()]
+                else:
+                    customers = [c for c in customers if not c.has_overdue_bills()]
+
+            return customers
+
+        except Exception as e:
+            self.logger.error(f"Failed to filter customers: {e}")
+            return []
 
     def schedule_job_for_customer(self, customer_id: int, job_date: date) -> Tuple[bool, List[str], Optional[int]]:
         """

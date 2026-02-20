@@ -1,39 +1,64 @@
 """
 Service Model - SQLAlchemy ORM
+Multi-tenant service catalog
 """
 from typing import List, Optional
 from decimal import Decimal
-from sqlalchemy import String, Numeric
+from sqlalchemy import String, Numeric, Integer, ForeignKey, Boolean, and_
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.extensions import db
-from app.models.base import BaseModelMixin
+from app.models.base import BaseModelMixin, TenantScopedMixin
 
 
-class Service(db.Model, BaseModelMixin):
+class Service(db.Model, BaseModelMixin, TenantScopedMixin):
     """Service model class"""
 
     __tablename__ = 'service'
 
     service_id: Mapped[int] = mapped_column(primary_key=True)
-    service_name: Mapped[str] = mapped_column(String(25), nullable=False)
+    tenant_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey('tenant.tenant_id'), nullable=True, index=True
+    )
+    service_name: Mapped[str] = mapped_column(String(100), nullable=False)
     cost: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    estimated_duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
     job_services: Mapped[List["JobService"]] = relationship("JobService", back_populates="service")
+    tenant: Mapped[Optional["Tenant"]] = relationship("Tenant", backref="services")
 
     @classmethod
     def get_all_sorted(cls) -> List['Service']:
-        """Get all services, sorted by name"""
-        query = db.select(cls).order_by(cls.service_name)
+        """Get all services sorted by name, scoped to tenant"""
+        query = db.select(cls)
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.service_name)
+        return list(db.session.execute(query).scalars())
+
+    @classmethod
+    def get_active_sorted(cls) -> List['Service']:
+        """Get active services sorted by name, scoped to tenant"""
+        query = db.select(cls).where(cls.is_active == True)
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.service_name)
         return list(db.session.execute(query).scalars())
 
     @classmethod
     def search_by_name(cls, search_term: str) -> List['Service']:
         """Search services by name"""
         search_pattern = f"%{search_term}%"
-        query = db.select(cls).where(
-            cls.service_name.ilike(search_pattern)
-        ).order_by(cls.service_name)
+        query = db.select(cls).where(cls.service_name.ilike(search_pattern))
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.service_name)
         return list(db.session.execute(query).scalars())
 
     def calculate_total_cost(self, quantity: int) -> Decimal:

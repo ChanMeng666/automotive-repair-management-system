@@ -1,284 +1,232 @@
 """
-视图层集成测试
-测试路由、表单处理、权限验证等
+View Integration Tests
+Tests route accessibility, auth requirements, and response codes
 """
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import json
 
-from app.utils.error_handler import ValidationError, SecurityError
+
+@pytest.mark.integration
+class TestPublicRoutes:
+    """Tests for publicly accessible routes"""
+
+    def test_index_page(self, client, app):
+        """Home page should be accessible"""
+        with app.app_context():
+            with patch('app.views.main.job_service') as mock_js, \
+                 patch('app.views.main.billing_service') as mock_bs:
+                mock_js.get_job_statistics.return_value = {}
+                mock_js.get_current_jobs.return_value = ([], 0, 0)
+                mock_bs.get_billing_statistics.return_value = {}
+                mock_bs.get_overdue_bills.return_value = []
+
+                response = client.get('/')
+                assert response.status_code == 200
+
+    def test_login_page(self, client, app):
+        """Login page should be accessible"""
+        with app.app_context():
+            response = client.get('/login')
+            assert response.status_code == 200
+
+    def test_about_page(self, client, app):
+        """About page should be accessible"""
+        with app.app_context():
+            response = client.get('/about')
+            assert response.status_code == 200
+
+    def test_help_page(self, client, app):
+        """Help page should be accessible"""
+        with app.app_context():
+            response = client.get('/help')
+            assert response.status_code == 200
+
+    def test_404_page(self, client, app):
+        """Non-existent page should return 404"""
+        with app.app_context():
+            response = client.get('/nonexistent-page-xyz')
+            assert response.status_code == 404
 
 
 @pytest.mark.integration
-class TestMainViews:
-    """主要视图集成测试类"""
-    
-    def test_index_page(self, client):
-        """测试首页访问"""
-        response = client.get('/')
-        
-        assert response.status_code == 200
-        assert '汽车维修管理系统'.encode('utf-8') in response.data
-    
-    def test_login_page_get(self, client):
-        """测试登录页面GET请求"""
-        response = client.get('/login')
-        
-        assert response.status_code == 200
-        assert '系统登录'.encode('utf-8') in response.data
-        assert b'csrf_token' in response.data
-    
-    def test_login_success(self, client):
-        """测试成功登录"""
-        import os
-        # Use test password from environment or default test password
-        test_password = os.environ.get('TEST_PASSWORD', 'test_password_for_testing')
+class TestTechnicianRoutes:
+    """Tests for technician route access"""
 
-        with patch.dict(os.environ, {
-            'AUTH_DEMO_MODE': 'true',
-            'DEMO_PASSWORD': test_password
-        }):
-            response = client.post('/login', data={
-                'username': 'test_user',
-                'password': test_password,
-                'user_type': 'technician',
-                'csrf_token': 'test_token'
-            })
+    def test_current_jobs_requires_login(self, client, app):
+        """Current jobs should redirect unauthenticated users"""
+        with app.app_context():
+            response = client.get('/technician/current-jobs')
+            assert response.status_code in (302, 303)
 
-            # 应该重定向到技术员页面
-            assert response.status_code == 302 or response.status_code == 200
-    
-    def test_login_invalid_credentials(self, client):
-        """测试无效凭据登录"""
-        response = client.post('/login', data={
-            'username': 'test_user',
-            'password': 'wrong_password',
-            'user_type': 'technician',
-            'csrf_token': 'test_token'
-        })
-        
-        assert response.status_code == 200
-        assert '用户名或密码错误'.encode('utf-8') in response.data or '系统登录'.encode('utf-8') in response.data
-    
-    def test_logout(self, authenticated_session):
-        """测试注销"""
-        response = authenticated_session.get('/logout')
-        
-        assert response.status_code == 302
-        assert response.location.endswith('/')
-    
-    @patch('app.services.customer_service.CustomerService.search_customers')
-    def test_api_search_customers_authenticated(self, mock_search, authenticated_session):
-        """测试已认证用户搜索客户API"""
-        mock_search.return_value = [
-            type('Customer', (), {
-                'customer_id': 1,
-                'full_name': '张三',
-                'email': 'zhangsan@example.com',
-                'phone': '13812345678'
-            })()
-        ]
-        
-        response = authenticated_session.get('/api/search/customers?q=张三')
-        
-        # 注意：由于我们禁用了认证装饰器，这里可能会返回200
-        # 在实际测试中，需要模拟完整的认证流程
-        assert response.status_code in [200, 401]
-    
-    def test_api_search_customers_unauthenticated(self, client):
-        """测试未认证用户搜索客户API"""
-        response = client.get('/api/search/customers?q=张三')
-        
-        # 应该返回401未授权，但在测试环境中可能行为不同
-        assert response.status_code in [401, 200]
+    def test_current_jobs_authenticated(self, authenticated_session, app):
+        """Current jobs should be accessible to authenticated technicians"""
+        with app.app_context():
+            with patch('app.views.technician.job_service') as mock_js:
+                mock_js.get_current_jobs.return_value = ([], 0, 0)
+                response = authenticated_session.get('/technician/current-jobs')
+                assert response.status_code == 200
+
+    def test_new_job_requires_login(self, client, app):
+        """New job page should redirect unauthenticated users"""
+        with app.app_context():
+            response = client.get('/technician/jobs/new')
+            assert response.status_code in (302, 303)
+
+    def test_services_page_authenticated(self, authenticated_session, app):
+        """Services page should be accessible to authenticated technicians"""
+        with app.app_context():
+            with patch('app.views.technician.Service') as mock_s:
+                mock_s.get_all_sorted.return_value = []
+                response = authenticated_session.get('/technician/services')
+                assert response.status_code == 200
+
+    def test_parts_page_authenticated(self, authenticated_session, app):
+        """Parts page should be accessible to authenticated technicians"""
+        with app.app_context():
+            with patch('app.views.technician.Part') as mock_p:
+                mock_p.get_all_sorted.return_value = []
+                response = authenticated_session.get('/technician/parts')
+                assert response.status_code == 200
+
+    def test_dashboard_authenticated(self, authenticated_session, app):
+        """Technician dashboard should be accessible"""
+        with app.app_context():
+            with patch('app.views.technician.job_service') as mock_js:
+                mock_js.get_job_statistics.return_value = {}
+                mock_js.get_current_jobs.return_value = ([], 0, 0)
+                response = authenticated_session.get('/technician/dashboard')
+                assert response.status_code == 200
 
 
 @pytest.mark.integration
-class TestTechnicianViews:
-    """技术员视图集成测试类"""
-    
-    @patch('app.services.job_service.JobService.get_current_jobs')
-    def test_current_jobs_page(self, mock_get_jobs, authenticated_session):
-        """测试当前工作订单页面"""
-        mock_get_jobs.return_value = ([], 0, 1)
-        
-        response = authenticated_session.get('/technician/current-jobs')
-        
-        # 可能需要额外的认证设置
-        assert response.status_code in [200, 302, 401]
-    
-    @patch('app.services.service_service.ServiceService.get_all_services')
-    def test_add_service_page(self, mock_get_services, authenticated_session):
-        """测试添加服务页面"""
-        mock_get_services.return_value = []
-        
-        response = authenticated_session.get('/technician/add-service')
-        
-        assert response.status_code in [200, 302, 401, 404]
+class TestAdminRoutes:
+    """Tests for administrator route access"""
+
+    def test_admin_dashboard_requires_admin(self, authenticated_session, app):
+        """Admin dashboard should redirect non-admin users"""
+        with app.app_context():
+            response = authenticated_session.get('/administrator/dashboard')
+            assert response.status_code in (302, 303)
+
+    def test_admin_dashboard_accessible(self, admin_session, app):
+        """Admin dashboard should be accessible to admins"""
+        with app.app_context():
+            with patch('app.views.administrator.job_service') as mock_js, \
+                 patch('app.views.administrator.billing_service') as mock_bs, \
+                 patch('app.views.administrator.customer_service') as mock_cs:
+                mock_js.get_job_statistics.return_value = {}
+                mock_js.get_current_jobs.return_value = ([], 0, 0)
+                mock_bs.get_billing_statistics.return_value = {}
+                mock_bs.get_overdue_bills.return_value = []
+                mock_cs.get_all_customers.return_value = []
+                mock_cs.get_customers_with_filter.return_value = []
+
+                response = admin_session.get('/administrator/dashboard')
+                assert response.status_code == 200
+
+    def test_billing_requires_admin(self, authenticated_session, app):
+        """Billing page should redirect non-admin users"""
+        with app.app_context():
+            response = authenticated_session.get('/administrator/billing')
+            assert response.status_code in (302, 303)
+
+    def test_reports_requires_admin(self, authenticated_session, app):
+        """Reports page should redirect non-admin users"""
+        with app.app_context():
+            response = authenticated_session.get('/administrator/reports')
+            assert response.status_code in (302, 303)
+
+    def test_overdue_bills_requires_admin(self, authenticated_session, app):
+        """Overdue bills page should redirect non-admin users"""
+        with app.app_context():
+            response = authenticated_session.get('/administrator/overdue-bills')
+            assert response.status_code in (302, 303)
 
 
 @pytest.mark.integration
-class TestAdministratorViews:
-    """管理员视图集成测试类"""
-    
-    @patch('app.services.customer_service.CustomerService.get_all_customers')
-    def test_customer_list_page(self, mock_get_customers, admin_session):
-        """测试客户列表页面"""
-        mock_get_customers.return_value = []
-        
-        response = admin_session.get('/administrator/customers')
-        
-        assert response.status_code in [200, 302, 401, 404]
-    
-    @patch('app.services.billing_service.BillingService.get_overdue_bills')
-    def test_overdue_bills_page(self, mock_get_bills, admin_session):
-        """测试逾期账单页面"""
-        mock_get_bills.return_value = []
-        
-        response = admin_session.get('/administrator/overdue-bills')
-        
-        assert response.status_code in [200, 302, 401, 404]
+class TestAPIEndpoints:
+    """Tests for API endpoints"""
+
+    def test_api_services(self, authenticated_session, app):
+        """API services endpoint should return JSON"""
+        with app.app_context():
+            with patch('app.views.technician.Service') as mock_s:
+                mock_s.get_all_sorted.return_value = []
+                response = authenticated_session.get('/technician/api/services')
+                assert response.status_code == 200
+                assert response.content_type == 'application/json'
+                data = response.get_json()
+                assert isinstance(data, list)
+
+    def test_api_parts(self, authenticated_session, app):
+        """API parts endpoint should return JSON"""
+        with app.app_context():
+            with patch('app.views.technician.Part') as mock_p:
+                mock_p.get_all_sorted.return_value = []
+                response = authenticated_session.get('/technician/api/parts')
+                assert response.status_code == 200
+                assert response.content_type == 'application/json'
+                data = response.get_json()
+                assert isinstance(data, list)
 
 
 @pytest.mark.integration
-class TestErrorHandling:
-    """错误处理集成测试类"""
-    
-    def test_404_error_page(self, client):
-        """测试404错误页面"""
-        response = client.get('/nonexistent-page')
-        
-        assert response.status_code == 404
-        assert '页面未找到'.encode('utf-8') in response.data or b'404' in response.data
-    
-    def test_404_error_api(self, client):
-        """测试API 404错误"""
-        response = client.get('/api/nonexistent-endpoint')
-        
-        assert response.status_code == 404
-        
-        if response.content_type == 'application/json':
-            data = json.loads(response.data)
-            assert 'error' in data
-    
-    @patch('app.views.main.customer_service.get_all_customers')
-    def test_500_error_handling(self, mock_get_customers, client):
-        """测试500错误处理"""
-        # 模拟服务层抛出异常
-        mock_get_customers.side_effect = Exception("Database error")
-        
-        response = client.get('/customers')
-        
-        # 错误应该被捕获并返回适当的错误页面
-        assert response.status_code in [200, 500]  # 可能被错误处理器处理
+class TestAuthRoutes:
+    """Tests for authentication routes"""
+
+    def test_logout_clears_session(self, authenticated_session, app):
+        """Logout should clear session and redirect"""
+        with app.app_context():
+            response = authenticated_session.get('/logout')
+            assert response.status_code in (302, 303)
+
+    def test_auth_status_endpoint(self, client, app):
+        """Auth status endpoint should return provider config"""
+        with app.app_context():
+            response = client.get('/auth/status')
+            assert response.status_code == 200
+            data = response.get_json()
+            assert 'google_oauth_configured' in data
+
+    def test_select_tenant_requires_login(self, client, app):
+        """Tenant selection should redirect unauthenticated users"""
+        with app.app_context():
+            response = client.get('/auth/select-tenant')
+            assert response.status_code in (302, 303)
+
+    def test_register_org_requires_login(self, client, app):
+        """Register organization should redirect unauthenticated users"""
+        with app.app_context():
+            response = client.get('/auth/register-organization')
+            assert response.status_code in (302, 303)
 
 
 @pytest.mark.integration
 class TestSecurityIntegration:
-    """安全功能集成测试类"""
-    
-    def test_csrf_protection_enabled(self, client):
-        """测试CSRF保护是否启用"""
-        # 获取登录页面以获取CSRF令牌
-        response = client.get('/login')
-        assert response.status_code == 200
-        
-        # 尝试不带CSRF令牌的POST请求
-        response = client.post('/login', data={
-            'username': 'test_user',
-            'password': '123456',
-            'user_type': 'technician'
-        })
-        
-        # 在测试环境中CSRF可能被禁用，所以检查两种情况
-        assert response.status_code in [200, 403]
-    
-    def test_sql_injection_protection(self, authenticated_session):
-        """测试SQL注入保护"""
-        # 尝试SQL注入攻击
-        malicious_query = "'; DROP TABLE customers; --"
-        
-        response = authenticated_session.get(f'/api/search/customers?q={malicious_query}')
-        
-        # 应该被安全检查拦截或安全处理
-        assert response.status_code in [200, 400, 403]
-    
-    def test_xss_protection(self, client):
-        """测试XSS保护"""
-        xss_payload = "<script>alert('xss')</script>"
-        
-        # 在表单中提交XSS载荷
-        response = client.post('/login', data={
-            'username': xss_payload,
-            'password': '123456',
-            'user_type': 'technician',
-            'csrf_token': 'test_token'
-        })
-        
-        # 检查响应中是否正确转义了脚本
-        assert b'<script>' not in response.data
-        assert response.status_code in [200, 400, 403]
+    """Security integration tests"""
 
+    def test_xss_protection(self, client, app):
+        """XSS payloads should be escaped in responses"""
+        with app.app_context():
+            xss_payload = "<script>alert('xss')</script>"
+            response = client.post('/login', data={
+                'username': xss_payload,
+                'password': '123456',
+                'user_type': 'technician',
+                'csrf_token': 'test_token'
+            })
+            # The XSS payload should not appear unescaped in the response
+            assert b"<script>alert('xss')</script>" not in response.data
+            assert response.status_code in (200, 400, 403)
 
-@pytest.mark.integration  
-class TestSessionManagement:
-    """会话管理集成测试类"""
-    
-    def test_session_creation_on_login(self, client):
-        """测试登录时会话创建"""
-        with client.session_transaction() as sess:
-            assert 'user_id' not in sess
-        
-        client.post('/login', data={
-            'username': 'test_user',
-            'password': '123456',
-            'user_type': 'technician',
-            'csrf_token': 'test_token'
-        })
-        
-        with client.session_transaction() as sess:
-            # 在成功登录后应该设置会话
-            if sess.get('logged_in'):
-                assert 'user_id' in sess
-                assert 'user_type' in sess
-    
-    def test_session_cleanup_on_logout(self, authenticated_session):
-        """测试注销时会话清理"""
-        # 验证会话存在
-        with authenticated_session.session_transaction() as sess:
-            assert sess.get('logged_in') is True
-        
-        # 注销
-        authenticated_session.get('/logout')
-        
-        # 验证会话被清理
-        with authenticated_session.session_transaction() as sess:
-            assert sess.get('logged_in') is not True
+    def test_session_cleanup_on_logout(self, authenticated_session, app):
+        """Session should be cleared on logout"""
+        with app.app_context():
+            with authenticated_session.session_transaction() as sess:
+                assert sess.get('logged_in') is True
 
+            authenticated_session.get('/logout')
 
-@pytest.mark.integration
-@pytest.mark.slow
-class TestDatabaseIntegration:
-    """数据库集成测试类"""
-    
-    @patch('app.utils.database.db_manager')
-    def test_database_connection_error_handling(self, mock_db_manager, client):
-        """测试数据库连接错误处理"""
-        # 模拟数据库连接失败
-        mock_db_manager.get_cursor.side_effect = Exception("Connection failed")
-        
-        response = client.get('/')
-        
-        # 应用应该优雅地处理数据库错误
-        assert response.status_code in [200, 500]
-    
-    @patch('app.models.customer.execute_query')
-    def test_database_query_error_handling(self, mock_execute_query, authenticated_session):
-        """测试数据库查询错误处理"""
-        # 模拟查询失败
-        mock_execute_query.side_effect = Exception("Query failed")
-        
-        response = authenticated_session.get('/api/search/customers?q=test')
-        
-        # 应该返回错误响应
-        assert response.status_code in [500, 400, 200] 
+            with authenticated_session.session_transaction() as sess:
+                assert sess.get('logged_in') is not True

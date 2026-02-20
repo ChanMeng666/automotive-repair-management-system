@@ -1,0 +1,300 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Help - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Help</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.role-card {
+    border: none;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.role-card:hover {
+    box-shadow: 0 8px 24px rgba(30, 58, 95, 0.1);
+}
+
+.role-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.role-body {
+    padding: 1.5rem;
+}
+
+.capability-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+}
+
+.capability-item i {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Header -->
+        <div class="card border-0 shadow-sm mb-4" style="border-top: 4px solid var(--accent) !important;">
+            <div class="card-body p-5">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                        <i data-lucide="help-circle" class="text-primary" style="width: 36px; height: 36px;"></i>
+                    </div>
+                    <div>
+                        <h1 class="h2 fw-bold mb-1">User Guide</h1>
+                        <p class="text-muted mb-0">Learn how to use AutoRepair Pro based on your role</p>
+                    </div>
+                </div>
+                <div class="alert alert-primary bg-primary bg-opacity-5 border-primary border-opacity-25 d-flex align-items-center" role="alert">
+                    <i data-lucide="lightbulb" class="me-2 flex-shrink-0" style="width: 20px; height: 20px;"></i>
+                    <div>Select a role section below to see the features and capabilities available to you.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Sections -->
+        <div class="row g-4">
+            <!-- Owner / Admin -->
+            <div class="col-md-6">
+                <div class="card role-card shadow-sm h-100">
+                    <div class="role-header bg-primary bg-opacity-5">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                <i data-lucide="shield" class="text-primary" style="width: 22px; height: 22px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Owner / Admin</h5>
+                                <small class="text-muted">Full system access and configuration</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-body">
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Create and manage organizations, configure business settings</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Invite and manage team members, assign roles and permissions</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>View all reports: revenue, technician performance, overdue accounts</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Configure services, pricing, and service categories</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Manage subscription plans and billing information</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Access audit logs and system activity history</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Export data and generate custom reports</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manager -->
+            <div class="col-md-6">
+                <div class="card role-card shadow-sm h-100">
+                    <div class="role-header" style="background: rgba(232, 126, 4, 0.05);">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle p-2 me-3" style="background: rgba(232, 126, 4, 0.1);">
+                                <i data-lucide="briefcase" class="text-accent" style="width: 22px; height: 22px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Manager</h5>
+                                <small class="text-muted">Day-to-day operations management</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-body">
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>View dashboard with real-time shop metrics and KPIs</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Create and assign repair orders to technicians</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Manage customer accounts, vehicles, and contact information</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Process payments, generate invoices, and track overdue accounts</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Monitor job progress and update repair order statuses</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>View reports on revenue and shop performance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technician -->
+            <div class="col-md-6">
+                <div class="card role-card shadow-sm h-100">
+                    <div class="role-header" style="background: rgba(16, 185, 129, 0.05);">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle p-2 me-3" style="background: rgba(16, 185, 129, 0.1);">
+                                <i data-lucide="wrench" style="width: 22px; height: 22px; color: #059669;"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Technician</h5>
+                                <small class="text-muted">Repair work and job management</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-body">
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>View assigned jobs and current workload on the dashboard</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Create new repair jobs with customer and vehicle details</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Update job status: in progress, awaiting parts, completed</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Add services, parts used, and labor notes to repair orders</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Browse the service catalog and view pricing</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>View customer history and past repair records</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parts Clerk -->
+            <div class="col-md-6">
+                <div class="card role-card shadow-sm h-100">
+                    <div class="role-header" style="background: rgba(99, 102, 241, 0.05);">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle p-2 me-3" style="background: rgba(99, 102, 241, 0.1);">
+                                <i data-lucide="package" style="width: 22px; height: 22px; color: #6366f1;"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Parts Clerk</h5>
+                                <small class="text-muted">Inventory and parts management</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="role-body">
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>View and manage the full parts inventory catalog</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Add new parts, update quantities, and adjust pricing</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Track stock levels and receive low-inventory alerts</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Manage supplier information and reorder parts</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Assign parts to repair orders and track usage</span>
+                        </div>
+                        <div class="capability-item">
+                            <i data-lucide="check-circle" class="text-success me-2" style="width: 16px; height: 16px;"></i>
+                            <span>Generate inventory reports and stock summaries</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-4 d-flex align-items-center">
+                    <i data-lucide="rocket" class="me-2 text-accent" style="width: 22px; height: 22px;"></i>
+                    Getting Started
+                </h4>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="rounded-circle bg-accent text-white fw-bold d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.85rem;">1</div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Sign In</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.9rem;">Log in with your credentials or Google account.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="rounded-circle bg-accent text-white fw-bold d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.85rem;">2</div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Select Organization</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.9rem;">Choose the shop or location you want to manage.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="rounded-circle bg-accent text-white fw-bold d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.85rem;">3</div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Start Working</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.9rem;">Use the dashboard and navigation to access your tools.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div class="card border-0 shadow-sm mt-4 mb-4">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3 d-flex align-items-center">
+                    <i data-lucide="headphones" class="me-2 text-accent" style="width: 22px; height: 22px;"></i>
+                    Need More Help?
+                </h4>
+                <p class="text-muted mb-0">
+                    Contact your organization administrator for account-related questions or system configuration.
+                    For technical support, reach out to the AutoRepair Pro support team through the contact information
+                    provided by your administrator.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,39 +1,68 @@
 """
 Part Model - SQLAlchemy ORM
+Multi-tenant parts catalog
 """
 from typing import List, Optional
 from decimal import Decimal
-from sqlalchemy import String, Numeric
+from sqlalchemy import String, Numeric, Integer, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.extensions import db
-from app.models.base import BaseModelMixin
+from app.models.base import BaseModelMixin, TenantScopedMixin
 
 
-class Part(db.Model, BaseModelMixin):
+class Part(db.Model, BaseModelMixin, TenantScopedMixin):
     """Part model class"""
 
     __tablename__ = 'part'
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'sku', name='uq_part_tenant_sku'),
+    )
 
     part_id: Mapped[int] = mapped_column(primary_key=True)
-    part_name: Mapped[str] = mapped_column(String(25), nullable=False)
+    tenant_id: Mapped[Optional[int]] = mapped_column(
+        Integer, ForeignKey('tenant.tenant_id'), nullable=True, index=True
+    )
+    part_name: Mapped[str] = mapped_column(String(100), nullable=False)
     cost: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False)
+    sku: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    supplier: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     # Relationships
     job_parts: Mapped[List["JobPart"]] = relationship("JobPart", back_populates="part")
+    tenant: Mapped[Optional["Tenant"]] = relationship("Tenant", backref="parts")
 
     @classmethod
     def get_all_sorted(cls) -> List['Part']:
-        """Get all parts, sorted by name"""
-        query = db.select(cls).order_by(cls.part_name)
+        """Get all parts sorted by name, scoped to tenant"""
+        query = db.select(cls)
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.part_name)
+        return list(db.session.execute(query).scalars())
+
+    @classmethod
+    def get_active_sorted(cls) -> List['Part']:
+        """Get active parts sorted by name, scoped to tenant"""
+        query = db.select(cls).where(cls.is_active == True)
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.part_name)
         return list(db.session.execute(query).scalars())
 
     @classmethod
     def search_by_name(cls, search_term: str) -> List['Part']:
         """Search parts by name"""
         search_pattern = f"%{search_term}%"
-        query = db.select(cls).where(
-            cls.part_name.ilike(search_pattern)
-        ).order_by(cls.part_name)
+        query = db.select(cls).where(cls.part_name.ilike(search_pattern))
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+        query = query.order_by(cls.part_name)
         return list(db.session.execute(query).scalars())
 
     def calculate_total_cost(self, quantity: int) -> Decimal:
@@ -72,9 +101,13 @@ class Part(db.Model, BaseModelMixin):
             db.func.count(JobPart.job_id).label('usage_count'),
             db.func.coalesce(db.func.sum(JobPart.qty), 0).label('total_used'),
             db.func.coalesce(db.func.sum(JobPart.qty * cls.cost), 0).label('total_value')
-        ).outerjoin(JobPart).group_by(cls.part_id, cls.part_name, cls.cost).order_by(
-            db.desc('usage_count'), cls.part_name
-        )
+        ).outerjoin(JobPart).group_by(cls.part_id, cls.part_name, cls.cost)
+
+        tenant_id = cls._get_current_tenant_id()
+        if tenant_id:
+            query = query.where(cls.tenant_id == tenant_id)
+
+        query = query.order_by(db.desc('usage_count'), cls.part_name)
 
         results = db.session.execute(query).all()
         return [

@@ -1,0 +1,128 @@
+{% extends "base/layout.html" %}
+{% block title %}Subscription - Administrator Portal{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Subscription</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="crown" class="text-warning" style="width: 28px; height: 28px;"></i>
+                        Subscription Management
+                    </h1>
+                    <p class="text-muted mb-0">Manage your plan and usage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Current Plan -->
+        <div class="col-lg-6">
+            <div class="table-container h-100" style="border-top: 3px solid var(--primary);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold d-flex align-items-center gap-2 mb-4">
+                        <i data-lucide="package" class="text-primary" style="width: 20px; height: 20px;"></i>
+                        Current Plan
+                    </h5>
+                    <div class="text-center mb-4">
+                        <div class="h2 fw-bold text-primary">{{ current_plan.name|default('Free') }}</div>
+                        <span class="status-badge {% if current_plan.status|default('active') == 'active' %}status-badge-success{% else %}status-badge-warning{% endif %}">
+                            <i data-lucide="{% if current_plan.status|default('active') == 'active' %}check-circle{% else %}clock{% endif %}" style="width: 12px; height: 12px;"></i>
+                            {{ current_plan.status|default('Active')|title }}
+                        </span>
+                    </div>
+                    {% if current_plan.renewal_date is defined %}
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Next Renewal</span>
+                        <span class="fw-semibold">{{ current_plan.renewal_date }}</span>
+                    </div>
+                    {% endif %}
+                    {% if current_plan.price is defined %}
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Monthly Cost</span>
+                        <span class="fw-semibold">${{ "%.2f"|format(current_plan.price|float) }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="mt-4 d-flex gap-2">
+                        <a href="#" class="btn btn-primary flex-fill">
+                            <i data-lucide="arrow-up-circle" class="me-1" style="width: 16px; height: 16px;"></i>
+                            Upgrade Plan
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary flex-fill">
+                            <i data-lucide="settings" class="me-1" style="width: 16px; height: 16px;"></i>
+                            Manage
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Statistics -->
+        <div class="col-lg-6">
+            <div class="table-container h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold d-flex align-items-center gap-2 mb-4">
+                        <i data-lucide="bar-chart-3" class="text-info" style="width: 20px; height: 20px;"></i>
+                        Usage Statistics
+                    </h5>
+
+                    <!-- Customers Usage -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold">Customers</span>
+                            <span class="text-muted">{{ usage.customers|default(0) }} / {{ usage.customers_limit|default('Unlimited') }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            {% set cust_pct = ((usage.customers|default(0) / usage.customers_limit|default(1)) * 100) if usage.customers_limit|default(0) else 0 %}
+                            <div class="progress-bar bg-primary" style="width: {{ cust_pct }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Jobs Usage -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold">Jobs This Month</span>
+                            <span class="text-muted">{{ usage.jobs_this_month|default(0) }} / {{ usage.jobs_limit|default('Unlimited') }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            {% set job_pct = ((usage.jobs_this_month|default(0) / usage.jobs_limit|default(1)) * 100) if usage.jobs_limit|default(0) else 0 %}
+                            <div class="progress-bar bg-success" style="width: {{ job_pct }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Team Members Usage -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold">Team Members</span>
+                            <span class="text-muted">{{ usage.team_members|default(0) }} / {{ usage.team_limit|default('Unlimited') }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            {% set team_pct = ((usage.team_members|default(0) / usage.team_limit|default(1)) * 100) if usage.team_limit|default(0) else 0 %}
+                            <div class="progress-bar bg-warning" style="width: {{ team_pct }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Usage -->
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold">Storage</span>
+                            <span class="text-muted">{{ usage.storage_used|default('0 MB') }} / {{ usage.storage_limit|default('1 GB') }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: {{ usage.storage_pct|default(0) }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

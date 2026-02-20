@@ -31,5 +31,8 @@ pytest==8.3.4
 pytest-cov==6.0.0
 pytest-mock==3.14.0
 
+# Payments
+stripe==11.4.1
+
 # Security
 bcrypt==4.2.1

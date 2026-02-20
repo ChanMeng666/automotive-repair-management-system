@@ -311,3 +311,119 @@ def auth_status():
         'google_oauth_configured': oauth_service.is_google_configured(),
         'neon_auth_configured': bool(current_app.config.get('NEON_AUTH_URL'))
     })
+
+
+# =============================================================================
+# MULTI-TENANT ROUTES
+# =============================================================================
+
+@auth_bp.route('/select-tenant')
+def select_tenant():
+    """
+    Tenant selection page - shown when user has multiple organizations
+    """
+    if not session.get('logged_in'):
+        flash('Please log in first', 'warning')
+        return redirect(url_for('main.login'))
+
+    from app.services.tenant_service import TenantService
+    tenant_service = TenantService()
+    user_id = session.get('user_id')
+    tenants = tenant_service.get_user_tenants(user_id)
+
+    if not tenants:
+        flash('You are not a member of any organization. Create one to get started.', 'info')
+        return redirect(url_for('auth.register_organization'))
+
+    if len(tenants) == 1:
+        tenant = tenants[0]
+        session['current_tenant_id'] = tenant['tenant_id']
+        session['current_tenant_slug'] = tenant['slug']
+        session['current_tenant_name'] = tenant['name']
+        session['current_role'] = tenant['role']
+        return redirect(url_for('main.dashboard'))
+
+    return render_template('auth/select_tenant.html', tenants=tenants)
+
+
+@auth_bp.route('/switch-tenant', methods=['POST'])
+def switch_tenant():
+    """Switch active tenant context"""
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Not authenticated'}), 401
+
+    tenant_slug = request.form.get('tenant_slug') or (request.get_json(silent=True) or {}).get('tenant_slug')
+    if not tenant_slug:
+        flash('No organization specified', 'error')
+        return redirect(url_for('auth.select_tenant'))
+
+    from app.services.tenant_service import TenantService
+    from app.models.tenant import Tenant
+
+    tenant = Tenant.find_by_slug(tenant_slug)
+    if not tenant:
+        flash('Organization not found', 'error')
+        return redirect(url_for('auth.select_tenant'))
+
+    tenant_service = TenantService()
+    user_tenants = tenant_service.get_user_tenants(session.get('user_id'))
+    tenant_data = next((t for t in user_tenants if t['slug'] == tenant_slug), None)
+
+    if not tenant_data:
+        flash('You are not a member of this organization', 'error')
+        return redirect(url_for('auth.select_tenant'))
+
+    session['current_tenant_id'] = tenant_data['tenant_id']
+    session['current_tenant_slug'] = tenant_data['slug']
+    session['current_tenant_name'] = tenant_data['name']
+    session['current_role'] = tenant_data['role']
+
+    flash(f'Switched to {tenant_data["name"]}', 'success')
+    return redirect(url_for('main.dashboard'))
+
+
+@auth_bp.route('/register-organization', methods=['GET', 'POST'])
+def register_organization():
+    """Register a new organization (tenant)"""
+    if not session.get('logged_in'):
+        flash('Please log in first', 'warning')
+        return redirect(url_for('main.login'))
+
+    if request.method == 'GET':
+        return render_template('auth/register_organization.html')
+
+    from app.services.tenant_service import TenantService
+    from app.utils.validators import sanitize_input
+
+    name = sanitize_input(request.form.get('name', ''))
+    business_type = sanitize_input(request.form.get('business_type', 'auto_repair'))
+    email = sanitize_input(request.form.get('email', ''))
+    phone = sanitize_input(request.form.get('phone', ''))
+
+    if not name or len(name) < 2:
+        flash('Organization name must be at least 2 characters', 'error')
+        return render_template('auth/register_organization.html')
+
+    tenant_service = TenantService()
+    user_id = session.get('user_id')
+
+    success, errors, tenant = tenant_service.create_tenant(
+        name=name,
+        owner_user_id=user_id,
+        business_type=business_type,
+        email=email or None,
+        phone=phone or None,
+    )
+
+    if success:
+        session['current_tenant_id'] = tenant.tenant_id
+        session['current_tenant_slug'] = tenant.slug
+        session['current_tenant_name'] = tenant.name
+        session['current_role'] = 'owner'
+
+        flash(f'Organization "{tenant.name}" created successfully!', 'success')
+        return redirect(url_for('onboarding.step', step_number=1))
+    else:
+        for error in errors:
+            flash(error, 'error')
+        return render_template('auth/register_organization.html')

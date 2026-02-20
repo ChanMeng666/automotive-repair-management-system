@@ -1,0 +1,120 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Select Organization - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.tenant-bg {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, #e8eef5 100%);
+    min-height: 80vh;
+}
+
+.tenant-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.tenant-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(30, 58, 95, 0.12);
+}
+
+.tenant-card .card-body {
+    padding: 1.75rem;
+}
+
+.business-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-auto-repair {
+    background: rgba(30, 58, 95, 0.1);
+    color: var(--primary);
+}
+
+.badge-parts-seller {
+    background: rgba(232, 126, 4, 0.1);
+    color: var(--accent);
+}
+
+.badge-both {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tenant-bg d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle p-3 mb-3">
+                        <i data-lucide="building-2" class="text-primary" style="width: 40px; height: 40px;"></i>
+                    </div>
+                    <h1 class="h2 fw-bold mb-2">Select Organization</h1>
+                    <p class="text-muted">Choose which organization you want to work in</p>
+                </div>
+
+                <!-- Tenant Cards -->
+                <div class="row g-4">
+                    {% for tenant in tenants %}
+                    <div class="col-md-6">
+                        <div class="card tenant-card h-100 border-0 shadow-sm">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-start justify-content-between mb-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-2">
+                                        <i data-lucide="building" class="text-primary" style="width: 24px; height: 24px;"></i>
+                                    </div>
+                                    <span class="business-badge {% if tenant.business_type == 'Auto Repair' %}badge-auto-repair{% elif tenant.business_type == 'Parts Seller' %}badge-parts-seller{% else %}badge-both{% endif %}">
+                                        {{ tenant.business_type }}
+                                    </span>
+                                </div>
+
+                                <h5 class="fw-bold mb-2">{{ tenant.tenant_name }}</h5>
+
+                                <div class="d-flex align-items-center text-muted mb-4">
+                                    <i data-lucide="shield" class="me-2" style="width: 16px; height: 16px;"></i>
+                                    <span class="text-sm">{{ tenant.role }}</span>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <a href="/org/{{ tenant.tenant_slug }}/dashboard" class="btn btn-accent w-100">
+                                        <i data-lucide="log-in" class="me-2" style="width: 18px; height: 18px;"></i>
+                                        Enter
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if not tenants %}
+                <div class="text-center py-5">
+                    <i data-lucide="inbox" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                    <h5 class="text-muted">No Organizations Found</h5>
+                    <p class="text-muted mb-4">You are not a member of any organization yet.</p>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-accent">
+                        <i data-lucide="plus" class="me-2" style="width: 18px; height: 18px;"></i>
+                        Create Organization
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

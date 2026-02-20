@@ -44,8 +44,33 @@
                 <!-- Brand Logo -->
                 <a class="navbar-brand" href="{{ url_for('main.index') }}">
                     <i data-lucide="settings-2" class="brand-icon"></i>
-                    <span>AutoRepair Pro</span>
+                    <span>AutoRepair Pro{% if current_tenant %} &middot; {{ current_tenant.name }}{% endif %}</span>
                 </a>
+
+                {% if user_tenants and user_tenants|length > 1 %}
+                <!-- Organization Switcher -->
+                <div class="dropdown me-3">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i data-lucide="building-2" style="width: 16px; height: 16px;" class="me-1"></i>
+                        <span class="d-none d-md-inline">{{ current_tenant.name if current_tenant else 'Select Org' }}</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><h6 class="dropdown-header">Organizations</h6></li>
+                        {% for tenant in user_tenants %}
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center" href="/org/{{ tenant.slug }}/dashboard">
+                                {% if current_tenant and tenant.id == current_tenant.id %}
+                                <i data-lucide="check" style="width: 14px; height: 14px;" class="me-2 text-success"></i>
+                                {% else %}
+                                <span style="width: 14px; display: inline-block;" class="me-2"></span>
+                                {% endif %}
+                                {{ tenant.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
 
                 <!-- Mobile Toggle Button -->
                 <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -108,6 +133,42 @@
                                     <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.reports') }}">
                                         <i data-lucide="bar-chart-3" class="nav-icon"></i>
                                         <span>Reports</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'team_members' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.team_members') }}">
+                                        <i data-lucide="users-cog" class="nav-icon"></i>
+                                        <span>Team Members</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'service_catalog' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.service_catalog') }}">
+                                        <i data-lucide="list-checks" class="nav-icon"></i>
+                                        <span>Service Catalog</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'parts_catalog' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.parts_catalog') }}">
+                                        <i data-lucide="package" class="nav-icon"></i>
+                                        <span>Parts Catalog</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'inventory' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.inventory') }}">
+                                        <i data-lucide="warehouse" class="nav-icon"></i>
+                                        <span>Inventory</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'org_settings' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.org_settings') }}">
+                                        <i data-lucide="building-2" class="nav-icon"></i>
+                                        <span>Organization Settings</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'subscription' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.subscription_management') }}">
+                                        <i data-lucide="credit-card" class="nav-icon"></i>
+                                        <span>Subscription</span>
                                     </a>
                                 </li>
                             {% endif %}
@@ -189,6 +250,14 @@
                                     <li><a class="dropdown-item" href="#">
                                         <i data-lucide="settings" class="dropdown-icon me-2"></i>Settings
                                     </a></li>
+                                    {% if user_tenants and user_tenants|length > 1 %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-bs-toggle="dropdown" onclick="document.querySelector('.org-switcher-btn')?.click(); return false;">
+                                            <i data-lucide="repeat" class="dropdown-icon me-2"></i>Switch Organization
+                                        </a>
+                                    </li>
+                                    {% endif %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ url_for('main.help_page') }}">
                                         <i data-lucide="help-circle" class="dropdown-icon me-2"></i>Help

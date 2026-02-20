@@ -160,3 +160,5 @@ cython_debug/
 .idea/
 connect.py
 *.db
+.claude/settings.local.json
+test_output.txt

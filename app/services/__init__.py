@@ -6,6 +6,8 @@ from app.services.customer_service import CustomerService
 from app.services.job_service import JobService
 from app.services.billing_service import BillingService
 from app.services.auth_service import AuthService, NeonAuthService, neon_auth
+from app.services.tenant_service import TenantService
+from app.services.stripe_service import StripeService
 
 __all__ = [
     'CustomerService',
@@ -13,5 +15,7 @@ __all__ = [
     'BillingService',
     'AuthService',
     'NeonAuthService',
-    'neon_auth'
+    'neon_auth',
+    'TenantService',
+    'StripeService',
 ]

@@ -1,0 +1,173 @@
+{% extends "base/layout.html" %}
+{% block title %}Reports - Administrator Portal{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Reports</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        Reports
+                    </h1>
+                    <p class="text-muted mb-0">Business analytics and performance metrics</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="window.print()">
+                        <i data-lucide="download" class="me-1" style="width: 16px; height: 16px;"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Period Info -->
+    {% if report_data and report_data.period_info %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center gap-2">
+                <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                <div>
+                    <strong>Report Period:</strong>
+                    {{ report_data.period_info.start_date|default('N/A') }} to {{ report_data.period_info.end_date|default('N/A') }}
+                    {% if report_data.period_info.comparison %}
+                    &mdash; Compared with {{ report_data.period_info.comparison }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Job Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="table-container card--status card--status-active">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="briefcase" style="width: 20px; height: 20px;"></i>
+                        Job Statistics
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% set js = report_data.job_stats if report_data else {} %}
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: var(--primary-bg);">
+                                <div class="h2 mb-0 text-primary">{{ js.total|default(0) }}</div>
+                                <small class="text-muted">Total Jobs</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: rgba(22,163,74,0.1);">
+                                <div class="h2 mb-0 text-success">{{ js.completed|default(0) }}</div>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: rgba(245,158,11,0.1);">
+                                <div class="h2 mb-0 text-warning">{{ js.in_progress|default(0) }}</div>
+                                <small class="text-muted">In Progress</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: rgba(107,114,128,0.1);">
+                                <div class="h2 mb-0 text-secondary">{{ js.pending|default(0) }}</div>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="table-container card--status card--status-accent">
+                <div class="table-header" style="background: var(--info); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="dollar-sign" style="width: 20px; height: 20px;"></i>
+                        Billing Statistics
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% set bs = report_data.billing_stats if report_data else {} %}
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: var(--primary-bg);">
+                                <div class="h2 mb-0 text-primary">${{ "%.2f"|format(bs.total_revenue|default(0)|float) }}</div>
+                                <small class="text-muted">Total Revenue</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: rgba(22,163,74,0.1);">
+                                <div class="h2 mb-0 text-success">${{ "%.2f"|format(bs.total_paid|default(0)|float) }}</div>
+                                <small class="text-muted">Collected</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: rgba(245,158,11,0.1);">
+                                <div class="h2 mb-0 text-warning">${{ "%.2f"|format(bs.total_unpaid|default(0)|float) }}</div>
+                                <small class="text-muted">Outstanding</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 rounded" style="background: rgba(220,38,38,0.1);">
+                                <div class="h2 mb-0 text-danger">${{ "%.2f"|format(bs.total_overdue|default(0)|float) }}</div>
+                                <small class="text-muted">Overdue</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="table-container">
+                <div class="table-header" style="background: var(--success); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+                        Customer Statistics
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% set cs = report_data.customer_stats if report_data else {} %}
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 rounded" style="background: var(--primary-bg);">
+                                <div class="h2 mb-0 text-primary">{{ cs.total|default(0) }}</div>
+                                <small class="text-muted">Total Customers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 rounded" style="background: rgba(22,163,74,0.1);">
+                                <div class="h2 mb-0 text-success">{{ cs.active|default(0) }}</div>
+                                <small class="text-muted">Active Customers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 rounded" style="background: rgba(245,158,11,0.1);">
+                                <div class="h2 mb-0 text-warning">{{ cs.with_unpaid|default(0) }}</div>
+                                <small class="text-muted">With Unpaid Bills</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base/layout.html" %}
+{% block title %}Payment Successful - AutoRepair Pro{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Payment Confirmation</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="table-container text-center" style="border-top: 4px solid var(--success);">
+                <div class="card-body p-5">
+                    <div class="rounded-circle bg-success bg-opacity-10 mx-auto mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i data-lucide="check-circle" class="text-success" style="width: 48px; height: 48px;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-3">Payment Successful</h2>
+                    <p class="text-muted mb-4">
+                        Your payment has been processed successfully. A confirmation email will be sent to your registered address.
+                    </p>
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                            <i data-lucide="layout-dashboard" class="me-1" style="width: 16px; height: 16px;"></i>
+                            Return to Dashboard
+                        </a>
+                        <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-secondary">
+                            <i data-lucide="credit-card" class="me-1" style="width: 16px; height: 16px;"></i>
+                            View Billing
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

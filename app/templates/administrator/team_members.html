@@ -1,0 +1,160 @@
+{% extends "base/layout.html" %}
+{% block title %}Team Members - Administrator Portal{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Team Members</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-0 d-flex align-items-center gap-2">
+                        <i data-lucide="users" class="text-primary" style="width: 28px; height: 28px;"></i>
+                        Team Members
+                    </h1>
+                    <p class="text-muted mb-0">Manage your team and invite new members</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="table-container" style="border-top: 3px solid var(--success);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold d-flex align-items-center gap-2 mb-3">
+                        <i data-lucide="user-plus" class="text-success" style="width: 20px; height: 20px;"></i>
+                        Invite Team Member
+                    </h5>
+                    <form method="post" action="#">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" name="invite_email" placeholder="colleague@example.com" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="invite_role" required>
+                                    <option value="">Select role...</option>
+                                    <option value="administrator">Administrator</option>
+                                    <option value="technician">Technician</option>
+                                    <option value="viewer">Viewer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i data-lucide="send" class="me-1" style="width: 16px; height: 16px;"></i>
+                                    Send Invite
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-container card--status card--status-active">
+                <div class="table-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: white;">
+                    <h5 class="table-title mb-0 d-flex align-items-center gap-2" style="color: white;">
+                        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+                        Current Members
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members|default([]) %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-2">
+                                                <i data-lucide="user" class="text-primary" style="width: 16px; height: 16px;"></i>
+                                            </div>
+                                            <strong>{{ member.name|default(member.email) }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i data-lucide="mail" class="text-muted" style="width: 14px; height: 14px;"></i>
+                                            {{ member.email }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if member.role == 'administrator' %}primary{% elif member.role == 'technician' %}info{% else %}secondary{% endif %}">
+                                            {{ member.role|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if member.status|default('active') == 'active' %}
+                                        <span class="status-badge status-badge-success">
+                                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                                            Active
+                                        </span>
+                                        {% elif member.status == 'invited' %}
+                                        <span class="status-badge status-badge-warning">
+                                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                            Invited
+                                        </span>
+                                        {% else %}
+                                        <span class="status-badge status-badge-error">
+                                            <i data-lucide="x-circle" style="width: 12px; height: 12px;"></i>
+                                            Inactive
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <form method="post" action="#" class="d-inline">
+                                                <input type="hidden" name="member_id" value="{{ member.id }}">
+                                                <select class="form-select form-select-sm d-inline-block" name="new_role" onchange="this.form.submit()" style="width: auto;">
+                                                    <option value="administrator" {% if member.role == 'administrator' %}selected{% endif %}>Admin</option>
+                                                    <option value="technician" {% if member.role == 'technician' %}selected{% endif %}>Tech</option>
+                                                    <option value="viewer" {% if member.role == 'viewer' %}selected{% endif %}>Viewer</option>
+                                                </select>
+                                            </form>
+                                            <form method="post" action="#" class="d-inline" onsubmit="return confirm('Remove this team member?');">
+                                                <input type="hidden" name="remove_member_id" value="{{ member.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i data-lucide="user-minus" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i data-lucide="users" style="width: 48px; height: 48px;" class="mb-2 d-block mx-auto"></i>
+                                        No team members yet. Invite someone above.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
