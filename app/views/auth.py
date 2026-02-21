@@ -71,62 +71,28 @@ def neon_callback():
     Called after sign-in or sign-up + verification via neon-auth.js.
     Accepts token from request body (preferred) or falls back to cookie.
     """
-    debug_info = {}
     try:
         # Try token from request body first (works cross-origin)
         session_token = None
         body = request.get_json(silent=True) or {}
-        debug_info['body_keys'] = list(body.keys())
-        debug_info['has_body_token'] = bool(body.get('token'))
 
         if body.get('token'):
             session_token = body['token']
-            debug_info['token_source'] = 'body'
-            debug_info['token_length'] = len(session_token)
-            debug_info['token_prefix'] = session_token[:30] + '...'
 
         # Fall back to cookie
         if not session_token:
             session_token = request.cookies.get('better-auth.session_token')
-            if session_token:
-                debug_info['token_source'] = 'cookie'
-                debug_info['token_length'] = len(session_token)
-                debug_info['token_prefix'] = session_token[:30] + '...'
-
-        # Log all cookies received (names only, not values)
-        debug_info['cookie_names'] = list(request.cookies.keys())
 
         if not session_token:
-            debug_info['error'] = 'no_token_found'
-            logger.warning(f"neon-callback: no token. debug={debug_info}")
-            return jsonify({'error': 'No session token', 'debug': debug_info}), 401
+            return jsonify({'error': 'No session token'}), 401
 
         auth_service = AuthService()
-
-        # Try JWT verification
-        jwt_payload = neon_auth.verify_token(session_token)
-        debug_info['jwt_valid'] = jwt_payload is not None
-        if jwt_payload:
-            debug_info['jwt_sub'] = jwt_payload.get('sub')
-            debug_info['jwt_email'] = jwt_payload.get('email')
-
-        # Try opaque session validation
-        if not jwt_payload:
-            opaque_payload = neon_auth.validate_session_token(session_token)
-            debug_info['opaque_valid'] = opaque_payload is not None
-            if opaque_payload:
-                debug_info['opaque_sub'] = opaque_payload.get('sub')
-                debug_info['opaque_email'] = opaque_payload.get('email')
-
         user = auth_service.authenticate_jwt(session_token)
-        debug_info['user_found'] = user is not None
 
         if not user:
             # Fallback: client may have passed user data from getSession()
             client_user = body.get('user')
-            debug_info['has_client_user'] = client_user is not None
             if client_user and client_user.get('id') and client_user.get('email'):
-                logger.info(f"neon-callback: trying client user data fallback id={client_user.get('id')}")
                 # Clean up any dirty DB transaction from failed lookups
                 try:
                     db.session.rollback()
@@ -139,11 +105,8 @@ def neon_callback():
                     'email_verified': client_user.get('emailVerified', False),
                 }
                 user = User.authenticate_with_jwt(fallback_payload)
-                debug_info['fallback_user_found'] = user is not None
 
         if user:
-            debug_info['user_id'] = user.user_id
-            debug_info['username'] = user.username
             auth_service.establish_session(user)
             redirect_url = auth_service.resolve_post_auth_redirect(user.user_id)
 
@@ -151,16 +114,14 @@ def neon_callback():
                 'success': True,
                 'user': user.to_dict(),
                 'redirect': redirect_url,
-                'debug': debug_info
             })
 
-        logger.warning(f"neon-callback: auth failed. debug={debug_info}")
-        return jsonify({'error': 'Invalid session', 'debug': debug_info}), 401
+        logger.warning("neon-callback: authentication failed")
+        return jsonify({'error': 'Invalid session'}), 401
 
     except Exception as e:
-        debug_info['exception'] = str(e)
-        logger.error(f"Neon callback error: {e}, debug={debug_info}")
-        return jsonify({'error': str(e), 'debug': debug_info}), 500
+        logger.error(f"Neon callback error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 # =============================================================================

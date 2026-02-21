@@ -54,7 +54,6 @@ class NeonAuthService:
 
         try:
             jwks_url = current_app.config.get('NEON_AUTH_JWKS_URL') or self.jwks_url
-            logger.info(f"Fetching JWKS from: {jwks_url}")
             response = requests.get(jwks_url, timeout=10)
             response.raise_for_status()
             self._jwks = response.json()
@@ -138,16 +137,11 @@ class NeonAuthService:
         try:
             response = requests.get(
                 get_session_url,
-                headers={
-                    'Cookie': f'better-auth.session_token={token}'
-                },
+                headers={'Cookie': f'better-auth.session_token={token}'},
                 timeout=10
             )
-            body_text = response.text[:500] if response.text else '(empty)'
-            logger.info(f"validate_session: cookie strategy status={response.status_code} body={body_text}")
             result = self._parse_session_response(response)
             if result:
-                logger.info(f"validate_session: cookie strategy SUCCESS sub={result.get('sub')}")
                 return result
         except Exception as e:
             logger.warning(f"Session validation via cookie failed: {e}")
@@ -156,16 +150,11 @@ class NeonAuthService:
         try:
             response = requests.get(
                 get_session_url,
-                headers={
-                    'Authorization': f'Bearer {token}'
-                },
+                headers={'Authorization': f'Bearer {token}'},
                 timeout=10
             )
-            body_text = response.text[:500] if response.text else '(empty)'
-            logger.info(f"validate_session: bearer strategy status={response.status_code} body={body_text}")
             result = self._parse_session_response(response)
             if result:
-                logger.info(f"validate_session: bearer strategy SUCCESS sub={result.get('sub')}")
                 return result
         except Exception as e:
             logger.warning(f"Session validation via Bearer failed: {e}")
@@ -174,10 +163,7 @@ class NeonAuthService:
         try:
             result = self._lookup_session_in_db(token)
             if result:
-                logger.info(f"validate_session: DB plain lookup SUCCESS sub={result.get('sub')}")
                 return result
-            else:
-                logger.info("validate_session: DB plain lookup returned no result")
         except Exception as e:
             logger.warning(f"Session DB plain lookup failed: {e}")
 
@@ -185,17 +171,12 @@ class NeonAuthService:
         # Better Auth stores hashed session tokens in the database
         try:
             hashed = hashlib.sha256(token.encode('utf-8')).hexdigest()
-            logger.info(f"validate_session: trying hashed token lookup hash_prefix={hashed[:16]}...")
             result = self._lookup_session_in_db(hashed)
             if result:
-                logger.info(f"validate_session: DB hashed lookup SUCCESS sub={result.get('sub')}")
                 return result
-            else:
-                logger.info("validate_session: DB hashed lookup returned no result")
         except Exception as e:
             logger.warning(f"Session DB hashed lookup failed: {e}")
 
-        logger.warning(f"All session token validation strategies failed for token prefix={token[:20]}...")
         return None
 
     def _parse_session_response(self, response) -> Optional[Dict[str, Any]]:
@@ -269,7 +250,7 @@ class NeonAuthService:
                         'email_verified': getattr(result, 'email_verified', False),
                     }
             except Exception as e:
-                logger.info(f"neon_auth DB lookup variant failed: {e}")
+                logger.debug(f"neon_auth DB lookup variant failed: {e}")
                 # Rollback the failed query to keep the session usable
                 try:
                     db.session.rollback()
