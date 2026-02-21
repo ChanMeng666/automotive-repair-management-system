@@ -398,11 +398,28 @@ class AuthService:
             self.logger.error(f"Failed to establish tenant session: {e}")
             return False
 
+    def _has_pending_invitations(self, user_id: int) -> bool:
+        """Check if user has any pending invitations"""
+        try:
+            count = db.session.execute(
+                db.select(db.func.count()).select_from(TenantMembership).where(
+                    TenantMembership.user_id == user_id,
+                    TenantMembership.status == TenantMembership.STATUS_PENDING,
+                )
+            ).scalar()
+            return (count or 0) > 0
+        except Exception as e:
+            self.logger.error(f"Failed to check pending invitations: {e}")
+            return False
+
     def resolve_post_auth_redirect(self, user_id: int) -> str:
         """Determine where to redirect after authentication based on memberships"""
         memberships = self._get_user_memberships(user_id)
 
         if not memberships:
+            # No active memberships — check for pending invitations
+            if self._has_pending_invitations(user_id):
+                return url_for('auth.invitations')
             return url_for('auth.no_organization')
 
         if len(memberships) == 1:

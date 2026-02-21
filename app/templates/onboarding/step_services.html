@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Configure Services - Step 2 of 4 - RepairOS{% endblock %}
+{% block title %}Configure Services - Step 1 of 3 - RepairOS{% endblock %}
 
 {% block breadcrumb %}{% endblock %}
 
@@ -50,9 +50,9 @@
             <div class="col-lg-9 col-xl-8">
                 <!-- Step Indicator -->
                 <div class="text-center mb-4">
-                    <span class="step-indicator">Step 2 of 4</span>
+                    <span class="step-indicator">Step 1 of 3</span>
                     <div class="progress-bar-custom mt-2">
-                        <div class="progress-fill" style="width: 50%;"></div>
+                        <div class="progress-fill" style="width: 33%;"></div>
                     </div>
                 </div>
 
@@ -64,7 +64,7 @@
                                 <i class="ti ti-tool text-primary" style="font-size: 36px;"></i>
                             </div>
                             <h1 class="h3 fw-bold mb-2">Configure Services</h1>
-                            <p class="text-muted">Add the services your shop offers. You can edit these later.</p>
+                            <p class="text-muted">Review the default services and add any custom ones your shop offers. You can edit these later.</p>
                         </div>
 
                         <!-- Current Services Table -->
@@ -76,29 +76,20 @@
                                         <th>Category</th>
                                         <th>Cost</th>
                                         <th>Duration</th>
-                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="services-body">
                                     {% for service in services %}
                                     <tr>
-                                        <td class="fw-semibold">{{ service.name }}</td>
+                                        <td class="fw-semibold">{{ service.service_name }}</td>
                                         <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ service.category }}</span></td>
                                         <td>${{ "%.2f"|format(service.cost) }}</td>
-                                        <td>{{ service.duration }}</td>
-                                        <td class="text-end">
-                                            <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Edit">
-                                                <i class="ti ti-pencil"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Remove">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </td>
+                                        <td>{{ service.estimated_duration_minutes }} min</td>
                                     </tr>
                                     {% endfor %}
                                     {% if not services %}
                                     <tr id="no-services-row">
-                                        <td colspan="5" class="text-center text-muted py-4">
+                                        <td colspan="4" class="text-center text-muted py-4">
                                             <i class="ti ti-inbox mb-2" style="font-size: 32px;"></i>
                                             <p class="mb-0">No services added yet. Use the form below to add your first service.</p>
                                         </td>
@@ -115,7 +106,7 @@
                                     <i class="ti ti-circle-plus me-2 text-accent"></i>
                                     Add New Service
                                 </h6>
-                                <form method="POST" action="" id="add-service-form">
+                                <form method="POST" action="{{ url_for('onboarding.save_step', step_number=1) }}" id="add-service-form">
                                     <input type="hidden" name="action" value="add_service">
                                     <div class="row g-3">
                                         <div class="col-md-6">
@@ -139,8 +130,8 @@
                                             <input type="number" class="form-control" id="service_cost" name="service_cost" min="0" step="0.01" placeholder="0.00" required>
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="service_duration" class="form-label">Duration</label>
-                                            <input type="text" class="form-control" id="service_duration" name="service_duration" placeholder="e.g. 1 hour">
+                                            <label for="service_duration" class="form-label">Duration (minutes)</label>
+                                            <input type="number" class="form-control" id="service_duration" name="service_duration" min="1" placeholder="e.g. 30">
                                         </div>
                                         <div class="col-12">
                                             <button type="submit" class="btn btn-primary">
@@ -155,11 +146,11 @@
 
                         <!-- Navigation -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('onboarding.step1') if url_for('onboarding.step1') is defined else '#' }}" class="btn btn-outline-secondary px-4 py-2">
-                                <i class="ti ti-arrow-left me-2"></i>
-                                Back
+                            <a href="{{ url_for('onboarding.step', step_number=2) }}" class="btn btn-link text-muted px-0">
+                                Skip for now
+                                <i class="ti ti-arrow-right ms-1"></i>
                             </a>
-                            <form method="POST" action="">
+                            <form method="POST" action="{{ url_for('onboarding.save_step', step_number=1) }}">
                                 <input type="hidden" name="action" value="next">
                                 <button type="submit" class="btn btn-accent px-4 py-2">
                                     Next

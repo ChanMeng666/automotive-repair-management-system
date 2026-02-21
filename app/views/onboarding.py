@@ -1,9 +1,13 @@
 """
 Onboarding Routes Blueprint
-Multi-step wizard for setting up a new organization
+Multi-step wizard for setting up a new organization (3 steps):
+  Step 1: Configure Services
+  Step 2: Add Parts & Inventory
+  Step 3: Invite Team Members
 """
-from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session, g
 import logging
+from app.extensions import db
 from app.utils.decorators import handle_database_errors
 from app.utils.validators import sanitize_input
 
@@ -30,37 +34,54 @@ def step(step_number):
     if redirect_response:
         return redirect_response
 
-    if step_number < 1 or step_number > 4:
+    if step_number < 1 or step_number > 3:
         return redirect(url_for('onboarding.step', step_number=1))
 
     tenant_id = session.get('current_tenant_id')
     tenant_name = session.get('current_tenant_name', '')
 
     template_map = {
-        1: 'onboarding/step1.html',
-        2: 'onboarding/step2.html',
-        3: 'onboarding/step3.html',
-        4: 'onboarding/step4.html',
+        1: 'onboarding/step_services.html',
+        2: 'onboarding/step_parts.html',
+        3: 'onboarding/step_team.html',
     }
 
     context = {
         'step_number': step_number,
-        'total_steps': 4,
+        'total_steps': 3,
         'tenant_name': tenant_name,
     }
 
     # Load step-specific data
-    if step_number == 2:
+    if step_number == 1:
         from app.models.service import Service
-        from flask import g
         g.current_tenant_id = tenant_id
         context['services'] = Service.get_all_sorted()
 
-    elif step_number == 3:
+    elif step_number == 2:
         from app.models.part import Part
-        from flask import g
         g.current_tenant_id = tenant_id
         context['parts'] = Part.get_all_sorted()
+
+    elif step_number == 3:
+        # Load pending invitations for this tenant
+        from app.models.tenant_membership import TenantMembership
+        from app.models.user import User
+        g.current_tenant_id = tenant_id
+        pending = db.session.execute(
+            db.select(TenantMembership).where(
+                TenantMembership.tenant_id == tenant_id,
+                TenantMembership.status == TenantMembership.STATUS_PENDING,
+            )
+        ).scalars().all()
+        invites = []
+        for m in pending:
+            user = User.find_by_id(m.user_id)
+            invites.append({
+                'email': user.email if user else 'Unknown',
+                'role': m.role,
+            })
+        context['invites'] = invites
 
     return render_template(template_map[step_number], **context)
 
@@ -77,18 +98,16 @@ def save_step(step_number):
 
     try:
         if step_number == 1:
-            _save_step1(tenant_id)
+            _save_services(tenant_id)
         elif step_number == 2:
-            _save_step2(tenant_id)
+            _save_parts(tenant_id)
         elif step_number == 3:
-            _save_step3(tenant_id)
-        elif step_number == 4:
-            _save_step4(tenant_id)
+            _save_invitations(tenant_id)
             flash('Setup complete! Welcome to RepairOS.', 'success')
             return redirect(url_for('onboarding.complete'))
 
         # Move to next step
-        next_step = min(step_number + 1, 4)
+        next_step = min(step_number + 1, 3)
         return redirect(url_for('onboarding.step', step_number=next_step))
 
     except Exception as e:
@@ -105,66 +124,71 @@ def complete():
     if redirect_response:
         return redirect_response
 
+    tenant_id = session.get('current_tenant_id')
     tenant_name = session.get('current_tenant_name', 'Your Organization')
     tenant_slug = session.get('current_tenant_slug', '')
 
+    # Build summary with real data
+    from app.models.service import Service
+    from app.models.part import Part
+    from app.models.tenant_membership import TenantMembership
+
+    g.current_tenant_id = tenant_id
+
+    services_count = len(Service.get_all_sorted())
+    parts_count = len(Part.get_all_sorted())
+
+    pending_invites = db.session.execute(
+        db.select(db.func.count()).select_from(TenantMembership).where(
+            TenantMembership.tenant_id == tenant_id,
+            TenantMembership.status == TenantMembership.STATUS_PENDING,
+        )
+    ).scalar() or 0
+
+    summary = {
+        'org_name': tenant_name,
+        'services_count': services_count,
+        'parts_count': parts_count,
+        'invites_count': pending_invites,
+    }
+
     return render_template('onboarding/complete.html',
                          tenant_name=tenant_name,
-                         tenant_slug=tenant_slug)
+                         tenant_slug=tenant_slug,
+                         summary=summary)
 
 
-def _save_step1(tenant_id):
-    """Save business details (step 1)"""
-    from app.models.tenant import Tenant
-    from app.extensions import db
-
-    tenant = Tenant.find_by_id(tenant_id)
-    if not tenant:
-        raise ValueError("Organization not found")
-
-    tenant.name = sanitize_input(request.form.get('name', tenant.name))
-    tenant.email = sanitize_input(request.form.get('email', '')) or tenant.email
-    tenant.phone = sanitize_input(request.form.get('phone', '')) or tenant.phone
-    tenant.address = sanitize_input(request.form.get('address', '')) or tenant.address
-    tenant.business_type = sanitize_input(request.form.get('business_type', tenant.business_type))
-
-    # Update settings
-    settings = tenant.settings or {}
-    tax_rate = request.form.get('tax_rate')
-    if tax_rate:
-        try:
-            settings['tax_rate'] = float(tax_rate)
-        except ValueError:
-            pass
-    settings['currency'] = sanitize_input(request.form.get('currency', 'USD'))
-    tenant.settings = settings
-
-    # Update session with potentially new name
-    session['current_tenant_name'] = tenant.name
-
-    db.session.commit()
-
-
-def _save_step2(tenant_id):
-    """Save service catalog (step 2) - services are already seeded, this is for modifications"""
+def _save_services(tenant_id):
+    """Save service catalog (step 1)"""
     from app.models.service import Service
-    from app.extensions import db
-    from flask import g
-
     g.current_tenant_id = tenant_id
 
     # Handle adding custom services
     service_name = sanitize_input(request.form.get('service_name', ''))
-    cost = request.form.get('cost')
-    category = sanitize_input(request.form.get('category', ''))
+    cost = request.form.get('service_cost')
+    category = sanitize_input(request.form.get('service_category', ''))
+    duration = request.form.get('service_duration', '')
 
     if service_name and cost:
         try:
+            estimated_minutes = None
+            if duration:
+                duration_str = duration.strip().lower()
+                try:
+                    estimated_minutes = int(duration_str)
+                except ValueError:
+                    # Try parsing "1 hour", "30 min", etc.
+                    if 'hour' in duration_str:
+                        estimated_minutes = int(float(duration_str.split()[0]) * 60)
+                    elif 'min' in duration_str:
+                        estimated_minutes = int(duration_str.split()[0])
+
             service = Service(
                 tenant_id=tenant_id,
                 service_name=service_name,
                 cost=float(cost),
                 category=category or 'General',
+                estimated_duration_minutes=estimated_minutes,
                 is_active=True,
             )
             db.session.add(service)
@@ -175,19 +199,19 @@ def _save_step2(tenant_id):
             db.session.rollback()
 
 
-def _save_step3(tenant_id):
-    """Save parts catalog (step 3) - parts are already seeded, this is for modifications"""
+def _save_parts(tenant_id):
+    """Save parts catalog (step 2)"""
     from app.models.part import Part
     from app.extensions import db
-    from flask import g
 
     g.current_tenant_id = tenant_id
 
     # Handle adding custom parts
     part_name = sanitize_input(request.form.get('part_name', ''))
-    cost = request.form.get('cost')
-    sku = sanitize_input(request.form.get('sku', ''))
-    category = sanitize_input(request.form.get('category', ''))
+    cost = request.form.get('part_cost')
+    sku = sanitize_input(request.form.get('part_sku', ''))
+    category = sanitize_input(request.form.get('part_category', ''))
+    supplier = sanitize_input(request.form.get('part_supplier', ''))
 
     if part_name and cost:
         try:
@@ -197,6 +221,7 @@ def _save_step3(tenant_id):
                 cost=float(cost),
                 sku=sku or None,
                 category=category or 'General',
+                supplier=supplier or None,
                 is_active=True,
             )
             db.session.add(part)
@@ -207,8 +232,8 @@ def _save_step3(tenant_id):
             db.session.rollback()
 
 
-def _save_step4(tenant_id):
-    """Save team invitations (step 4)"""
+def _save_invitations(tenant_id):
+    """Save team invitations (step 3)"""
     from app.services.tenant_service import TenantService
 
     tenant_service = TenantService()
@@ -234,3 +259,4 @@ def _save_step4(tenant_id):
             else:
                 for error in errors:
                     flash(f'{email}: {error}', 'warning')
+

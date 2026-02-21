@@ -334,7 +334,88 @@ def no_organization():
     """Page shown when authenticated user has no tenant memberships"""
     if not session.get('logged_in'):
         return redirect(url_for('auth.login'))
+
+    # Check for pending invitations before showing "no org" page
+    from app.services.tenant_service import TenantService
+    tenant_service = TenantService()
+    user_id = session.get('user_id')
+    pending = tenant_service.get_pending_invitations(user_id)
+    if pending:
+        return redirect(url_for('auth.invitations'))
+
     return render_template('auth/no_organization.html')
+
+
+@auth_bp.route('/invitations')
+def invitations():
+    """Show pending invitations for the current user"""
+    if not session.get('logged_in'):
+        flash('Please log in first', 'warning')
+        return redirect(url_for('auth.login'))
+
+    from app.services.tenant_service import TenantService
+    tenant_service = TenantService()
+    user_id = session.get('user_id')
+
+    pending = tenant_service.get_pending_invitations(user_id)
+    active_tenants = tenant_service.get_user_tenants(user_id)
+
+    return render_template(
+        'auth/invitations.html',
+        invitations=pending,
+        has_active_tenants=len(active_tenants) > 0,
+    )
+
+
+@auth_bp.route('/invitations/<int:membership_id>/accept', methods=['POST'])
+def accept_invitation(membership_id):
+    """Accept a pending invitation"""
+    if not session.get('logged_in'):
+        return redirect(url_for('auth.login'))
+
+    from app.services.tenant_service import TenantService
+    from app.services.auth_service import AuthService
+
+    tenant_service = TenantService()
+    auth_service = AuthService()
+    user_id = session.get('user_id')
+
+    success, errors = tenant_service.accept_invitation(membership_id, user_id)
+
+    if success:
+        # Get the membership to establish tenant session
+        from app.models.tenant_membership import TenantMembership
+        membership = TenantMembership.find_by_id(membership_id)
+        if membership:
+            auth_service.establish_tenant_session(user_id, membership.tenant_id)
+        flash('Invitation accepted! Welcome to the team.', 'success')
+        return redirect(url_for('main.dashboard'))
+    else:
+        for error in errors:
+            flash(error, 'error')
+        return redirect(url_for('auth.invitations'))
+
+
+@auth_bp.route('/invitations/<int:membership_id>/decline', methods=['POST'])
+def decline_invitation(membership_id):
+    """Decline a pending invitation"""
+    if not session.get('logged_in'):
+        return redirect(url_for('auth.login'))
+
+    from app.services.tenant_service import TenantService
+
+    tenant_service = TenantService()
+    user_id = session.get('user_id')
+
+    success, errors = tenant_service.decline_invitation(membership_id, user_id)
+
+    if success:
+        flash('Invitation declined.', 'info')
+    else:
+        for error in errors:
+            flash(error, 'error')
+
+    return redirect(url_for('auth.invitations'))
 
 
 # =============================================================================
@@ -420,6 +501,7 @@ def register_organization():
     business_type = sanitize_input(request.form.get('business_type', 'auto_repair'))
     email = sanitize_input(request.form.get('email', ''))
     phone = sanitize_input(request.form.get('phone', ''))
+    address = sanitize_input(request.form.get('address', ''))
 
     if not name or len(name) < 2:
         flash('Organization name must be at least 2 characters', 'error')
@@ -434,6 +516,7 @@ def register_organization():
         business_type=business_type,
         email=email or None,
         phone=phone or None,
+        address=address or None,
     )
 
     if success:

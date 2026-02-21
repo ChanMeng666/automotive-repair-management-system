@@ -27,6 +27,7 @@ class TenantService:
         business_type: str = 'auto_repair',
         email: Optional[str] = None,
         phone: Optional[str] = None,
+        address: Optional[str] = None,
     ) -> Tuple[bool, List[str], Optional[Tenant]]:
         """
         Create a new tenant with the given user as owner.
@@ -51,6 +52,7 @@ class TenantService:
                 business_type=business_type,
                 email=email or owner.email,
                 phone=phone,
+                address=address,
                 status=Tenant.STATUS_TRIAL,
                 trial_ends_at=datetime.utcnow() + timedelta(days=14),
                 settings={
@@ -248,6 +250,72 @@ class TenantService:
                 is_active=True,
             )
             db.session.add(part)
+
+    def get_pending_invitations(self, user_id: int) -> List[Dict[str, Any]]:
+        """
+        Get all pending invitations for a user.
+
+        Returns:
+            List of dicts with membership_id, tenant_name, tenant_slug, role, invited_at, invited_by
+        """
+        try:
+            pending = db.session.execute(
+                db.select(TenantMembership).where(
+                    TenantMembership.user_id == user_id,
+                    TenantMembership.status == TenantMembership.STATUS_PENDING,
+                )
+            ).scalars().all()
+
+            results = []
+            for m in pending:
+                tenant = Tenant.find_by_id(m.tenant_id)
+                invited_by_user = User.find_by_id(m.invited_by) if m.invited_by else None
+                if tenant:
+                    results.append({
+                        'membership_id': m.membership_id,
+                        'tenant_name': tenant.name,
+                        'tenant_slug': tenant.slug,
+                        'role': m.role,
+                        'invited_at': m.invited_at,
+                        'invited_by': invited_by_user.username if invited_by_user else None,
+                    })
+            return results
+
+        except Exception as e:
+            self.logger.error(f"Failed to get pending invitations: {e}")
+            return []
+
+    def decline_invitation(
+        self, membership_id: int, user_id: int
+    ) -> Tuple[bool, List[str]]:
+        """
+        Decline a pending invitation by deleting the membership record.
+
+        Returns:
+            (success, errors)
+        """
+        try:
+            membership = TenantMembership.find_by_id(membership_id)
+            if not membership:
+                return False, ["Invitation not found"]
+
+            if membership.user_id != user_id:
+                return False, ["This invitation is not for you"]
+
+            if membership.status != TenantMembership.STATUS_PENDING:
+                return False, ["This invitation has already been processed"]
+
+            db.session.delete(membership)
+            db.session.commit()
+            self.logger.info(
+                f"User {user_id} declined invitation to tenant {membership.tenant_id}"
+            )
+            return True, []
+
+        except Exception as e:
+            self.logger.error(f"Failed to decline invitation: {e}")
+            db.session.rollback()
+            return False, ["Failed to decline invitation"]
 
     def get_user_tenants(self, user_id: int) -> List[Dict[str, Any]]:
         """Get all tenants a user belongs to"""

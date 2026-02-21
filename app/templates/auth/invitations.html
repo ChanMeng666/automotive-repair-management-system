@@ -1,0 +1,98 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Pending Invitations - RepairOS{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-lg-6 col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                        <i class="ti ti-mail-forward text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h2 class="fw-bold mb-2">Pending Invitations</h2>
+                    <p class="text-muted">You have been invited to join the following organizations.</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% if invitations %}
+                <div class="d-flex flex-column gap-3 mb-4">
+                    {% for invite in invitations %}
+                    <div class="card border shadow-none">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-start justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3 flex-shrink-0">
+                                        <i class="ti ti-building text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ invite.tenant_name }}</h6>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="badge bg-primary bg-opacity-10 text-primary">{{ invite.role|title }}</span>
+                                            {% if invite.invited_by %}
+                                            <small class="text-muted">Invited by {{ invite.invited_by }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-3">
+                                <form method="POST" action="{{ url_for('auth.accept_invitation', membership_id=invite.membership_id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-accent btn-sm">
+                                        <i class="ti ti-check me-1"></i>Accept
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('auth.decline_invitation', membership_id=invite.membership_id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                        <i class="ti ti-x me-1"></i>Decline
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 mb-4">
+                    <i class="ti ti-inbox text-muted mb-2" style="font-size: 48px;"></i>
+                    <p class="text-muted mb-0">No pending invitations.</p>
+                </div>
+                {% endif %}
+
+                <div class="d-flex flex-column gap-2">
+                    {% if has_active_tenants %}
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary w-100">
+                        <i class="ti ti-layout-dashboard me-2"></i>Go to Dashboard
+                    </a>
+                    {% endif %}
+
+                    {% if not invitations and not has_active_tenants %}
+                    <a href="{{ url_for('auth.register_organization') }}" class="btn btn-accent w-100">
+                        <i class="ti ti-building-plus me-2"></i>Create Organization
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('main.logout') }}" class="text-muted text-decoration-none text-sm">
+                        <i class="ti ti-logout me-1"></i>Sign out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

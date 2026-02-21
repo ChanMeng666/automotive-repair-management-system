@@ -1,6 +1,6 @@
 {% extends "base/layout.html" %}
 
-{% block title %}Invite Team Members - Step 4 of 4 - RepairOS{% endblock %}
+{% block title %}Invite Team Members - Step 3 of 3 - RepairOS{% endblock %}
 
 {% block breadcrumb %}{% endblock %}
 
@@ -48,7 +48,7 @@
             <div class="col-lg-7 col-xl-6">
                 <!-- Step Indicator -->
                 <div class="text-center mb-4">
-                    <span class="step-indicator">Step 4 of 4</span>
+                    <span class="step-indicator">Step 3 of 3</span>
                     <div class="progress-bar-custom mt-2">
                         <div class="progress-fill" style="width: 90%;"></div>
                     </div>
@@ -72,7 +72,7 @@
                                     <i class="ti ti-send me-2 text-accent"></i>
                                     Send Invitation
                                 </h6>
-                                <form method="POST" action="" id="invite-form">
+                                <form method="POST" action="{{ url_for('onboarding.save_step', step_number=3) }}" id="invite-form">
                                     <input type="hidden" name="action" value="invite">
                                     <div class="row g-3">
                                         <div class="col-md-7">
@@ -88,10 +88,10 @@
                                             <label for="invite_role" class="form-label">Role</label>
                                             <select class="form-select" id="invite_role" name="invite_role" required>
                                                 <option value="">Select role</option>
+                                                <option value="admin">Administrator</option>
                                                 <option value="manager">Manager</option>
                                                 <option value="technician">Technician</option>
                                                 <option value="parts_clerk">Parts Clerk</option>
-                                                <option value="administrator">Administrator</option>
                                             </select>
                                         </div>
                                         <div class="col-12">
@@ -124,16 +124,7 @@
                                             <small class="text-muted">{{ invite.role|title }}</small>
                                         </div>
                                     </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
-                                        <form method="POST" action="" class="d-inline">
-                                            <input type="hidden" name="action" value="remove_invite">
-                                            <input type="hidden" name="invite_email" value="{{ invite.email }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel invite">
-                                                <i class="ti ti-x"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">Pending</span>
                                 </div>
                                 {% endfor %}
                             </div>
@@ -142,11 +133,11 @@
 
                         <!-- Navigation -->
                         <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('onboarding.step3') if url_for('onboarding.step3') is defined else '#' }}" class="btn btn-outline-secondary px-4 py-2">
+                            <a href="{{ url_for('onboarding.step', step_number=2) }}" class="btn btn-outline-secondary px-4 py-2">
                                 <i class="ti ti-arrow-left me-2"></i>
                                 Back
                             </a>
-                            <form method="POST" action="">
+                            <form method="POST" action="{{ url_for('onboarding.save_step', step_number=3) }}">
                                 <input type="hidden" name="action" value="next">
                                 <button type="submit" class="btn btn-accent px-4 py-2">
                                     Complete Setup
