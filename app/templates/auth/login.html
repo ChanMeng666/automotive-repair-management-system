@@ -145,6 +145,10 @@
                         <button type="submit" id="signinBtn" class="btn btn-accent w-100 py-3 fw-semibold">
                             <i class="ti ti-login me-2"></i>Sign In
                         </button>
+
+                        <div class="text-end mt-2">
+                            <a href="#" id="forgotPasswordLink" class="text-muted text-decoration-none text-sm">Forgot password?</a>
+                        </div>
                     </form>
                 </div>
 
@@ -215,6 +219,10 @@
             <div id="verificationOverlay" class="verification-overlay flex-column align-items-center justify-content-center p-5">
                 <div class="text-center" style="max-width: 360px;">
                     <div class="mb-4">
+                        <a href="#" id="verifyBackBtn" class="text-muted text-decoration-none text-sm d-inline-flex align-items-center gap-1 mb-3" style="float: left;">
+                            <i class="ti ti-arrow-left"></i>Back
+                        </a>
+                        <div style="clear: both;"></div>
                         <div class="avatar avatar-xl bg-primary-lt rounded-circle mx-auto mb-3">
                             <i class="ti ti-mail-check" style="font-size: 2rem;"></i>
                         </div>
@@ -445,11 +453,56 @@ document.addEventListener('DOMContentLoaded', function() {
             pendingVerifyEmail = email;
             document.getElementById('verifyEmailDisplay').textContent = email;
             document.getElementById('verificationOverlay').classList.add('active');
+            setLoading(btn, false);
+            otpInputs.forEach(i => { i.value = ''; });
             otpInputs[0].focus();
         } catch (error) {
             showMessage(error.message || 'Sign up failed. Please try again.', 'error');
             setLoading(btn, false);
         }
+    });
+
+    // Back button on verification overlay
+    document.getElementById('verifyBackBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('verificationOverlay').classList.remove('active');
+        document.getElementById('verify-message').classList.add('d-none');
+        otpInputs.forEach(i => { i.value = ''; });
+    });
+
+    // Forgot password
+    document.getElementById('forgotPasswordLink').addEventListener('click', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('signin-email').value.trim();
+        if (!email) {
+            showMessage('Please enter your email address first, then click "Forgot password?".', 'error');
+            document.getElementById('signin-email').focus();
+            return;
+        }
+        if (!window.neonAuth) {
+            showMessage('Authentication service not configured.', 'error');
+            return;
+        }
+        this.textContent = 'Sending...';
+        this.style.pointerEvents = 'none';
+        try {
+            const authUrl = window.neonAuth.authUrl;
+            const response = await fetch(authUrl + '/forget-password/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+                credentials: 'include'
+            });
+            if (response.ok) {
+                showMessage('Password reset email sent. Please check your inbox.', 'success');
+            } else {
+                showMessage('Could not send reset email. Please check your email address.', 'error');
+            }
+        } catch (error) {
+            showMessage('Failed to send reset email. Please try again.', 'error');
+        }
+        this.textContent = 'Forgot password?';
+        this.style.pointerEvents = '';
     });
 
     // Verify Email Form
@@ -493,10 +546,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Resend Code
+    // Resend Code with cooldown
+    let resendCooldown = 0;
+    function startResendCooldown(seconds) {
+        const btn = document.getElementById('resendCodeBtn');
+        resendCooldown = seconds;
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.6';
+        const tick = setInterval(() => {
+            resendCooldown--;
+            btn.textContent = 'Resend code (' + resendCooldown + 's)';
+            if (resendCooldown <= 0) {
+                clearInterval(tick);
+                btn.textContent = 'Resend code';
+                btn.style.pointerEvents = '';
+                btn.style.opacity = '';
+            }
+        }, 1000);
+    }
+
     document.getElementById('resendCodeBtn').addEventListener('click', async function(e) {
         e.preventDefault();
-        if (!window.neonAuth || !pendingVerifyEmail) return;
+        if (!window.neonAuth || !pendingVerifyEmail || resendCooldown > 0) return;
 
         this.textContent = 'Sending...';
         this.style.pointerEvents = 'none';
@@ -504,12 +575,12 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             await window.neonAuth.resendOtp(pendingVerifyEmail);
             showVerifyMessage('A new code has been sent to your email.', 'success');
+            startResendCooldown(60);
         } catch (error) {
             showVerifyMessage('Failed to resend code. Please try again.', 'error');
+            this.textContent = 'Resend code';
+            this.style.pointerEvents = '';
         }
-
-        this.textContent = 'Resend code';
-        this.style.pointerEvents = '';
     });
 });
 </script>

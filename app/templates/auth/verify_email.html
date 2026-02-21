@@ -145,20 +145,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    let resendCooldown = 0;
     document.getElementById('resendBtn').addEventListener('click', async function(e) {
         e.preventDefault();
         const email = document.getElementById('verify-email').value.trim();
         if (!email) { showMsg('Please enter your email first.', 'error'); return; }
-        if (!window.neonAuth) return;
+        if (!window.neonAuth || resendCooldown > 0) return;
 
         this.textContent = 'Sending...';
+        this.style.pointerEvents = 'none';
         try {
             await window.neonAuth.resendOtp(email);
             showMsg('A new code has been sent.', 'success');
+            resendCooldown = 60;
+            const tick = setInterval(() => {
+                resendCooldown--;
+                document.getElementById('resendBtn').textContent = 'Resend code (' + resendCooldown + 's)';
+                if (resendCooldown <= 0) {
+                    clearInterval(tick);
+                    document.getElementById('resendBtn').textContent = 'Resend code';
+                    document.getElementById('resendBtn').style.pointerEvents = '';
+                    document.getElementById('resendBtn').style.opacity = '';
+                }
+            }, 1000);
+            this.style.opacity = '0.6';
         } catch (error) {
             showMsg('Failed to resend code.', 'error');
+            this.textContent = 'Resend code';
+            this.style.pointerEvents = '';
         }
-        this.textContent = 'Resend code';
     });
 });
 </script>
