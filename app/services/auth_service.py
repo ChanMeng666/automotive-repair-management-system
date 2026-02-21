@@ -108,8 +108,51 @@ class NeonAuthService:
         """Get or create user from Neon Auth token"""
         payload = self.verify_token(token)
         if not payload:
-            return None
+            # JWT verification failed — try opaque session token validation
+            payload = self.validate_session_token(token)
+            if not payload:
+                return None
         return User.authenticate_with_jwt(payload)
+
+    def validate_session_token(self, token: str) -> Optional[Dict[str, Any]]:
+        """
+        Validate an opaque session token by calling Neon Auth's get-session API.
+        Used as fallback when JWT verification fails (Better Auth may issue opaque tokens).
+        """
+        try:
+            auth_url = self.auth_url
+            if not auth_url:
+                return None
+
+            auth_url = auth_url.rstrip('/')
+            response = requests.get(
+                f"{auth_url}/get-session",
+                headers={
+                    'Cookie': f'better-auth.session_token={token}'
+                },
+                timeout=10
+            )
+
+            if not response.ok:
+                return None
+
+            data = response.json()
+            session_data = data.get('session')
+            user_data = data.get('user')
+
+            if not user_data:
+                return None
+
+            # Return a payload compatible with authenticate_with_jwt
+            return {
+                'sub': user_data.get('id'),
+                'email': user_data.get('email'),
+                'name': user_data.get('name'),
+                'email_verified': user_data.get('emailVerified', False),
+            }
+        except Exception as e:
+            logger.warning(f"Session token validation failed: {e}")
+            return None
 
     def get_neon_auth_user(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Fetch user details from Neon Auth neon_auth schema"""

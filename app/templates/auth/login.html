@@ -278,7 +278,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/neon-auth.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // State
@@ -486,12 +485,10 @@ document.addEventListener('DOMContentLoaded', function() {
         this.textContent = 'Sending...';
         this.style.pointerEvents = 'none';
         try {
-            const authUrl = window.neonAuth.authUrl;
-            const response = await fetch(authUrl + '/forget-password/email', {
+            const response = await fetch('/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-                credentials: 'include'
+                body: JSON.stringify({ email })
             });
             if (response.ok) {
                 showMessage('Password reset email sent. Please check your inbox.', 'success');
@@ -520,12 +517,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setLoading(btn, true);
         try {
-            await window.neonAuth.verifyEmail(pendingVerifyEmail, otp);
+            const verifyResult = await window.neonAuth.verifyEmail(pendingVerifyEmail, otp);
 
-            // Now establish Flask session
+            // Now establish Flask session - pass token explicitly in body
+            const callbackPayload = {};
+            if (verifyResult && verifyResult.token) {
+                callbackPayload.token = verifyResult.token;
+            }
+
             const callbackResponse = await fetch('/auth/neon-callback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(callbackPayload),
                 credentials: 'include'
             });
 

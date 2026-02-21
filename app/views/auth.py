@@ -53,9 +53,10 @@ def callback():
                 redirect_url = auth_service.resolve_post_auth_redirect(user.user_id)
                 return redirect(redirect_url)
 
-        logger.warning("OAuth callback without valid session")
-        flash('Authentication failed. Please try again.', 'error')
-        return redirect(url_for('auth.login'))
+        # No server-side token available — render bridge page that fetches
+        # the session from Neon Auth client-side and forwards to Flask
+        logger.info("OAuth callback without server-side token, rendering bridge page")
+        return render_template('auth/oauth_completing.html')
 
     except Exception as e:
         logger.error(f"OAuth callback error: {e}")
@@ -68,9 +69,18 @@ def neon_callback():
     """
     API endpoint for JavaScript client to notify backend of successful auth.
     Called after sign-in or sign-up + verification via neon-auth.js.
+    Accepts token from request body (preferred) or falls back to cookie.
     """
     try:
-        session_token = request.cookies.get('better-auth.session_token')
+        # Try token from request body first (works cross-origin)
+        session_token = None
+        body = request.get_json(silent=True) or {}
+        if body.get('token'):
+            session_token = body['token']
+
+        # Fall back to cookie
+        if not session_token:
+            session_token = request.cookies.get('better-auth.session_token')
 
         if not session_token:
             return jsonify({'error': 'No session token'}), 401
@@ -137,6 +147,45 @@ def verify_email():
 def verify_email_page():
     """Standalone email verification page for users who navigated away"""
     return render_template('auth/verify_email.html')
+
+
+# =============================================================================
+# FORGOT PASSWORD PROXY
+# =============================================================================
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """Proxy forgot-password requests to Neon Auth to avoid cross-origin issues"""
+    try:
+        data = request.get_json(silent=True) or {}
+        email = data.get('email')
+
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        neon_auth_url = current_app.config.get('NEON_AUTH_URL', '').rstrip('/')
+        if not neon_auth_url:
+            return jsonify({'error': 'Auth service not configured'}), 500
+
+        response = http_requests.post(
+            f"{neon_auth_url}/forget-password/email",
+            json={'email': email},
+            timeout=10
+        )
+
+        if response.ok:
+            return jsonify({'success': True})
+
+        error_data = {}
+        if response.headers.get('content-type', '').startswith('application/json'):
+            error_data = response.json()
+        return jsonify({
+            'error': error_data.get('message', 'Could not send reset email')
+        }), response.status_code
+
+    except Exception as e:
+        logger.error(f"Forgot password error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 # =============================================================================

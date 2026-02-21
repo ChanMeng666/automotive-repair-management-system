@@ -73,6 +73,7 @@ class NeonAuthClient {
 
     /**
      * Verify email with OTP code
+     * Returns the session token from the response so callers can pass it to Flask
      */
     async verifyEmail(email, otp) {
         try {
@@ -89,7 +90,9 @@ class NeonAuthClient {
                 throw new Error(data.message || 'Verification failed');
             }
 
-            return { success: true };
+            // Extract session token from response
+            const token = (data.session && data.session.token) || data.token || null;
+            return { success: true, token: token };
         } catch (error) {
             console.error('Email verification error:', error);
             throw error;
@@ -140,10 +143,19 @@ class NeonAuthClient {
                 throw new Error(data.message || 'Sign in failed');
             }
 
-            // Establish Flask session
+            // Extract token from Neon Auth response
+            const token = (data.session && data.session.token) || data.token || null;
+
+            // Establish Flask session - pass token in body since cookie may not be visible cross-origin
+            const callbackPayload = {};
+            if (token) {
+                callbackPayload.token = token;
+            }
+
             const callbackResponse = await fetch('/auth/neon-callback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(callbackPayload),
                 credentials: 'include'
             });
 
@@ -177,7 +189,7 @@ class NeonAuthClient {
             }
 
             const data = await response.json();
-            return data.session;
+            return data.session || data;
         } catch (error) {
             console.error('Get session error:', error);
             return null;
@@ -201,13 +213,23 @@ class NeonAuthClient {
     }
 
     /**
-     * Handle OAuth callback - establish Flask session after redirect
+     * Handle OAuth callback - get session from Neon Auth and pass token to Flask
      */
     async handleCallback() {
         try {
+            // Get session from Neon Auth (client-side cookie is visible to Neon Auth domain)
+            const sessionData = await this.getSession();
+            const token = sessionData ? (sessionData.token || null) : null;
+
+            const payload = {};
+            if (token) {
+                payload.token = token;
+            }
+
             const response = await fetch('/auth/neon-callback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
                 credentials: 'include'
             });
 
