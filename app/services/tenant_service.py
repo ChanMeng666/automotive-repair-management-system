@@ -10,8 +10,6 @@ from app.models.tenant import Tenant
 from app.models.tenant_membership import TenantMembership
 from app.models.subscription import Subscription
 from app.models.user import User
-from app.models.service import Service
-from app.models.part import Part
 
 
 class TenantService:
@@ -44,6 +42,20 @@ class TenantService:
             if not owner:
                 return False, ["User not found"], None
 
+            # Prevent duplicate tenant name per user (case-insensitive)
+            existing_owned = db.session.execute(
+                db.select(TenantMembership)
+                .join(Tenant, Tenant.tenant_id == TenantMembership.tenant_id)
+                .where(
+                    TenantMembership.user_id == owner_user_id,
+                    TenantMembership.role == TenantMembership.ROLE_OWNER,
+                    db.func.lower(Tenant.name) == name.strip().lower(),
+                )
+            ).scalar_one_or_none()
+
+            if existing_owned:
+                return False, ["You already own an organization with this name"], None
+
             slug = Tenant.generate_slug(name)
 
             tenant = Tenant(
@@ -63,12 +75,19 @@ class TenantService:
             db.session.add(tenant)
             db.session.flush()  # get tenant_id
 
-            # Create owner membership
+            # Create owner membership — only set is_default if user has no existing default
+            has_default = db.session.execute(
+                db.select(TenantMembership).where(
+                    TenantMembership.user_id == owner_user_id,
+                    TenantMembership.is_default == True,
+                )
+            ).scalar_one_or_none()
+
             membership = TenantMembership(
                 user_id=owner_user_id,
                 tenant_id=tenant.tenant_id,
                 role=TenantMembership.ROLE_OWNER,
-                is_default=True,
+                is_default=(has_default is None),
                 status=TenantMembership.STATUS_ACTIVE,
                 accepted_at=datetime.utcnow(),
             )
@@ -82,9 +101,6 @@ class TenantService:
                 trial_ends_at=tenant.trial_ends_at,
             )
             db.session.add(subscription)
-
-            # Seed default catalog
-            self.seed_default_catalog(tenant.tenant_id)
 
             db.session.commit()
             self.logger.info(f"Tenant created: {tenant.name} (slug={tenant.slug})")
@@ -200,56 +216,6 @@ class TenantService:
             self.logger.error(f"Failed to accept invitation: {e}")
             db.session.rollback()
             return False, ["Failed to accept invitation"]
-
-    def seed_default_catalog(self, tenant_id: int) -> None:
-        """
-        Seed a new tenant with default services and parts.
-        Called during tenant creation (within the same transaction).
-        """
-        default_services = [
-            ('Oil Change', 49.99, 'Maintenance', 30),
-            ('Brake Inspection', 29.99, 'Inspection', 20),
-            ('Tire Rotation', 39.99, 'Maintenance', 25),
-            ('Engine Diagnostic', 89.99, 'Diagnostic', 45),
-            ('Battery Replacement', 149.99, 'Repair', 30),
-            ('Wheel Alignment', 79.99, 'Maintenance', 40),
-            ('Transmission Fluid Change', 129.99, 'Maintenance', 45),
-            ('Air Filter Replacement', 24.99, 'Maintenance', 15),
-        ]
-
-        for name, cost, category, duration in default_services:
-            service = Service(
-                tenant_id=tenant_id,
-                service_name=name,
-                cost=cost,
-                category=category,
-                estimated_duration_minutes=duration,
-                is_active=True,
-            )
-            db.session.add(service)
-
-        default_parts = [
-            ('Oil Filter', 12.99, 'OIL-FLT-001', 'Filters', 'Generic'),
-            ('Brake Pads (Front)', 45.99, 'BRK-PAD-F01', 'Brakes', 'Generic'),
-            ('Brake Pads (Rear)', 39.99, 'BRK-PAD-R01', 'Brakes', 'Generic'),
-            ('Air Filter', 18.99, 'AIR-FLT-001', 'Filters', 'Generic'),
-            ('Spark Plug', 8.99, 'SPK-PLG-001', 'Ignition', 'Generic'),
-            ('Wiper Blade', 14.99, 'WPR-BLD-001', 'Exterior', 'Generic'),
-            ('Battery (Standard)', 129.99, 'BAT-STD-001', 'Electrical', 'Generic'),
-            ('Coolant (1 Gallon)', 19.99, 'CLT-GAL-001', 'Fluids', 'Generic'),
-        ]
-
-        for name, cost, sku, category, supplier in default_parts:
-            part = Part(
-                tenant_id=tenant_id,
-                part_name=name,
-                cost=cost,
-                sku=sku,
-                category=category,
-                supplier=supplier,
-                is_active=True,
-            )
-            db.session.add(part)
 
     def get_pending_invitations(self, user_id: int) -> List[Dict[str, Any]]:
         """

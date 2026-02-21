@@ -116,8 +116,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
+                form.classList.add('was-validated');
+                return;
             }
             form.classList.add('was-validated');
+            // Prevent double submission
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn.disabled) {
+                event.preventDefault();
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
         });
     });
 });
