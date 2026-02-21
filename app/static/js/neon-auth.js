@@ -172,12 +172,15 @@ class NeonAuthClient {
                 tokenPrefix: token ? token.substring(0, 30) + '...' : null
             });
 
-            // Step 3: POST to Flask neon-callback
+            // Step 3: Also pass user data from the sign-in response
             const callbackPayload = {};
             if (token) {
                 callbackPayload.token = token;
             }
-            debugLog('signIn calling /auth/neon-callback', { payloadKeys: Object.keys(callbackPayload), hasToken: !!callbackPayload.token });
+            if (data.user) {
+                callbackPayload.user = data.user;
+            }
+            debugLog('signIn calling /auth/neon-callback', { payloadKeys: Object.keys(callbackPayload), hasToken: !!callbackPayload.token, hasUser: !!callbackPayload.user });
 
             const callbackResponse = await fetch('/auth/neon-callback', {
                 method: 'POST',
@@ -198,22 +201,19 @@ class NeonAuthClient {
                 return { success: true, redirect: callbackData.redirect || '/dashboard' };
             }
 
-            // Step 4: Retry with getSession
+            // Step 4: Retry with getSession (includes full user data)
             debugLog('signIn callback failed, trying getSession fallback', {});
-            const sessionData = await this.getSession();
-            debugLog('signIn getSession result', sessionData);
+            const fullSession = await this._getFullSession();
+            debugLog('signIn getFullSession result', fullSession);
 
-            if (sessionData) {
-                const sessionToken = sessionData.token || null;
-                debugLog('signIn retry token', {
-                    hasSessionToken: !!sessionToken,
-                    tokenPrefix: sessionToken ? sessionToken.substring(0, 30) + '...' : null
-                });
-
-                const retryPayload = {};
+            if (fullSession && fullSession.user) {
+                const sessionToken = fullSession.session ? fullSession.session.token : null;
+                const retryPayload = { user: fullSession.user };
                 if (sessionToken) {
                     retryPayload.token = sessionToken;
                 }
+
+                debugLog('signIn retry with user data', { hasToken: !!sessionToken, userId: fullSession.user.id });
 
                 const retryResponse = await fetch('/auth/neon-callback', {
                     method: 'POST',
@@ -242,6 +242,9 @@ class NeonAuthClient {
         }
     }
 
+    /**
+     * Get current Neon Auth session object (session field only)
+     */
     async getSession() {
         debugLog('getSession START', { url: `${this.authUrl}/get-session` });
         try {
@@ -277,6 +280,30 @@ class NeonAuthClient {
             return null;
         } catch (error) {
             debugLog('getSession ERROR', error.message);
+            return null;
+        }
+    }
+
+    /**
+     * Get full session data including user object from Neon Auth
+     * Returns { session: {...}, user: {...} } or null
+     */
+    async _getFullSession() {
+        try {
+            const response = await fetch(`${this.authUrl}/get-session`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) return null;
+
+            const data = await response.json();
+            if (data.session && data.user) {
+                return { session: data.session, user: data.user };
+            }
+            return null;
+        } catch (error) {
+            debugLog('_getFullSession ERROR', error.message);
             return null;
         }
     }
@@ -340,24 +367,30 @@ class NeonAuthClient {
             // const cleanUrl = window.location.pathname || '/';
             // window.history.replaceState({}, '', cleanUrl);
 
-            // Step 1: Get session from Neon Auth
-            debugLog('checkSessionVerifier calling getSession', {});
-            const sessionData = await this.getSession();
-            const token = sessionData ? (sessionData.token || null) : null;
+            // Step 1: Get full session from Neon Auth (includes user data)
+            debugLog('checkSessionVerifier calling getFullSession', {});
+            const fullSession = await this._getFullSession();
+            const token = fullSession && fullSession.session ? fullSession.session.token : null;
+            const userData = fullSession ? fullSession.user : null;
             debugLog('checkSessionVerifier session result', {
-                hasSession: !!sessionData,
+                hasSession: !!fullSession,
                 hasToken: !!token,
+                hasUser: !!userData,
                 tokenPrefix: token ? token.substring(0, 30) + '...' : null,
-                sessionData: sessionData
+                userId: userData ? userData.id : null,
+                userEmail: userData ? userData.email : null
             });
 
-            // Step 2: POST to Flask
+            // Step 2: POST to Flask with token + user data
             const payload = {};
             if (token) {
                 payload.token = token;
             }
+            if (userData) {
+                payload.user = userData;
+            }
 
-            debugLog('checkSessionVerifier calling /auth/neon-callback', { payloadKeys: Object.keys(payload) });
+            debugLog('checkSessionVerifier calling /auth/neon-callback', { payloadKeys: Object.keys(payload), hasToken: !!payload.token, hasUser: !!payload.user });
             const response = await fetch('/auth/neon-callback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -377,31 +410,6 @@ class NeonAuthClient {
                 debugLog('checkSessionVerifier SUCCESS, redirecting', data.redirect || '/dashboard');
                 window.location.href = data.redirect || '/dashboard';
                 return true;
-            }
-
-            // Step 3: Try verifier as token
-            if (!token) {
-                debugLog('checkSessionVerifier trying verifier as token', { verifier });
-                const verifierResponse = await fetch('/auth/neon-callback', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: verifier }),
-                    credentials: 'include'
-                });
-
-                const verifierText = await verifierResponse.text();
-                debugLog('checkSessionVerifier verifier-as-token response', {
-                    status: verifierResponse.status,
-                    ok: verifierResponse.ok,
-                    body: verifierText
-                });
-
-                if (verifierResponse.ok) {
-                    const data = JSON.parse(verifierText);
-                    debugLog('checkSessionVerifier SUCCESS via verifier', data.redirect || '/dashboard');
-                    window.location.href = data.redirect || '/dashboard';
-                    return true;
-                }
             }
 
             debugLog('checkSessionVerifier ALL ATTEMPTS FAILED', 'Staying on page for debug inspection');

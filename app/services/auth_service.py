@@ -6,6 +6,7 @@ All authentication flows go through Neon Auth - no local password auth
 from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime, timedelta
 import logging
+import hashlib
 import jwt
 import requests
 from functools import wraps
@@ -136,17 +137,12 @@ class NeonAuthService:
                 },
                 timeout=10
             )
-            logger.info(f"validate_session: cookie strategy status={response.status_code}")
+            body_text = response.text[:500] if response.text else '(empty)'
+            logger.info(f"validate_session: cookie strategy status={response.status_code} body={body_text}")
             result = self._parse_session_response(response)
             if result:
                 logger.info(f"validate_session: cookie strategy SUCCESS sub={result.get('sub')}")
                 return result
-            else:
-                try:
-                    body = response.text[:500]
-                    logger.info(f"validate_session: cookie strategy body={body}")
-                except Exception:
-                    pass
         except Exception as e:
             logger.warning(f"Session validation via cookie failed: {e}")
 
@@ -159,30 +155,39 @@ class NeonAuthService:
                 },
                 timeout=10
             )
-            logger.info(f"validate_session: bearer strategy status={response.status_code}")
+            body_text = response.text[:500] if response.text else '(empty)'
+            logger.info(f"validate_session: bearer strategy status={response.status_code} body={body_text}")
             result = self._parse_session_response(response)
             if result:
                 logger.info(f"validate_session: bearer strategy SUCCESS sub={result.get('sub')}")
                 return result
-            else:
-                try:
-                    body = response.text[:500]
-                    logger.info(f"validate_session: bearer strategy body={body}")
-                except Exception:
-                    pass
         except Exception as e:
             logger.warning(f"Session validation via Bearer failed: {e}")
 
-        # Strategy 3: Look up session directly in neon_auth DB tables
+        # Strategy 3: Look up session in neon_auth DB (plain token)
         try:
             result = self._lookup_session_in_db(token)
             if result:
-                logger.info(f"validate_session: DB lookup SUCCESS sub={result.get('sub')}")
+                logger.info(f"validate_session: DB plain lookup SUCCESS sub={result.get('sub')}")
                 return result
             else:
-                logger.info("validate_session: DB lookup returned no result")
+                logger.info("validate_session: DB plain lookup returned no result")
         except Exception as e:
-            logger.warning(f"Session DB lookup failed: {e}")
+            logger.warning(f"Session DB plain lookup failed: {e}")
+
+        # Strategy 4: Look up session in neon_auth DB (SHA-256 hashed token)
+        # Better Auth stores hashed session tokens in the database
+        try:
+            hashed = hashlib.sha256(token.encode('utf-8')).hexdigest()
+            logger.info(f"validate_session: trying hashed token lookup hash_prefix={hashed[:16]}...")
+            result = self._lookup_session_in_db(hashed)
+            if result:
+                logger.info(f"validate_session: DB hashed lookup SUCCESS sub={result.get('sub')}")
+                return result
+            else:
+                logger.info("validate_session: DB hashed lookup returned no result")
+        except Exception as e:
+            logger.warning(f"Session DB hashed lookup failed: {e}")
 
         logger.warning(f"All session token validation strategies failed for token prefix={token[:20]}...")
         return None
@@ -211,31 +216,58 @@ class NeonAuthService:
     def _lookup_session_in_db(self, token: str) -> Optional[Dict[str, Any]]:
         """
         Look up a session token directly in the neon_auth schema.
-        This is the most reliable fallback since it doesn't depend on HTTP calls.
+        Tries multiple column name conventions (camelCase and snake_case).
         """
-        try:
-            result = db.session.execute(
-                db.text("""
-                    SELECT u.id, u.email, u.name, u.email_verified
-                    FROM neon_auth.session s
-                    JOIN neon_auth."user" u ON s."userId" = u.id
-                    WHERE s.token = :token
-                      AND s."expiresAt" > NOW()
-                """),
-                {'token': token}
-            ).fetchone()
+        # Try camelCase columns first (Better Auth default with Drizzle)
+        for query_sql in [
+            # camelCase columns (Drizzle ORM default)
+            """
+                SELECT u.id, u.email, u.name, u."emailVerified" as email_verified
+                FROM neon_auth.session s
+                JOIN neon_auth."user" u ON s."userId" = u.id
+                WHERE s.token = :token
+                  AND s."expiresAt" > NOW()
+            """,
+            # snake_case columns (Prisma / some configurations)
+            """
+                SELECT u.id, u.email, u.name, u.email_verified
+                FROM neon_auth.session s
+                JOIN neon_auth."user" u ON s.user_id = u.id
+                WHERE s.token = :token
+                  AND s.expires_at > NOW()
+            """,
+            # all lowercase (PostgreSQL default unquoted)
+            """
+                SELECT u.id, u.email, u.name, u.emailverified as email_verified
+                FROM neon_auth.session s
+                JOIN neon_auth."user" u ON s.userid = u.id
+                WHERE s.token = :token
+                  AND s.expiresat > NOW()
+            """,
+        ]:
+            try:
+                result = db.session.execute(
+                    db.text(query_sql),
+                    {'token': token}
+                ).fetchone()
 
-            if result:
-                return {
-                    'sub': result.id,
-                    'email': result.email,
-                    'name': result.name,
-                    'email_verified': result.email_verified,
-                }
-            return None
-        except Exception as e:
-            logger.debug(f"neon_auth session DB lookup error: {e}")
-            return None
+                if result:
+                    return {
+                        'sub': result.id,
+                        'email': result.email,
+                        'name': result.name,
+                        'email_verified': getattr(result, 'email_verified', False),
+                    }
+            except Exception as e:
+                logger.info(f"neon_auth DB lookup variant failed: {e}")
+                # Rollback the failed query to keep the session usable
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
+                continue
+
+        return None
 
     def get_neon_auth_user(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Fetch user details from Neon Auth neon_auth schema"""
