@@ -113,6 +113,12 @@ class NeonAuthService:
             payload = self.validate_session_token(token)
             if not payload:
                 return None
+            # Clean up any dirty DB transaction state left by failed SQL lookups
+            # in validate_session_token before querying the User table
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
         return User.authenticate_with_jwt(payload)
 
     def validate_session_token(self, token: str) -> Optional[Dict[str, Any]]:

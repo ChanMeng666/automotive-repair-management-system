@@ -123,12 +123,15 @@ def neon_callback():
 
         if not user:
             # Fallback: client may have passed user data from getSession()
-            # Verify the session exists in the DB before trusting client data
             client_user = body.get('user')
             debug_info['has_client_user'] = client_user is not None
             if client_user and client_user.get('id') and client_user.get('email'):
                 logger.info(f"neon-callback: trying client user data fallback id={client_user.get('id')}")
-                # Build a payload from client data and use authenticate_with_jwt
+                # Clean up any dirty DB transaction from failed lookups
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
                 fallback_payload = {
                     'sub': client_user['id'],
                     'email': client_user['email'],
