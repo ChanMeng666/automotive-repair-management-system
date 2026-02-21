@@ -136,11 +136,19 @@ class NeonAuthService:
                 },
                 timeout=10
             )
+            logger.info(f"validate_session: cookie strategy status={response.status_code}")
             result = self._parse_session_response(response)
             if result:
+                logger.info(f"validate_session: cookie strategy SUCCESS sub={result.get('sub')}")
                 return result
+            else:
+                try:
+                    body = response.text[:500]
+                    logger.info(f"validate_session: cookie strategy body={body}")
+                except Exception:
+                    pass
         except Exception as e:
-            logger.debug(f"Session validation via cookie failed: {e}")
+            logger.warning(f"Session validation via cookie failed: {e}")
 
         # Strategy 2: Pass token as Bearer authorization
         try:
@@ -151,21 +159,32 @@ class NeonAuthService:
                 },
                 timeout=10
             )
+            logger.info(f"validate_session: bearer strategy status={response.status_code}")
             result = self._parse_session_response(response)
             if result:
+                logger.info(f"validate_session: bearer strategy SUCCESS sub={result.get('sub')}")
                 return result
+            else:
+                try:
+                    body = response.text[:500]
+                    logger.info(f"validate_session: bearer strategy body={body}")
+                except Exception:
+                    pass
         except Exception as e:
-            logger.debug(f"Session validation via Bearer failed: {e}")
+            logger.warning(f"Session validation via Bearer failed: {e}")
 
         # Strategy 3: Look up session directly in neon_auth DB tables
         try:
             result = self._lookup_session_in_db(token)
             if result:
+                logger.info(f"validate_session: DB lookup SUCCESS sub={result.get('sub')}")
                 return result
+            else:
+                logger.info("validate_session: DB lookup returned no result")
         except Exception as e:
-            logger.debug(f"Session DB lookup failed: {e}")
+            logger.warning(f"Session DB lookup failed: {e}")
 
-        logger.warning(f"All session token validation strategies failed")
+        logger.warning(f"All session token validation strategies failed for token prefix={token[:20]}...")
         return None
 
     def _parse_session_response(self, response) -> Optional[Dict[str, Any]]:
