@@ -77,12 +77,16 @@ def neon_callback():
         body = request.get_json(silent=True) or {}
         if body.get('token'):
             session_token = body['token']
+            logger.info("neon-callback: token received from request body")
 
         # Fall back to cookie
         if not session_token:
             session_token = request.cookies.get('better-auth.session_token')
+            if session_token:
+                logger.info("neon-callback: token received from cookie")
 
         if not session_token:
+            logger.warning("neon-callback: no token in body or cookie")
             return jsonify({'error': 'No session token'}), 401
 
         auth_service = AuthService()
@@ -98,6 +102,7 @@ def neon_callback():
                 'redirect': redirect_url
             })
 
+        logger.warning("neon-callback: token present but user authentication failed")
         return jsonify({'error': 'Invalid session'}), 401
 
     except Exception as e:

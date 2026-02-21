@@ -48,6 +48,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
+    // Check if neonAuth.checkSessionVerifier already handled the redirect
+    // (it runs on DOMContentLoaded too, but this page is specifically for the bridge flow)
+    const params = new URLSearchParams(window.location.search);
+    const verifier = params.get('neon_auth_session_verifier');
+
+    // If there's a verifier, checkSessionVerifier in neon-auth.js will handle it.
+    // Only proceed here if there's no verifier (this is the /auth/callback bridge).
+    if (verifier) {
+        // Let checkSessionVerifier handle it — just wait
+        return;
+    }
+
     try {
         // Get session from Neon Auth (client-side cookies are visible to Neon Auth domain)
         const sessionData = await window.neonAuth.getSession();

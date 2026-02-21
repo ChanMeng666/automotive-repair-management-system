@@ -167,6 +167,32 @@ class NeonAuthClient {
                 };
             }
 
+            // If the token from sign-in response didn't work,
+            // try fetching a fresh session from Neon Auth
+            const sessionData = await this.getSession();
+            if (sessionData) {
+                const sessionToken = sessionData.token || null;
+                const retryPayload = {};
+                if (sessionToken) {
+                    retryPayload.token = sessionToken;
+                }
+
+                const retryResponse = await fetch('/auth/neon-callback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(retryPayload),
+                    credentials: 'include'
+                });
+
+                if (retryResponse.ok) {
+                    const retryData = await retryResponse.json();
+                    return {
+                        success: true,
+                        redirect: retryData.redirect || '/dashboard'
+                    };
+                }
+            }
+
             throw new Error('Failed to establish session');
         } catch (error) {
             console.error('Sign in error:', error);
@@ -189,7 +215,15 @@ class NeonAuthClient {
             }
 
             const data = await response.json();
-            return data.session || data;
+            // Better Auth may return { session: {...}, user: {...} } or { session: null }
+            if (data.session) {
+                return data.session;
+            }
+            // Some responses nest differently
+            if (data.token) {
+                return data;
+            }
+            return null;
         } catch (error) {
             console.error('Get session error:', error);
             return null;
@@ -243,6 +277,72 @@ class NeonAuthClient {
 
         return { success: false };
     }
+
+    /**
+     * Check for neon_auth_session_verifier in URL and complete the auth flow.
+     * Called automatically on every page load. After Google OAuth, Neon Auth
+     * redirects to the app's origin with ?neon_auth_session_verifier=... param.
+     * This method detects that, gets the session, and establishes a Flask session.
+     */
+    async checkSessionVerifier() {
+        const params = new URLSearchParams(window.location.search);
+        const verifier = params.get('neon_auth_session_verifier');
+
+        if (!verifier) return false;
+
+        try {
+            // Clean the URL immediately to prevent re-triggering
+            const cleanUrl = window.location.pathname || '/';
+            window.history.replaceState({}, '', cleanUrl);
+
+            // Get session from Neon Auth — the session cookie should be set after OAuth
+            const sessionData = await this.getSession();
+            const token = sessionData ? (sessionData.token || null) : null;
+
+            const payload = {};
+            if (token) {
+                payload.token = token;
+            }
+
+            const response = await fetch('/auth/neon-callback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                window.location.href = data.redirect || '/dashboard';
+                return true;
+            }
+
+            // If getSession didn't return a token, try using the verifier directly
+            // as a token (some Better Auth configurations return it this way)
+            if (!token) {
+                const verifierResponse = await fetch('/auth/neon-callback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: verifier }),
+                    credentials: 'include'
+                });
+
+                if (verifierResponse.ok) {
+                    const data = await verifierResponse.json();
+                    window.location.href = data.redirect || '/dashboard';
+                    return true;
+                }
+            }
+
+            console.warn('Session verifier detected but could not establish session');
+            window.location.href = '/auth/login';
+            return false;
+        } catch (error) {
+            console.error('Session verifier handling error:', error);
+            window.location.href = '/auth/login';
+            return false;
+        }
+    }
 }
 
 // Initialize Neon Auth client when the page loads
@@ -252,5 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (authUrl) {
         window.neonAuth = new NeonAuthClient(authUrl);
+
+        // Auto-detect OAuth redirect with session verifier
+        window.neonAuth.checkSessionVerifier();
     }
 });

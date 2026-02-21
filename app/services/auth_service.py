@@ -118,40 +118,104 @@ class NeonAuthService:
         """
         Validate an opaque session token by calling Neon Auth's get-session API.
         Used as fallback when JWT verification fails (Better Auth may issue opaque tokens).
+        Tries multiple header strategies since Better Auth accepts tokens in different ways.
         """
-        try:
-            auth_url = self.auth_url
-            if not auth_url:
-                return None
+        auth_url = self.auth_url
+        if not auth_url:
+            return None
 
-            auth_url = auth_url.rstrip('/')
+        auth_url = auth_url.rstrip('/')
+        get_session_url = f"{auth_url}/get-session"
+
+        # Strategy 1: Pass token as cookie
+        try:
             response = requests.get(
-                f"{auth_url}/get-session",
+                get_session_url,
                 headers={
                     'Cookie': f'better-auth.session_token={token}'
                 },
                 timeout=10
             )
-
-            if not response.ok:
-                return None
-
-            data = response.json()
-            session_data = data.get('session')
-            user_data = data.get('user')
-
-            if not user_data:
-                return None
-
-            # Return a payload compatible with authenticate_with_jwt
-            return {
-                'sub': user_data.get('id'),
-                'email': user_data.get('email'),
-                'name': user_data.get('name'),
-                'email_verified': user_data.get('emailVerified', False),
-            }
+            result = self._parse_session_response(response)
+            if result:
+                return result
         except Exception as e:
-            logger.warning(f"Session token validation failed: {e}")
+            logger.debug(f"Session validation via cookie failed: {e}")
+
+        # Strategy 2: Pass token as Bearer authorization
+        try:
+            response = requests.get(
+                get_session_url,
+                headers={
+                    'Authorization': f'Bearer {token}'
+                },
+                timeout=10
+            )
+            result = self._parse_session_response(response)
+            if result:
+                return result
+        except Exception as e:
+            logger.debug(f"Session validation via Bearer failed: {e}")
+
+        # Strategy 3: Look up session directly in neon_auth DB tables
+        try:
+            result = self._lookup_session_in_db(token)
+            if result:
+                return result
+        except Exception as e:
+            logger.debug(f"Session DB lookup failed: {e}")
+
+        logger.warning(f"All session token validation strategies failed")
+        return None
+
+    def _parse_session_response(self, response) -> Optional[Dict[str, Any]]:
+        """Parse a get-session response into a JWT-compatible payload"""
+        if not response.ok:
+            return None
+
+        try:
+            data = response.json()
+        except Exception:
+            return None
+
+        user_data = data.get('user')
+        if not user_data:
+            return None
+
+        return {
+            'sub': user_data.get('id'),
+            'email': user_data.get('email'),
+            'name': user_data.get('name'),
+            'email_verified': user_data.get('emailVerified', user_data.get('email_verified', False)),
+        }
+
+    def _lookup_session_in_db(self, token: str) -> Optional[Dict[str, Any]]:
+        """
+        Look up a session token directly in the neon_auth schema.
+        This is the most reliable fallback since it doesn't depend on HTTP calls.
+        """
+        try:
+            result = db.session.execute(
+                db.text("""
+                    SELECT u.id, u.email, u.name, u.email_verified
+                    FROM neon_auth.session s
+                    JOIN neon_auth."user" u ON s."userId" = u.id
+                    WHERE s.token = :token
+                      AND s."expiresAt" > NOW()
+                """),
+                {'token': token}
+            ).fetchone()
+
+            if result:
+                return {
+                    'sub': result.id,
+                    'email': result.email,
+                    'name': result.name,
+                    'email_verified': result.email_verified,
+                }
+            return None
+        except Exception as e:
+            logger.debug(f"neon_auth session DB lookup error: {e}")
             return None
 
     def get_neon_auth_user(self, user_id: str) -> Optional[Dict[str, Any]]:
