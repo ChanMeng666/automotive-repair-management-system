@@ -151,6 +151,9 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
     @classmethod
     def find_by_neon_auth_id(cls, neon_auth_user_id: str) -> Optional['User']:
         """Find user by Neon Auth user ID"""
+        # Ensure str type — neon_auth DB may return UUID objects which cause
+        # "operator does not exist: character varying = uuid" on PostgreSQL
+        neon_auth_user_id = str(neon_auth_user_id)
         query = db.select(cls).where(cls.neon_auth_user_id == neon_auth_user_id)
         return db.session.execute(query).scalar_one_or_none()
 
@@ -160,6 +163,7 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
         neon_auth_user_id = jwt_payload.get('sub')
         if not neon_auth_user_id:
             return None
+        neon_auth_user_id = str(neon_auth_user_id)
 
         user = cls.find_by_neon_auth_id(neon_auth_user_id)
         if user:

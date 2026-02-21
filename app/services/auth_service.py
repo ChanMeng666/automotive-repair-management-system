@@ -208,12 +208,16 @@ class NeonAuthService:
         except Exception:
             return None
 
+        if not data or not isinstance(data, dict):
+            return None
+
         user_data = data.get('user')
         if not user_data:
             return None
 
+        user_id = user_data.get('id')
         return {
-            'sub': user_data.get('id'),
+            'sub': str(user_id) if user_id else None,
             'email': user_data.get('email'),
             'name': user_data.get('name'),
             'email_verified': user_data.get('emailVerified', user_data.get('email_verified', False)),
@@ -259,7 +263,7 @@ class NeonAuthService:
 
                 if result:
                     return {
-                        'sub': result.id,
+                        'sub': str(result.id),
                         'email': result.email,
                         'name': result.name,
                         'email_verified': getattr(result, 'email_verified', False),

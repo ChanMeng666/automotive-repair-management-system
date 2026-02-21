@@ -95,26 +95,32 @@ def dashboard():
     
     try:
         user_type = session.get('current_role', 'technician')
-        
+
+        # Select template based on role
+        if user_type in ('owner', 'admin'):
+            template = 'administrator/dashboard.html'
+        else:
+            template = 'technician/dashboard.html'
+
         # Get statistics
         job_stats = job_service.get_job_statistics()
         billing_stats = billing_service.get_billing_statistics()
-        
+
         # Get recent activities
         recent_jobs, _, _ = job_service.get_current_jobs(page=1, per_page=10)
         overdue_bills = billing_service.get_overdue_bills()
-        
-        return render_template('dashboard.html',
+
+        return render_template(template,
                              user_type=user_type,
                              job_stats=job_stats,
                              billing_stats=billing_stats,
                              recent_jobs=recent_jobs,
                              overdue_bills=overdue_bills)
-        
+
     except Exception as e:
         logger.error(f"Dashboard loading failed: {e}")
         flash('Failed to load dashboard', 'error')
-        return render_template('dashboard.html',
+        return render_template('technician/dashboard.html',
                              user_type='technician',
                              job_stats={},
                              billing_stats={},

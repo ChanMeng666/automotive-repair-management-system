@@ -1,0 +1,119 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Create Organization - RepairOS{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.register-bg {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e8eef5 100%);
+    min-height: 80vh;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-bg d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-xl-5">
+                <div class="card border-0 shadow-lg" style="border-top: 4px solid var(--accent) !important;">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                                <i class="ti ti-building-plus text-primary" style="font-size: 2rem;"></i>
+                            </div>
+                            <h2 class="fw-bold mb-2">Create Organization</h2>
+                            <p class="text-muted">Set up your business on RepairOS</p>
+                        </div>
+
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form method="POST" action="{{ url_for('auth.register_organization') }}" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-semibold">Organization Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="ti ti-building text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           placeholder="e.g. Mike's Auto Shop" required minlength="2">
+                                </div>
+                                <div class="invalid-feedback">Organization name must be at least 2 characters.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="business_type" class="form-label fw-semibold">Business Type</label>
+                                <select class="form-select" id="business_type" name="business_type" required>
+                                    <option value="auto_repair" selected>Auto Repair</option>
+                                    <option value="parts_seller">Parts Seller</option>
+                                    <option value="both">Both</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-semibold">Business Email <span class="text-muted fw-normal">(optional)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="ti ti-mail text-muted"></i>
+                                    </span>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                           placeholder="shop@example.com">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="phone" class="form-label fw-semibold">Phone <span class="text-muted fw-normal">(optional)</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="ti ti-phone text-muted"></i>
+                                    </span>
+                                    <input type="tel" class="form-control" id="phone" name="phone"
+                                           placeholder="(555) 123-4567">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-accent btn-lg w-100">
+                                <i class="ti ti-plus me-2"></i>Create Organization
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('auth.no_organization') }}" class="text-muted text-decoration-none text-sm">
+                                <i class="ti ti-arrow-left me-1"></i>Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    });
+});
+</script>
+{% endblock %}
