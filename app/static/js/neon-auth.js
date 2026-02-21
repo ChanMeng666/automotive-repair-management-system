@@ -5,30 +5,93 @@
 
 // ============ DEBUG LOGGER ============
 const _debugLogs = [];
+function _createDebugPanel() {
+    let panel = document.getElementById('neon-debug-panel');
+    if (panel) return panel;
+
+    panel = document.createElement('div');
+    panel.id = 'neon-debug-panel';
+    panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;' +
+        'background:#1a1a2e;color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;z-index:99999;' +
+        'border-top:2px solid #e85d04;white-space:pre-wrap;word-break:break-all;user-select:text;';
+
+    // Toolbar
+    const toolbar = document.createElement('div');
+    toolbar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;position:sticky;top:0;background:#1a1a2e;padding:4px 0;z-index:1;';
+
+    const title = document.createElement('span');
+    title.style.cssText = 'color:#e85d04;font-weight:bold;font-size:13px;';
+    title.textContent = '=== NeonAuth Debug Panel ===';
+
+    const btnGroup = document.createElement('span');
+    btnGroup.style.cssText = 'display:flex;gap:6px;';
+
+    // Copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = 'Copy All Logs';
+    copyBtn.style.cssText = 'background:#e85d04;color:#fff;border:none;padding:4px 12px;border-radius:4px;' +
+        'cursor:pointer;font-family:monospace;font-size:12px;font-weight:bold;';
+    copyBtn.addEventListener('click', function() {
+        const text = _debugLogs.join('\n');
+        navigator.clipboard.writeText(text).then(function() {
+            copyBtn.textContent = 'Copied!';
+            copyBtn.style.background = '#2ecc71';
+            setTimeout(function() { copyBtn.textContent = 'Copy All Logs'; copyBtn.style.background = '#e85d04'; }, 1500);
+        }).catch(function() {
+            // Fallback: create a textarea for manual copy
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;top:10%;left:5%;width:90%;height:40%;z-index:999999;font-size:12px;font-family:monospace;background:#111;color:#0f0;padding:8px;border:2px solid #e85d04;';
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close (select all + copy first)';
+            closeBtn.style.cssText = 'position:fixed;top:calc(10% - 30px);left:5%;z-index:999999;background:#e85d04;color:#fff;border:none;padding:6px 16px;cursor:pointer;font-weight:bold;';
+            closeBtn.addEventListener('click', function() { ta.remove(); closeBtn.remove(); });
+            document.body.appendChild(closeBtn);
+            document.body.appendChild(ta);
+            ta.select();
+        });
+    });
+
+    // Clear button
+    const clearBtn = document.createElement('button');
+    clearBtn.textContent = 'Clear';
+    clearBtn.style.cssText = 'background:#555;color:#fff;border:none;padding:4px 10px;border-radius:4px;' +
+        'cursor:pointer;font-family:monospace;font-size:12px;';
+    clearBtn.addEventListener('click', function() {
+        const logArea = document.getElementById('neon-debug-logs');
+        if (logArea) logArea.innerHTML = '';
+        _debugLogs.length = 0;
+    });
+
+    btnGroup.appendChild(copyBtn);
+    btnGroup.appendChild(clearBtn);
+    toolbar.appendChild(title);
+    toolbar.appendChild(btnGroup);
+    panel.appendChild(toolbar);
+
+    // Log area
+    const logArea = document.createElement('div');
+    logArea.id = 'neon-debug-logs';
+    panel.appendChild(logArea);
+
+    document.body.appendChild(panel);
+    return panel;
+}
+
 function debugLog(label, data) {
     const ts = new Date().toISOString().slice(11, 23);
     const entry = `[${ts}] ${label}: ${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}`;
     _debugLogs.push(entry);
     console.log(`%c[NeonAuth] ${label}`, 'color:#e85d04;font-weight:bold', data);
 
-    // Also append to on-page debug panel if it exists
-    let panel = document.getElementById('neon-debug-panel');
-    if (!panel) {
-        panel = document.createElement('div');
-        panel.id = 'neon-debug-panel';
-        panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;' +
-            'background:#1a1a2e;color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;z-index:99999;' +
-            'border-top:2px solid #e85d04;white-space:pre-wrap;word-break:break-all;';
-        const header = document.createElement('div');
-        header.style.cssText = 'color:#e85d04;font-weight:bold;margin-bottom:4px;font-size:13px;';
-        header.textContent = '=== NeonAuth Debug Panel (copy all text below for debugging) ===';
-        panel.appendChild(header);
-        document.body.appendChild(panel);
+    const panel = _createDebugPanel();
+    const logArea = document.getElementById('neon-debug-logs');
+    if (logArea) {
+        const line = document.createElement('div');
+        line.style.cssText = 'border-bottom:1px solid #333;padding:2px 0;';
+        line.textContent = entry;
+        logArea.appendChild(line);
     }
-    const line = document.createElement('div');
-    line.style.cssText = 'border-bottom:1px solid #333;padding:2px 0;';
-    line.textContent = entry;
-    panel.appendChild(line);
     panel.scrollTop = panel.scrollHeight;
 }
 // ======================================
