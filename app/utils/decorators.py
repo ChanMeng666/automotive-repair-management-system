@@ -195,7 +195,7 @@ def login_required(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         if not session.get('logged_in'):
             flash('Please login to access this page', 'warning')
-            return redirect(url_for('main.login'))
+            return redirect(url_for('auth.login'))
         return func(*args, **kwargs)
 
     return wrapper
@@ -210,7 +210,7 @@ def tenant_required(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         if not session.get('logged_in'):
             flash('Please login to access this page', 'warning')
-            return redirect(url_for('main.login'))
+            return redirect(url_for('auth.login'))
 
         tenant_id = getattr(g, 'current_tenant_id', None)
         if not tenant_id:
@@ -245,7 +245,7 @@ def permission_required(permission: str) -> Callable:
                 if request.is_json:
                     return jsonify({'error': 'Authentication required'}), 401
                 flash('Please login to access this page', 'warning')
-                return redirect(url_for('main.login'))
+                return redirect(url_for('auth.login'))
 
             # Must have tenant context
             tenant_id = getattr(g, 'current_tenant_id', None)
@@ -314,9 +314,9 @@ def role_required(*roles: str) -> Callable:
         def wrapper(*args, **kwargs):
             if not session.get('logged_in'):
                 flash('Please login to access this page', 'warning')
-                return redirect(url_for('main.login'))
+                return redirect(url_for('auth.login'))
 
-            user_role = session.get('user_type')
+            user_role = session.get('current_role')
             if user_role not in roles:
                 logging.warning(
                     f"Access denied: user role '{user_role}' not in {roles} "
@@ -337,10 +337,10 @@ def admin_required(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         if not session.get('logged_in'):
             flash('Please login to access this page', 'warning')
-            return redirect(url_for('main.login'))
+            return redirect(url_for('auth.login'))
 
-        user_role = session.get('user_type')
-        if user_role != 'administrator':
+        user_role = session.get('current_role')
+        if user_role not in ('owner', 'admin'):
             logging.warning(
                 f"Admin access denied: user role '{user_role}' for {func.__name__}"
             )
@@ -358,10 +358,10 @@ def technician_required(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         if not session.get('logged_in'):
             flash('Please login to access this page', 'warning')
-            return redirect(url_for('main.login'))
+            return redirect(url_for('auth.login'))
 
-        user_role = session.get('user_type')
-        if user_role not in ('technician', 'administrator'):
+        user_role = session.get('current_role')
+        if user_role not in ('owner', 'admin', 'manager', 'technician'):
             logging.warning(
                 f"Technician access denied: user role '{user_role}' for {func.__name__}"
             )

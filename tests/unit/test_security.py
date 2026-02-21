@@ -291,7 +291,7 @@ class TestSecurityDecorators:
         with app.test_request_context():
             from flask import session
             session['logged_in'] = True
-            session['user_type'] = 'technician'
+            session['current_role'] = 'technician'
             session['user_id'] = 'test_user'
 
             mock_func = Mock(return_value="success")
@@ -317,7 +317,7 @@ class TestSecurityDecorators:
         with app.test_request_context():
             from flask import session
             session['logged_in'] = True
-            session['user_type'] = 'technician'
+            session['current_role'] = 'technician'
 
             mock_func = Mock()
             decorated_func = require_auth(['administrator'])(mock_func)

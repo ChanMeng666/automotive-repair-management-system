@@ -15,7 +15,7 @@ def require_login_and_tenant():
     """Ensure user is logged in and has a tenant context"""
     if not session.get('logged_in'):
         flash('Please log in first', 'warning')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('auth.login'))
     if not session.get('current_tenant_id'):
         flash('Please select or create an organization first', 'warning')
         return redirect(url_for('auth.select_tenant'))

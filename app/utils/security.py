@@ -201,7 +201,7 @@ def require_auth(user_types: List[str] = None):
                 abort(401, description="Login required")
 
             if user_types:
-                user_type = session.get('user_type')
+                user_type = session.get('current_role')
                 if user_type not in user_types:
                     abort(403, description="Insufficient permissions")
 

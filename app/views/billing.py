@@ -4,7 +4,7 @@ Handles subscription plans, Stripe checkout, billing portal, and webhooks
 """
 import logging
 from flask import Blueprint, request, redirect, url_for, render_template, flash, g, jsonify
-from app.services.auth_service import login_required
+from app.utils.decorators import login_required
 from app.services.stripe_service import StripeService, PLAN_CONFIG
 from app.extensions import db
 

@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 @pytest.mark.unit
 class TestPasswordHashing:
-    """Tests for password hashing functionality"""
+    """Tests for password hashing functionality (werkzeug utility)"""
 
     def test_password_hash_generation(self):
         """Test that password hashing works correctly"""
@@ -45,51 +45,30 @@ class TestPasswordHashing:
 class TestUserModel:
     """Tests for User model"""
 
-    def test_user_is_admin_property(self):
-        """Test is_admin property"""
+    def test_user_is_admin_superadmin(self):
+        """Test is_admin returns True for superadmins"""
         from app.models.user import User
 
-        admin_user = User(username='admin', role='administrator', is_active=True)
-        tech_user = User(username='tech', role='technician', is_active=True)
+        superadmin = User(username='superadmin', is_superadmin=True, is_active=True)
+        regular = User(username='regular', is_superadmin=False, is_active=True)
 
-        assert admin_user.is_admin is True
-        assert tech_user.is_admin is False
+        assert superadmin.is_admin is True
+        assert regular.is_admin is False
 
-    def test_user_is_technician_property(self):
-        """Test is_technician property"""
+    def test_user_is_admin_not_based_on_role(self):
+        """Test is_admin does not check legacy role column"""
         from app.models.user import User
 
-        admin_user = User(username='admin', role='administrator', is_active=True)
-        tech_user = User(username='tech', role='technician', is_active=True)
+        # Legacy role='administrator' should NOT make user admin
+        user = User(username='admin', role='administrator', is_superadmin=False, is_active=True)
+        assert user.is_admin is False
 
-        assert admin_user.is_technician is False
-        assert tech_user.is_technician is True
-
-    def test_user_check_password(self):
-        """Test password checking"""
+    def test_user_password_hash_nullable(self):
+        """Test that user can be created without password_hash (Neon Auth users)"""
         from app.models.user import User
 
-        password = "test_password"
-        user = User(
-            username='test',
-            password_hash=generate_password_hash(password),
-            role='technician',
-            is_active=True
-        )
-
-        assert user.check_password(password) is True
-        assert user.check_password("wrong_password") is False
-
-    def test_user_set_password(self):
-        """Test setting password"""
-        from app.models.user import User
-
-        user = User(username='test', role='technician', is_active=True)
-        new_password = "new_secure_password"
-        user.set_password(new_password)
-
-        assert user.password_hash is not None
-        assert user.check_password(new_password) is True
+        user = User(username='neon_user', email='test@example.com', is_active=True)
+        assert user.password_hash is None
 
     def test_user_to_dict(self):
         """Test converting user to dictionary"""
@@ -113,9 +92,19 @@ class TestUserModel:
         """Test string representation"""
         from app.models.user import User
 
-        user = User(username='testuser', role='administrator')
+        user = User(username='testuser')
         repr_str = repr(user)
         assert 'testuser' in repr_str
+
+    def test_user_email_verified_default(self):
+        """Test email_verified can be set"""
+        from app.models.user import User
+
+        user = User(username='test', is_active=True, email_verified=False)
+        assert user.email_verified is False
+
+        user2 = User(username='test2', is_active=True, email_verified=True)
+        assert user2.email_verified is True
 
 
 @pytest.mark.unit
@@ -149,6 +138,67 @@ class TestRBACDecorators:
         with app.test_request_context():
             from flask import session
             session['logged_in'] = True
-            session['user_type'] = 'technician'
+            session['current_role'] = 'technician'
             with pytest.raises(Forbidden):
                 admin_route()
+
+    def test_admin_required_allows_owner(self, app):
+        """Test admin_required allows owner role"""
+        from app.utils.decorators import admin_required
+
+        @admin_required
+        def admin_route():
+            return "admin access"
+
+        with app.test_request_context():
+            from flask import session
+            session['logged_in'] = True
+            session['current_role'] = 'owner'
+            result = admin_route()
+            assert result == "admin access"
+
+    def test_admin_required_allows_admin(self, app):
+        """Test admin_required allows admin role"""
+        from app.utils.decorators import admin_required
+
+        @admin_required
+        def admin_route():
+            return "admin access"
+
+        with app.test_request_context():
+            from flask import session
+            session['logged_in'] = True
+            session['current_role'] = 'admin'
+            result = admin_route()
+            assert result == "admin access"
+
+    def test_technician_required_allows_technician(self, app):
+        """Test technician_required allows technician role"""
+        from app.utils.decorators import technician_required
+
+        @technician_required
+        def tech_route():
+            return "tech access"
+
+        with app.test_request_context():
+            from flask import session
+            session['logged_in'] = True
+            session['current_role'] = 'technician'
+            result = tech_route()
+            assert result == "tech access"
+
+    def test_technician_required_denies_viewer(self, app):
+        """Test technician_required denies viewer role"""
+        from werkzeug.exceptions import Forbidden
+        from app.utils.decorators import technician_required
+
+        @technician_required
+        def tech_route():
+            return "tech access"
+
+        with app.test_request_context():
+            from flask import session
+            session['logged_in'] = True
+            session['current_role'] = 'viewer'
+            with pytest.raises(Forbidden):
+                tech_route()

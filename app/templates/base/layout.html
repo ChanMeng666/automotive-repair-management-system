@@ -83,8 +83,23 @@
                             </a>
                         </li>
 
-                        {% if session.user_type == 'technician' %}
-                            <!-- Technician Menu -->
+                        {% if session.current_role in ('owner', 'admin') %}
+                            <!-- Admin/Owner Menu -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.dashboard') }}">
+                                    <i class="ti ti-shield me-1"></i>
+                                    <span>Admin Panel</span>
+                                </a>
+                            </li>
+                            <!-- Also show technician tools for admin/owner -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'current' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.current_jobs') }}">
+                                    <i class="ti ti-clipboard-list me-1"></i>
+                                    <span>Current Jobs</span>
+                                </a>
+                            </li>
+                        {% elif session.current_role in ('manager', 'technician') %}
+                            <!-- Technician/Manager Menu -->
                             <li class="nav-item">
                                 <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'current' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.current_jobs') }}">
                                     <i class="ti ti-clipboard-list me-1"></i>
@@ -107,14 +122,6 @@
                                 <a class="nav-link {% if request.endpoint and 'technician' in request.endpoint and 'parts' in request.endpoint %}active{% endif %}" href="{{ url_for('technician.parts') }}">
                                     <i class="ti ti-package me-1"></i>
                                     <span>Parts</span>
-                                </a>
-                            </li>
-                        {% elif session.user_type == 'administrator' %}
-                            <!-- Administrator Menu (sidebar handles full nav) -->
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint and 'administrator' in request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('administrator.dashboard') }}">
-                                    <i class="ti ti-shield me-1"></i>
-                                    <span>Admin Panel</span>
                                 </a>
                             </li>
                         {% endif %}
@@ -151,7 +158,7 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><h6 class="dropdown-header">Notifications</h6></li>
                                 {% if overdue_bills_count|default(0) > 0 %}
-                                <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.overdue_bills') }}{% else %}#{% endif %}">
+                                <li><a class="dropdown-item" href="{% if session.current_role in ('owner', 'admin') %}{{ url_for('administrator.overdue_bills') }}{% else %}#{% endif %}">
                                     <div class="d-flex">
                                         <i class="ti ti-alert-triangle text-warning me-2"></i>
                                         <div>
@@ -162,7 +169,7 @@
                                 </a></li>
                                 {% endif %}
                                 {% if unpaid_bills_count|default(0) > 0 %}
-                                <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.pay_bills') }}{% else %}#{% endif %}">
+                                <li><a class="dropdown-item" href="{% if session.current_role in ('owner', 'admin') %}{{ url_for('administrator.pay_bills') }}{% else %}#{% endif %}">
                                     <div class="d-flex">
                                         <i class="ti ti-credit-card text-info me-2"></i>
                                         <div>
@@ -186,7 +193,7 @@
                                 <span class="avatar avatar-sm bg-white-lt me-2"><i class="ti ti-user"></i></span>
                                 <div class="d-none d-md-block lh-sm">
                                     <div class="fw-semibold">{{ session.user_id }}</div>
-                                    <small class="text-white-50">{{ session.user_type|title }}</small>
+                                    <small class="text-white-50">{{ session.current_role|title }}</small>
                                 </div>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -196,7 +203,7 @@
                                 <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
                                     <i class="ti ti-user me-2"></i>Profile
                                 </a></li>
-                                <li><a class="dropdown-item" href="{% if session.user_type == 'administrator' %}{{ url_for('administrator.org_settings') }}{% else %}{{ url_for('main.dashboard') }}{% endif %}">
+                                <li><a class="dropdown-item" href="{% if session.current_role in ('owner', 'admin') %}{{ url_for('administrator.org_settings') }}{% else %}{{ url_for('main.dashboard') }}{% endif %}">
                                     <i class="ti ti-settings me-2"></i>Settings
                                 </a></li>
                                 {% if user_tenants and user_tenants|length > 1 %}
@@ -223,7 +230,7 @@
                     {% else %}
                         <!-- Login Button -->
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.login') }}">
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">
                                 <i class="ti ti-login me-1"></i>
                                 <span>Sign In</span>
                             </a>
@@ -317,6 +324,9 @@
 
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+
+    <!-- Neon Auth Client -->
+    <script src="{{ url_for('static', filename='js/neon-auth.js') }}"></script>
 
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

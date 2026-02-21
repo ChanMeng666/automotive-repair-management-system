@@ -1,0 +1,165 @@
+{% extends "base/layout.html" %}
+
+{% block title %}Verify Email - RepairOS{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block extra_css %}
+<style>
+.otp-inputs { display: flex; gap: 0.5rem; justify-content: center; }
+.otp-inputs input {
+    width: 3rem;
+    height: 3.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    transition: border-color 0.2s;
+}
+.otp-inputs input:focus {
+    border-color: var(--tblr-primary);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-lg-5 col-md-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <div class="avatar avatar-xl bg-primary-lt rounded-circle mx-auto mb-4">
+                    <i class="ti ti-mail-check" style="font-size: 2rem;"></i>
+                </div>
+
+                <h2 class="fw-bold mb-3">Verify Your Email</h2>
+                <p class="text-muted mb-4">
+                    Enter your email and the 6-digit verification code we sent you.
+                </p>
+
+                <div id="verify-message" class="alert d-none mb-3"></div>
+
+                <form id="standaloneVerifyForm">
+                    <div class="mb-3 text-start">
+                        <label for="verify-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="verify-email" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="otp-inputs mb-4">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="0">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="1">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="2">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="3">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="4">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="5">
+                    </div>
+
+                    <button type="submit" id="verifyBtn" class="btn btn-accent w-100 py-3 fw-semibold mb-3">
+                        <i class="ti ti-check me-2"></i>Verify Email
+                    </button>
+                </form>
+
+                <p class="text-muted text-sm mb-0">
+                    Didn't receive the code?
+                    <a href="#" id="resendBtn" class="text-primary text-decoration-none fw-semibold">Resend code</a>
+                </p>
+
+                <div class="mt-3">
+                    <a href="{{ url_for('auth.login') }}" class="text-muted text-decoration-none text-sm">
+                        <i class="ti ti-arrow-left me-1"></i>Back to sign in
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/neon-auth.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInputs = document.querySelectorAll('.otp-digit');
+
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+            for (let i = 0; i < Math.min(paste.length, otpInputs.length); i++) {
+                otpInputs[i].value = paste[i];
+            }
+        });
+    });
+
+    function getOtp() {
+        return Array.from(otpInputs).map(i => i.value).join('');
+    }
+
+    function showMsg(text, type) {
+        const el = document.getElementById('verify-message');
+        el.className = 'alert alert-' + (type === 'error' ? 'danger' : type) + ' mb-3';
+        el.textContent = text;
+        el.classList.remove('d-none');
+    }
+
+    document.getElementById('standaloneVerifyForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('verify-email').value.trim();
+        const otp = getOtp();
+        const btn = document.getElementById('verifyBtn');
+
+        if (!email || otp.length !== 6) {
+            showMsg('Please enter your email and the 6-digit code.', 'error');
+            return;
+        }
+
+        if (!window.neonAuth) {
+            showMsg('Authentication service not configured.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying...';
+
+        try {
+            await window.neonAuth.verifyEmail(email, otp);
+            showMsg('Email verified! Redirecting to sign in...', 'success');
+            setTimeout(() => { window.location.href = '{{ url_for("auth.login") }}'; }, 1500);
+        } catch (error) {
+            showMsg(error.message || 'Verification failed. Please try again.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ti ti-check me-2"></i>Verify Email';
+        }
+    });
+
+    document.getElementById('resendBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('verify-email').value.trim();
+        if (!email) { showMsg('Please enter your email first.', 'error'); return; }
+        if (!window.neonAuth) return;
+
+        this.textContent = 'Sending...';
+        try {
+            await window.neonAuth.resendOtp(email);
+            showMsg('A new code has been sent.', 'success');
+        } catch (error) {
+            showMsg('Failed to resend code.', 'error');
+        }
+        this.textContent = 'Resend code';
+    });
+});
+</script>
+{% endblock %}

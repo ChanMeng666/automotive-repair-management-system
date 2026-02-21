@@ -10,7 +10,7 @@ from app.services.job_service import JobService
 from app.services.billing_service import BillingService
 from app.utils.decorators import handle_database_errors, log_function_call
 from app.utils.validators import validate_customer_data, sanitize_input
-from app.utils.security import csrf_protect, require_auth, InputSanitizer, SQLInjectionProtection
+from app.utils.security import require_auth, InputSanitizer, SQLInjectionProtection
 from app.utils.error_handler import ValidationError, BusinessLogicError
 
 # Create blueprint
@@ -59,56 +59,24 @@ def index():
 
 @main_bp.route('/login')
 def login():
-    """Login page (simplified version)"""
-    return render_template('auth/login.html')
-
-
-@main_bp.route('/login', methods=['POST'])
-@csrf_protect
-@handle_database_errors
-def login_post():
-    """Handle login submission"""
-    from app.services.auth_service import AuthService
-
-    username = InputSanitizer.sanitize_string(request.form.get('username', ''))
-    password = request.form.get('password', '')
-    user_type = InputSanitizer.sanitize_string(request.form.get('user_type', 'technician'))
-
-    # Check for SQL injection
-    if SQLInjectionProtection.scan_sql_injection(username):
-        raise ValidationError("Username contains illegal characters")
-    if SQLInjectionProtection.scan_sql_injection(user_type):
-        raise ValidationError("User type contains illegal characters")
-
-    if not username or not password:
-        flash('Please enter username and password', 'error')
-        return render_template('auth/login.html')
-
-    # Use AuthService for authentication
-    auth_service = AuthService()
-    success, user_data, error_message = auth_service.authenticate(username, password, user_type)
-
-    if success:
-        session['user_id'] = user_data.get('user_id', username)
-        session['username'] = user_data.get('username', username)
-        session['user_type'] = user_data.get('role', user_type)
-        session['logged_in'] = True
-
-        flash(f'Welcome back, {username}!', 'success')
-
-        # Redirect based on user type
-        if user_data.get('role', user_type) == 'administrator':
-            return redirect(url_for('administrator.dashboard'))
-        else:
-            return redirect(url_for('technician.current_jobs'))
-    else:
-        flash(error_message or 'Incorrect username or password', 'error')
-        return render_template('auth/login.html')
+    """Redirect to auth login page"""
+    return redirect(url_for('auth.login'))
 
 
 @main_bp.route('/logout')
 def logout():
-    """Logout"""
+    """Logout - clear session and redirect"""
+    from flask import current_app
+    import requests as http_requests
+
+    # Try to sign out from Neon Auth
+    neon_auth_url = (current_app.config.get('NEON_AUTH_URL') or '').rstrip('/')
+    if neon_auth_url:
+        try:
+            http_requests.post(f"{neon_auth_url}/sign-out", timeout=5)
+        except Exception:
+            pass
+
     session.clear()
     flash('You have successfully logged out', 'info')
     return redirect(url_for('main.index'))
@@ -123,10 +91,10 @@ def dashboard():
     # Check if logged in (simplified version)
     if not session.get('logged_in'):
         flash('Please login first', 'warning')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('auth.login'))
     
     try:
-        user_type = session.get('user_type', 'technician')
+        user_type = session.get('current_role', 'technician')
         
         # Get statistics
         job_stats = job_service.get_job_statistics()

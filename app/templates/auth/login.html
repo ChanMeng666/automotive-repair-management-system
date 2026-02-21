@@ -6,7 +6,6 @@
 
 {% block extra_css %}
 <style>
-/* Login page background pattern */
 .login-bg {
     background: linear-gradient(135deg, #f1f5f9 0%, #e8eef5 100%);
     position: relative;
@@ -20,15 +19,52 @@
     pointer-events: none;
 }
 
-/* Shake animation for invalid feedback */
-.invalid-feedback {
-    animation: shake 0.5s ease-in-out;
+.auth-tab-btn {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--tblr-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+.auth-tab-btn.active {
+    color: var(--tblr-primary);
+    border-bottom-color: var(--tblr-primary);
+}
+
+.auth-tab-content { display: none; }
+.auth-tab-content.active { display: block; }
+
+.verification-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: white;
+    z-index: 10;
+    border-radius: inherit;
+}
+
+.verification-overlay.active { display: flex; }
+
+.otp-inputs { display: flex; gap: 0.5rem; justify-content: center; }
+.otp-inputs input {
+    width: 3rem;
+    height: 3.5rem;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    transition: border-color 0.2s;
+}
+.otp-inputs input:focus {
+    border-color: var(--tblr-primary);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.15);
 }
 </style>
 {% endblock %}
@@ -37,22 +73,29 @@
 <div class="row justify-content-center min-vh-100 align-items-center login-bg">
     <div class="col-xl-4 col-lg-5 col-md-6 col-sm-8" style="position: relative; z-index: 1;">
         <!-- Login Card -->
-        <div class="card border-0 shadow-lg" style="border-top: 4px solid var(--accent) !important;">
+        <div class="card border-0 shadow-lg position-relative" style="border-top: 4px solid var(--accent) !important; overflow: hidden;">
             <div class="card-body p-5">
                 <!-- Header -->
                 <div class="text-center mb-4">
                     <img src="{{ url_for('static', filename='images/RepairOS-logo.svg') }}" alt="RepairOS" style="height: 64px; width: auto;" class="mb-3">
-                    <h1 class="h3 fw-bold text-gray-900 mb-2">Welcome Back</h1>
-                    <p class="text-muted">Sign in to your RepairOS account</p>
+                    <h1 class="h3 fw-bold text-gray-900 mb-1">Welcome to RepairOS</h1>
+                    <p class="text-muted">Sign in or create your account</p>
                 </div>
 
                 <!-- Message display area -->
                 <div id="auth-message" class="alert d-none mb-4"></div>
 
-                {% if config.get('GOOGLE_CLIENT_ID') %}
-                <!-- Google OAuth Sign In -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} mb-3">{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <!-- Google Sign In -->
                 <div class="mb-4">
-                    <a href="{{ url_for('auth.google_login') }}" class="btn btn-oauth btn-google w-100 mb-2">
+                    <button type="button" id="googleSignInBtn" class="btn w-100 d-flex align-items-center justify-content-center gap-2" style="background: white; border: 1px solid #dadce0; color: #3c4043; padding: 0.625rem;">
                         <svg width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -60,107 +103,102 @@
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                         <span>Continue with Google</span>
-                    </a>
-                </div>
-
-                <div class="divider mb-4">
-                    <span>or sign in with</span>
-                </div>
-                {% endif %}
-
-                <!-- Auth Tabs -->
-                <div class="auth-tabs">
-                    <button type="button" class="auth-tab active" data-tab="password">
-                        <i class="ti ti-key me-2"></i>Password
                     </button>
                 </div>
 
-                <!-- Password Login Form -->
-                <div id="password-content" class="auth-content active">
-                    <form method="POST" action="{{ url_for('main.login') }}" class="needs-validation" novalidate>
-                        <!-- Username Field -->
-                        <div class="form-group mb-3">
-                            <label for="username" class="form-label">Username</label>
+                <div class="text-center text-muted mb-4 d-flex align-items-center gap-2">
+                    <hr class="flex-fill"><span class="text-sm">or</span><hr class="flex-fill">
+                </div>
+
+                <!-- Auth Tabs -->
+                <div class="d-flex border-bottom mb-4">
+                    <button type="button" class="auth-tab-btn active" data-tab="signin">Sign In</button>
+                    <button type="button" class="auth-tab-btn" data-tab="signup">Create Account</button>
+                </div>
+
+                <!-- Sign In Tab -->
+                <div id="signin-content" class="auth-tab-content active">
+                    <form id="signinForm" novalidate>
+                        <div class="mb-3">
+                            <label for="signin-email" class="form-label">Email</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">
-                                    <i class="ti ti-user text-muted"></i>
+                                    <i class="ti ti-mail text-muted"></i>
                                 </span>
-                                <input
-                                    type="text"
-                                    class="form-control border-start-0 ps-0"
-                                    id="username"
-                                    name="username"
-                                    placeholder="Enter your username"
-                                    required
-                                    autocomplete="username"
-                                >
-                                <div class="invalid-feedback">
-                                    Please enter your username.
-                                </div>
+                                <input type="email" class="form-control border-start-0 ps-0" id="signin-email" placeholder="you@example.com" required autocomplete="email">
                             </div>
                         </div>
 
-                        <!-- Password Field -->
-                        <div class="form-group mb-4">
-                            <label for="password" class="form-label">Password</label>
+                        <div class="mb-4">
+                            <label for="signin-password" class="form-label">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">
                                     <i class="ti ti-lock text-muted"></i>
                                 </span>
-                                <input
-                                    type="password"
-                                    class="form-control border-start-0 ps-0"
-                                    id="password"
-                                    name="password"
-                                    placeholder="Enter your password"
-                                    required
-                                    autocomplete="current-password"
-                                >
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-secondary border-start-0"
-                                    id="togglePassword"
-                                    title="Show/Hide Password"
-                                >
-                                    <i class="ti ti-eye text-muted" id="togglePasswordIcon"></i>
+                                <input type="password" class="form-control border-start-0 ps-0" id="signin-password" placeholder="Your password" required autocomplete="current-password">
+                                <button type="button" class="btn btn-outline-secondary border-start-0 toggle-password" data-target="signin-password" title="Show/Hide Password">
+                                    <i class="ti ti-eye text-muted"></i>
                                 </button>
-                                <div class="invalid-feedback">
-                                    Please enter your password.
-                                </div>
                             </div>
                         </div>
 
-                        <!-- User Type Selection -->
-                        <div class="form-group mb-4">
-                            <label for="user_type" class="form-label">Sign in as</label>
-                            <select class="form-select" id="user_type" name="user_type" required>
-                                <option value="">Select your role</option>
-                                <option value="technician">Technician</option>
-                                <option value="administrator">Administrator</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please select your role.
-                            </div>
-                        </div>
-
-                        <!-- Remember Me -->
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
-                                <label class="form-check-label text-sm" for="remember_me">
-                                    Remember me
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" class="btn btn-accent w-100 py-3 fw-semibold">
-                            <i class="ti ti-login me-2"></i>
-                            Sign In
+                        <button type="submit" id="signinBtn" class="btn btn-accent w-100 py-3 fw-semibold">
+                            <i class="ti ti-login me-2"></i>Sign In
                         </button>
                     </form>
                 </div>
 
+                <!-- Create Account Tab -->
+                <div id="signup-content" class="auth-tab-content">
+                    <form id="signupForm" novalidate>
+                        <div class="mb-3">
+                            <label for="signup-name" class="form-label">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-user text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="signup-name" placeholder="John Doe" required autocomplete="name">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="signup-email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-mail text-muted"></i>
+                                </span>
+                                <input type="email" class="form-control border-start-0 ps-0" id="signup-email" placeholder="you@example.com" required autocomplete="email">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="signup-password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-lock text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control border-start-0 ps-0" id="signup-password" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
+                                <button type="button" class="btn btn-outline-secondary border-start-0 toggle-password" data-target="signup-password" title="Show/Hide Password">
+                                    <i class="ti ti-eye text-muted"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="signup-confirm" class="form-label">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="ti ti-lock-check text-muted"></i>
+                                </span>
+                                <input type="password" class="form-control border-start-0 ps-0" id="signup-confirm" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="signupBtn" class="btn btn-accent w-100 py-3 fw-semibold">
+                            <i class="ti ti-user-plus me-2"></i>Create Account
+                        </button>
+                    </form>
+                </div>
 
                 <!-- System Info -->
                 <div class="mt-4 p-3 bg-light border-start border-4 border-primary rounded">
@@ -168,11 +206,42 @@
                         <i class="ti ti-shield-check"></i>Secure Login
                     </h6>
                     <p class="text-muted text-sm mb-0">
-                        {% if config.get('GOOGLE_CLIENT_ID') %}
-                        Sign in securely using Google or your credentials. Your data is protected with industry-standard encryption.
-                        {% else %}
-                        Please contact your system administrator if you need login credentials.
-                        {% endif %}
+                        Sign in securely using Google or your email. Your data is protected with industry-standard encryption.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Verification Overlay -->
+            <div id="verificationOverlay" class="verification-overlay flex-column align-items-center justify-content-center p-5">
+                <div class="text-center" style="max-width: 360px;">
+                    <div class="mb-4">
+                        <div class="avatar avatar-xl bg-primary-lt rounded-circle mx-auto mb-3">
+                            <i class="ti ti-mail-check" style="font-size: 2rem;"></i>
+                        </div>
+                        <h3 class="fw-bold mb-2">Verify Your Email</h3>
+                        <p class="text-muted">We sent a 6-digit verification code to <strong id="verifyEmailDisplay"></strong></p>
+                    </div>
+
+                    <form id="verifyForm">
+                        <div class="otp-inputs mb-4">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="0" autofocus>
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="1">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="2">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="3">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="4">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="5">
+                        </div>
+
+                        <div id="verify-message" class="alert d-none mb-3"></div>
+
+                        <button type="submit" id="verifyBtn" class="btn btn-accent w-100 py-3 fw-semibold mb-3">
+                            <i class="ti ti-check me-2"></i>Verify Email
+                        </button>
+                    </form>
+
+                    <p class="text-muted text-sm mb-0">
+                        Didn't receive the code?
+                        <a href="#" id="resendCodeBtn" class="text-primary text-decoration-none fw-semibold">Resend code</a>
                     </p>
                 </div>
             </div>
@@ -201,35 +270,246 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/neon-auth.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Password visibility toggle
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
+    // State
+    let pendingVerifyEmail = '';
 
-    if (togglePassword && passwordInput) {
-        const toggleIcon = document.getElementById('togglePasswordIcon');
-        togglePassword.addEventListener('click', function() {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            // Update the Tabler icon class
-            if (toggleIcon) {
-                toggleIcon.className = isPassword ? 'ti ti-eye-off text-muted' : 'ti ti-eye text-muted';
-            }
-            this.title = isPassword ? 'Hide Password' : 'Show Password';
+    // Tab switching
+    document.querySelectorAll('.auth-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.auth-tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.dataset.tab + '-content').classList.add('active');
+            hideMessage();
         });
+    });
+
+    // Password toggle
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = document.getElementById(this.dataset.target);
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'ti ti-eye-off text-muted';
+            } else {
+                input.type = 'password';
+                icon.className = 'ti ti-eye text-muted';
+            }
+        });
+    });
+
+    // OTP input handling
+    const otpInputs = document.querySelectorAll('.otp-digit');
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+            for (let i = 0; i < Math.min(paste.length, otpInputs.length); i++) {
+                otpInputs[i].value = paste[i];
+            }
+            const nextEmpty = Math.min(paste.length, otpInputs.length - 1);
+            otpInputs[nextEmpty].focus();
+        });
+    });
+
+    function getOtpValue() {
+        return Array.from(otpInputs).map(i => i.value).join('');
     }
 
-    // Form validation
-    const forms = document.querySelectorAll('.needs-validation');
-    forms.forEach(form => {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+    // Message helpers
+    function showMessage(text, type) {
+        const el = document.getElementById('auth-message');
+        el.className = 'alert alert-' + (type === 'error' ? 'danger' : type) + ' mb-4';
+        el.textContent = text;
+        el.classList.remove('d-none');
+    }
+
+    function hideMessage() {
+        document.getElementById('auth-message').classList.add('d-none');
+    }
+
+    function showVerifyMessage(text, type) {
+        const el = document.getElementById('verify-message');
+        el.className = 'alert alert-' + (type === 'error' ? 'danger' : type) + ' mb-3';
+        el.textContent = text;
+        el.classList.remove('d-none');
+    }
+
+    function setLoading(btn, loading) {
+        if (loading) {
+            btn.disabled = true;
+            btn._originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Please wait...';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = btn._originalHtml;
+        }
+    }
+
+    // Google Sign In
+    document.getElementById('googleSignInBtn').addEventListener('click', async function() {
+        if (!window.neonAuth) {
+            showMessage('Authentication service not configured. Please try again later.', 'error');
+            return;
+        }
+        setLoading(this, true);
+        try {
+            await window.neonAuth.signInWithGoogle();
+        } catch (error) {
+            showMessage(error.message || 'Google sign-in failed. Please try again.', 'error');
+            setLoading(this, false);
+        }
+    });
+
+    // Sign In Form
+    document.getElementById('signinForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        hideMessage();
+
+        const email = document.getElementById('signin-email').value.trim();
+        const password = document.getElementById('signin-password').value;
+        const btn = document.getElementById('signinBtn');
+
+        if (!email || !password) {
+            showMessage('Please enter your email and password.', 'error');
+            return;
+        }
+
+        if (!window.neonAuth) {
+            showMessage('Authentication service not configured.', 'error');
+            return;
+        }
+
+        setLoading(btn, true);
+        try {
+            const result = await window.neonAuth.signInWithEmailPassword(email, password);
+            if (result.success) {
+                window.location.href = result.redirect;
             }
-            form.classList.add('was-validated');
-        });
+        } catch (error) {
+            showMessage(error.message || 'Invalid email or password.', 'error');
+            setLoading(btn, false);
+        }
+    });
+
+    // Sign Up Form
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        hideMessage();
+
+        const name = document.getElementById('signup-name').value.trim();
+        const email = document.getElementById('signup-email').value.trim();
+        const password = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('signup-confirm').value;
+        const btn = document.getElementById('signupBtn');
+
+        if (!name || !email || !password || !confirm) {
+            showMessage('Please fill in all fields.', 'error');
+            return;
+        }
+
+        if (password !== confirm) {
+            showMessage('Passwords do not match.', 'error');
+            return;
+        }
+
+        if (password.length < 8) {
+            showMessage('Password must be at least 8 characters.', 'error');
+            return;
+        }
+
+        if (!window.neonAuth) {
+            showMessage('Authentication service not configured.', 'error');
+            return;
+        }
+
+        setLoading(btn, true);
+        try {
+            await window.neonAuth.signUp(email, password, name);
+            // Show verification overlay
+            pendingVerifyEmail = email;
+            document.getElementById('verifyEmailDisplay').textContent = email;
+            document.getElementById('verificationOverlay').classList.add('active');
+            otpInputs[0].focus();
+        } catch (error) {
+            showMessage(error.message || 'Sign up failed. Please try again.', 'error');
+            setLoading(btn, false);
+        }
+    });
+
+    // Verify Email Form
+    document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const otp = getOtpValue();
+        const btn = document.getElementById('verifyBtn');
+
+        if (otp.length !== 6) {
+            showVerifyMessage('Please enter the 6-digit code.', 'error');
+            return;
+        }
+
+        if (!window.neonAuth) return;
+
+        setLoading(btn, true);
+        try {
+            await window.neonAuth.verifyEmail(pendingVerifyEmail, otp);
+
+            // Now establish Flask session
+            const callbackResponse = await fetch('/auth/neon-callback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (callbackResponse.ok) {
+                const data = await callbackResponse.json();
+                window.location.href = data.redirect || '/dashboard';
+            } else {
+                showVerifyMessage('Email verified but session could not be established. Please sign in.', 'warning');
+                setTimeout(() => {
+                    document.getElementById('verificationOverlay').classList.remove('active');
+                    // Switch to sign-in tab
+                    document.querySelector('[data-tab="signin"]').click();
+                }, 2000);
+            }
+        } catch (error) {
+            showVerifyMessage(error.message || 'Invalid code. Please try again.', 'error');
+            setLoading(btn, false);
+        }
+    });
+
+    // Resend Code
+    document.getElementById('resendCodeBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        if (!window.neonAuth || !pendingVerifyEmail) return;
+
+        this.textContent = 'Sending...';
+        this.style.pointerEvents = 'none';
+
+        try {
+            await window.neonAuth.resendOtp(pendingVerifyEmail);
+            showVerifyMessage('A new code has been sent to your email.', 'success');
+        } catch (error) {
+            showVerifyMessage('Failed to resend code. Please try again.', 'error');
+        }
+
+        this.textContent = 'Resend code';
+        this.style.pointerEvents = '';
     });
 });
 </script>

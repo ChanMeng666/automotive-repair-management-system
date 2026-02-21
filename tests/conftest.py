@@ -100,7 +100,6 @@ def authenticated_session(app):
     with client.session_transaction() as sess:
         sess['user_id'] = 'test_user'
         sess['username'] = 'test_user'
-        sess['user_type'] = 'technician'
         sess['logged_in'] = True
         sess['current_tenant_id'] = 1
         sess['current_tenant_slug'] = 'test-org'
@@ -116,7 +115,6 @@ def admin_session(app):
     with client.session_transaction() as sess:
         sess['user_id'] = 'admin_user'
         sess['username'] = 'admin_user'
-        sess['user_type'] = 'administrator'
         sess['logged_in'] = True
         sess['current_tenant_id'] = 1
         sess['current_tenant_slug'] = 'test-org'

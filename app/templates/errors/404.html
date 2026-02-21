@@ -23,17 +23,17 @@
                                 <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
                                     <i class="ti ti-layout-dashboard me-2"></i>Dashboard
                                 </a>
-                                {% if session.user_type == 'technician' %}
+                                {% if session.current_role == 'technician' %}
                                     <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-secondary">
                                         <i class="ti ti-list me-2"></i>Current Jobs
                                     </a>
-                                {% elif session.user_type == 'administrator' %}
+                                {% elif session.current_role in ('owner', 'admin') %}
                                     <a href="{{ url_for('administrator.customer_list') }}" class="btn btn-outline-secondary">
                                         <i class="ti ti-users me-2"></i>Customer Management
                                     </a>
                                 {% endif %}
                             {% else %}
-                                <a href="{{ url_for('main.login') }}" class="btn btn-outline-primary">
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">
                                     <i class="ti ti-login me-2"></i>Login to System
                                 </a>
                             {% endif %}
@@ -48,7 +48,7 @@
                         <a href="{{ url_for('main.customers') }}" class="btn btn-sm btn-outline-secondary me-2 mb-1">
                             Customer List
                         </a>
-                        {% if session.logged_in and session.user_type == 'technician' %}
+                        {% if session.logged_in and session.current_role == 'technician' %}
                             <a href="{{ url_for('technician.new_job') }}" class="btn btn-sm btn-outline-secondary me-2 mb-1">
                                 New Job
                             </a>

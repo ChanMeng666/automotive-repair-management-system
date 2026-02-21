@@ -26,9 +26,9 @@ def require_admin_login():
     """Check administrator login status"""
     if not session.get('logged_in'):
         flash('Please login first', 'warning')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('auth.login'))
 
-    if session.get('user_type') != 'administrator':
+    if session.get('current_role') not in ('owner', 'admin'):
         flash('Administrator privileges required', 'error')
         return redirect(url_for('main.index'))
 

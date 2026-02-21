@@ -7,7 +7,6 @@ from datetime import datetime
 import logging
 from sqlalchemy import String, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db
 from app.models.base import BaseModelMixin, TimestampMixin
 
@@ -38,10 +37,12 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
     user_id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     email: Mapped[Optional[str]] = mapped_column(String(320), unique=True, nullable=True, index=True)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
     # Legacy role column kept for backward compatibility during migration
     role: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, index=True)
@@ -59,18 +60,8 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
 
     @property
     def is_admin(self) -> bool:
-        """Check if user is a superadmin or has admin/owner role in any tenant"""
-        if self.is_superadmin:
-            return True
-        # Legacy support
-        if self.role == 'administrator':
-            return True
-        return False
-
-    @property
-    def is_technician(self) -> bool:
-        """Check if user has technician role (legacy support)"""
-        return self.role == 'technician'
+        """Check if user is a superadmin"""
+        return self.is_superadmin
 
     def get_tenants(self) -> List[Dict[str, Any]]:
         """Get all tenants this user belongs to"""
@@ -145,16 +136,6 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
         ).scalars().first()
         return membership.tenant_id if membership else None
 
-    def check_password(self, password: str) -> bool:
-        """Verify password against stored hash"""
-        if not self.password_hash:
-            return False
-        return check_password_hash(self.password_hash, password)
-
-    def set_password(self, password: str) -> None:
-        """Set a new password (hashed)"""
-        self.password_hash = generate_password_hash(password)
-
     @classmethod
     def find_by_username(cls, username: str) -> Optional['User']:
         """Find user by username"""
@@ -172,15 +153,6 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
         """Find user by Neon Auth user ID"""
         query = db.select(cls).where(cls.neon_auth_user_id == neon_auth_user_id)
         return db.session.execute(query).scalar_one_or_none()
-
-    @classmethod
-    def authenticate(cls, username: str, password: str) -> Optional['User']:
-        """Authenticate user with username and password"""
-        user = cls.find_by_username(username)
-        if user and user.is_active and user.check_password(password):
-            user.update_last_login()
-            return user
-        return None
 
     @classmethod
     def authenticate_with_jwt(cls, jwt_payload: dict) -> Optional['User']:
@@ -217,8 +189,8 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
         user = cls(
             username=username,
             email=email,
-            password_hash=generate_password_hash(__import__('secrets').token_urlsafe(32)),
             is_active=True,
+            email_verified=True,
             neon_auth_user_id=neon_auth_user_id,
         )
         db.session.add(user)
@@ -229,37 +201,6 @@ class User(db.Model, BaseModelMixin, TimestampMixin):
     def update_last_login(self) -> bool:
         """Update the last login timestamp"""
         self.last_login = datetime.utcnow()
-        db.session.commit()
-        return True
-
-    @classmethod
-    def create(
-        cls,
-        username: str,
-        password: str,
-        email: Optional[str] = None,
-        role: Optional[str] = None
-    ) -> Optional['User']:
-        """Create a new user"""
-        if cls.find_by_username(username):
-            raise ValueError("Username already exists")
-        if email and cls.find_by_email(email):
-            raise ValueError("Email already registered")
-
-        user = cls(
-            username=username,
-            password_hash=generate_password_hash(password),
-            email=email,
-            role=role,
-            is_active=True
-        )
-        db.session.add(user)
-        db.session.commit()
-        return user
-
-    def update_password(self, new_password: str) -> bool:
-        """Update user's password"""
-        self.password_hash = generate_password_hash(new_password)
         db.session.commit()
         return True
 

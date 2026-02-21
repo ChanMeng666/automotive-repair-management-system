@@ -27,7 +27,11 @@ class TestPublicRoutes:
     def test_login_page(self, client, app):
         """Login page should be accessible"""
         with app.app_context():
+            # /login now redirects to /auth/login
             response = client.get('/login')
+            assert response.status_code == 302
+
+            response = client.get('/auth/login')
             assert response.status_code == 200
 
     def test_about_page(self, client, app):
@@ -187,7 +191,7 @@ class TestAuthRoutes:
             response = client.get('/auth/status')
             assert response.status_code == 200
             data = response.get_json()
-            assert 'google_oauth_configured' in data
+            assert 'neon_auth_configured' in data
 
     def test_select_tenant_requires_login(self, client, app):
         """Tenant selection should redirect unauthenticated users"""
@@ -210,15 +214,10 @@ class TestSecurityIntegration:
         """XSS payloads should be escaped in responses"""
         with app.app_context():
             xss_payload = "<script>alert('xss')</script>"
-            response = client.post('/login', data={
-                'username': xss_payload,
-                'password': '123456',
-                'user_type': 'technician',
-                'csrf_token': 'test_token'
-            })
-            # The XSS payload should not appear unescaped in the response
+            # Test that the login page does not contain unescaped XSS in query params
+            response = client.get(f'/auth/login?error={xss_payload}')
             assert b"<script>alert('xss')</script>" not in response.data
-            assert response.status_code in (200, 400, 403)
+            assert response.status_code == 200
 
     def test_session_cleanup_on_logout(self, authenticated_session, app):
         """Session should be cleared on logout"""

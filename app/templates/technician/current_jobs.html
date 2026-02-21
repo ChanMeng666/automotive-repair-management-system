@@ -201,7 +201,7 @@
                                             onclick="viewJobDetails({{ record.job_id }})" title="Quick View">
                                         <i class="ti ti-eye"></i>
                                     </button>
-                                    {% if session.user_type == 'administrator' and record.paid == 0 %}
+                                    {% if session.current_role in ('owner', 'admin') and record.paid == 0 %}
                                         <button type="button" class="btn btn-sm btn-outline-success"
                                                 onclick="markAsPaid({{ record.job_id }})" title="Mark as Paid">
                                             <i class="ti ti-credit-card"></i>

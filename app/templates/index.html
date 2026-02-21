@@ -84,11 +84,11 @@
                     <i class="ti ti-calendar me-1"></i>
                     {{ current_date.strftime('%A, %B %d, %Y') if current_date else '' }}
                     <span class="mx-2">&middot;</span>
-                    <span class="badge bg-primary-lt">{{ session.user_type|title }}</span>
+                    <span class="badge bg-primary-lt">{{ session.current_role|title }}</span>
                 </p>
             </div>
             <div class="d-flex gap-2">
-                {% if session.user_type == 'technician' %}
+                {% if session.current_role == 'technician' %}
                 <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent">
                     <i class="ti ti-plus me-1"></i>New Job
                 </a>
@@ -182,7 +182,7 @@
                 <p class="text-secondary">Manage repair work orders, track progress, and create new service requests.</p>
             </div>
             <div class="card-footer d-flex gap-2">
-                {% if session.user_type == 'technician' %}
+                {% if session.current_role == 'technician' %}
                 <a href="{{ url_for('technician.current_jobs') }}" class="btn btn-outline-success">
                     <i class="ti ti-clipboard-list me-1"></i>Current Jobs
                 </a>
@@ -206,7 +206,7 @@
                 <p class="text-secondary">Process payments, manage billing records, and track outstanding balances.</p>
             </div>
             <div class="card-footer d-flex gap-2">
-                {% if session.user_type == 'administrator' %}
+                {% if session.current_role in ('owner', 'admin') %}
                 <a href="{{ url_for('administrator.pay_bills') }}" class="btn btn-outline-info">
                     <i class="ti ti-credit-card me-1"></i>Payments
                 </a>
@@ -230,7 +230,7 @@
                 <p class="text-secondary">Generate detailed reports, view business analytics, and performance metrics.</p>
             </div>
             <div class="card-footer d-flex gap-2">
-                {% if session.user_type == 'administrator' %}
+                {% if session.current_role in ('owner', 'admin') %}
                 <a href="{{ url_for('administrator.reports') }}" class="btn btn-outline-secondary">
                     <i class="ti ti-file-text me-1"></i>View Reports
                 </a>
@@ -275,7 +275,7 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="ti ti-clock me-2"></i>Recent Work Orders</h3>
                 <div class="card-actions">
-                    <a href="{{ url_for('technician.current_jobs') if session.user_type == 'technician' else url_for('main.dashboard') }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ url_for('technician.current_jobs') if session.current_role == 'technician' else url_for('main.dashboard') }}" class="btn btn-sm btn-outline-primary">
                         View All
                     </a>
                 </div>
@@ -337,7 +337,7 @@
                 <div class="empty-icon"><i class="ti ti-inbox"></i></div>
                 <p class="empty-title">No Recent Work Orders</p>
                 <p class="empty-subtitle text-secondary">Create a new work order to get started.</p>
-                {% if session.user_type == 'technician' %}
+                {% if session.current_role == 'technician' %}
                 <div class="empty-action">
                     <a href="{{ url_for('technician.new_job') }}" class="btn btn-accent"><i class="ti ti-plus me-2"></i>Create New Job</a>
                 </div>
@@ -353,7 +353,7 @@
             <div class="card-header">
                 <h3 class="card-title"><i class="ti ti-alert-triangle text-warning me-2"></i>Overdue Bills</h3>
                 <div class="card-actions">
-                    {% if session.user_type == 'administrator' %}
+                    {% if session.current_role in ('owner', 'admin') %}
                     <a href="{{ url_for('administrator.overdue_bills') }}" class="btn btn-sm btn-outline-warning">View All</a>
                     {% endif %}
                 </div>
@@ -372,7 +372,7 @@
                     </div>
                     <div class="text-end">
                         <div class="fw-bold text-danger">${{ "%.2f"|format(bill.get('total_cost', 0)) }}</div>
-                        {% if session.user_type == 'administrator' %}
+                        {% if session.current_role in ('owner', 'admin') %}
                         <a href="{{ url_for('administrator.pay_single_bill', job_id=bill.get('job_id', 0)) }}" class="btn btn-sm btn-outline-success mt-1">Pay</a>
                         {% endif %}
                     </div>
@@ -409,7 +409,7 @@
                 From work orders to invoicing, RepairOS gives your team the tools to deliver faster service, get paid on time, and grow your business.
             </p>
             <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg px-4">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-accent btn-lg px-4">
                     <i class="ti ti-rocket me-2"></i>Get Started Free
                 </a>
                 <a href="{{ url_for('main.about') }}" class="btn btn-outline-light btn-lg px-4">
@@ -525,7 +525,7 @@
                 <h3 class="fw-bold text-white mb-2">Ready to modernize your shop?</h3>
                 <p class="mb-4" style="color: rgba(255,255,255,0.7);">Start free, no credit card required. Upgrade when you're ready.</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{{ url_for('main.login') }}" class="btn btn-accent btn-lg px-4">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-accent btn-lg px-4">
                         <i class="ti ti-rocket me-2"></i>Start Free Trial
                     </a>
                     <a href="{{ url_for('billing.plans') }}" class="btn btn-outline-light btn-lg px-4">

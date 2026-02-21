@@ -25,7 +25,7 @@ def require_technician_login():
     """Check technician login status"""
     if not session.get('logged_in'):
         flash('Please log in first', 'warning')
-        return redirect(url_for('main.login'))
+        return redirect(url_for('auth.login'))
     return None
 
 
