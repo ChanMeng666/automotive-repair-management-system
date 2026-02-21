@@ -7,7 +7,9 @@
       "Bash(findstr:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat!: implement secure authentication system and project modernization\n\nBREAKING CHANGE: Legacy app.py is deprecated, use run.py as entry point\n\nSecurity:\n- Remove hardcoded passwords \\(secret_key, login password ''123456''\\)\n- Fix SQL injection vulnerability in app.py:437\n- Enforce SECRET_KEY and DB_PASSWORD in production via ConfigurationError\n- Remove demo credentials display from login template\n\nAuthentication:\n- Add User model with password hashing \\(werkzeug PBKDF2-SHA256\\)\n- Implement AuthService with database and demo mode authentication\n- Add RBAC decorators: login_required, role_required, admin_required\n- Create user table schema with roles \\(technician/administrator\\)\n\nArchitecture:\n- Mark app.py as deprecated with warnings\n- Update config validation for production environment\n- Modernize environment configuration \\(.env.example\\)\n\nCode Quality:\n- Add pyproject.toml \\(black, isort, pytest, mypy, coverage config\\)\n- Add .flake8, .editorconfig, .pre-commit-config.yaml\n- Add bandit.yaml for security scanning\n- Add unit tests for authentication system\n\nDocumentation:\n- Update README with new environment-based configuration\n- Remove connect.py references, use .env instead\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(tree:*)",
+      "Bash(heroku:*)"
     ]
   }
 }
