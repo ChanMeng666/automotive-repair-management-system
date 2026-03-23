@@ -109,4 +109,4 @@ Alembic migrations in `migrations/versions/`:
 
 ## Key Dependencies
 
-Flask 3.1.3, Werkzeug 3.1.6, SQLAlchemy 2.0.36, psycopg2-binary 2.9.10, Alembic 1.14.0, Authlib 1.6.6, PyJWT 2.10.1, Stripe 11.4.1, bcrypt 4.2.1, Chart.js 4.4.0, Bootstrap 5.3, Lucide Icons.
+Flask 3.1.3, Werkzeug 3.1.6, SQLAlchemy 2.0.36, psycopg2-binary 2.9.10, Alembic 1.14.0, PyJWT 2.12.0, Stripe 11.4.1, bcrypt 4.2.1, Chart.js 4.4.0, Bootstrap 5.3, Lucide Icons.
