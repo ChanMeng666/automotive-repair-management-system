@@ -1,0 +1,64 @@
+{
+  "project": "automotive-repair-management-system",
+  "baseUrl": "https://repairos.chanmeng.org",
+  "outDir": "docs/showcase",
+  "loginWall": false,
+  "reducedMotion": "reduce",
+  "viewports": {
+    "desktop": { "width": 1280, "height": 800, "deviceScaleFactor": 2 },
+    "mobile": { "width": 390, "height": 844, "deviceScaleFactor": 3, "isMobile": true }
+  },
+  "pages": [
+    {
+      "label": "hero",
+      "url": "/",
+      "viewport": "desktop",
+      "before": [
+        { "action": "wait", "ms": 1500 }
+      ]
+    },
+    {
+      "label": "features",
+      "url": "/",
+      "viewport": "desktop",
+      "before": [
+        { "action": "wait", "ms": 1500 },
+        { "action": "scroll", "by": 550 }
+      ]
+    },
+    {
+      "label": "login",
+      "url": "/auth/login",
+      "viewport": "desktop",
+      "before": [
+        { "action": "wait", "ms": 1500 }
+      ]
+    },
+    {
+      "label": "mobile-hero",
+      "url": "/",
+      "viewport": "mobile",
+      "before": [
+        { "action": "wait", "ms": 1500 }
+      ]
+    }
+  ],
+  "demo": {
+    "size": { "width": 1280, "height": 720 },
+    "stepPauseMs": 600,
+    "steps": [
+      { "action": "goto", "url": "/" },
+      { "action": "wait", "ms": 1000 },
+      { "action": "scroll", "by": 350 },
+      { "action": "wait", "ms": 800 },
+      { "action": "scroll", "by": 400 },
+      { "action": "wait", "ms": 800 },
+      { "action": "scroll", "by": 400 },
+      { "action": "wait", "ms": 1000 },
+      { "action": "scroll", "to": "bottom" },
+      { "action": "wait", "ms": 1200 },
+      { "action": "scroll", "to": "top" },
+      { "action": "wait", "ms": 800 }
+    ]
+  }
+}
